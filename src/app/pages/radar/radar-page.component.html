@@ -11,13 +11,13 @@
         <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
         <input
           [value]="q()"
-          (input)="q.set($any($event.target).value)"
+          (input)="q.set($any($event.target).value); page.set(1)"
           placeholder="Buscar cliente..."
           class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
       <div class="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
-        <select class="filter-select md:min-w-[180px]" [value]="risk()" (change)="risk.set($any($event.target).value)">
+        <select class="filter-select md:min-w-[180px]" [value]="risk()" (change)="risk.set($any($event.target).value); page.set(1)">
           <option [value]="ALL">Todos - Risco</option>
           <option value="ALTO">Alto</option>
           <option value="MEDIO">Medio</option>
@@ -41,10 +41,9 @@
     } @else if (!top20.loading() && filtered().length === 0 && !top20.error()) {
       <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</div>
     } @else {
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
-            <tr>
+      <div class="flex flex-col">
+        <app-data-table>
+            <tr data-table-head-row>
               <th class="px-4 py-3 text-left font-medium">Cliente</th>
               <th class="px-4 py-3 text-left font-medium">Dias sem uso</th>
               <th class="px-4 py-3 text-left font-medium">Acoes 30d</th>
@@ -53,11 +52,8 @@
               <th class="px-4 py-3 text-left font-medium">Usuarios</th>
               <th class="px-4 py-3 text-left font-medium">Score IA</th>
               <th class="px-4 py-3 text-left font-medium">Risco</th>
-              <!-- <th class="px-4 py-3 text-left font-medium">Resumo</th> -->
             </tr>
-          </thead>
-          <tbody class="divide-y divide-border">
-            @for (row of filtered(); track row.cliente.owner_id) {
+            @for (row of pageSlice(); track row.cliente.owner_id) {
               <tr class="group transition-colors hover:bg-muted/20">
                 <td class="px-4 py-3 align-top">
                   <a [routerLink]="['/cliente', row.cliente.owner_id]" class="flex items-start gap-3">
@@ -87,13 +83,16 @@
                   <app-risk-badge [risk]="riskLevel(row)" />
                   <div class="mt-1 text-[10px] uppercase text-muted-foreground">{{ row.analise.nivel_risco }}</div>
                 </td>
-                <!-- <td class="max-w-[280px] px-4 py-3 align-top text-xs leading-relaxed text-muted-foreground">
-                  {{ row.analise.resumo }}
-                </td> -->
               </tr>
             }
-          </tbody>
-        </table>
+        </app-data-table>
+        <app-table-pagination-bar
+          [totalCount]="filtered().length"
+          [page]="page()"
+          [pageSize]="pageSize()"
+          (pageChange)="page.set($event)"
+          (pageSizeChange)="pageSize.set($event)"
+        />
       </div>
     }
   </div>

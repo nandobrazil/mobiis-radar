@@ -1,9 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
+import { DataTableComponent } from '../../shared/data-table.component';
 import { RiskBadgeComponent, ScoreBarComponent } from '../../shared/risk-badge.component';
 import { RadarTop20Service } from '../../shared/radar-top20.service';
+import { TablePaginationBarComponent } from '../../shared/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar.component';
 import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
@@ -12,7 +14,7 @@ const ALL = '__all__';
 @Component({
   selector: 'app-radar-page',
   standalone: true,
-  imports: [RiskBadgeComponent, RouterLink, ScoreBarComponent, TopBarComponent],
+  imports: [DataTableComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
   templateUrl: './radar-page.component.html',
 })
 export class RadarPageComponent implements OnInit {
@@ -21,6 +23,10 @@ export class RadarPageComponent implements OnInit {
   protected readonly q = signal('');
   protected readonly risk = signal(ALL);
   protected readonly initials = initials;
+
+  /** Paginação somente no front (sobre `filtered()`). */
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(10);
 
   protected readonly subtitle = computed(
     () => `${this.filtered().length} de ${this.top20.items().length} clientes filtrados`,
@@ -37,6 +43,30 @@ export class RadarPageComponent implements OnInit {
       return matchQ && matchR;
     });
   });
+
+  protected readonly pageSlice = computed(() => {
+    const rows = this.filtered();
+    const size = this.pageSize();
+    const p = this.page();
+    const start = (p - 1) * size;
+    return rows.slice(start, start + size);
+  });
+
+  constructor() {
+    effect(() => {
+      const n = this.filtered().length;
+      const size = this.pageSize();
+      const tp = Math.max(1, Math.ceil(n / Math.max(1, size)));
+      untracked(() => {
+        const p = this.page();
+        if (p > tp) {
+          this.page.set(tp);
+        } else if (p < 1) {
+          this.page.set(1);
+        }
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.top20.load();

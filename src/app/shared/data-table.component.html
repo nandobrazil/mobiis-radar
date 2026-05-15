@@ -1,0 +1,10 @@
+<div class="overflow-x-auto">
+  <table class="w-full text-sm" [ngClass]="tableClass() || undefined">
+    <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
+      <ng-content select="[data-table-head-row]" />
+    </thead>
+    <tbody class="divide-y divide-border">
+      <ng-content />
+    </tbody>
+  </table>
+</div>

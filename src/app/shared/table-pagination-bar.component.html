@@ -1,0 +1,48 @@
+<div
+  class="flex flex-col gap-2 border-t border-border bg-muted/10 px-4 py-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
+>
+  <span>
+    @if (totalCount() === 0) {
+      Nenhum registro
+    } @else {
+      Mostrando <span class="tabular-nums font-medium text-foreground">{{ rangeStart() }}</span>
+      –
+      <span class="tabular-nums font-medium text-foreground">{{ rangeEnd() }}</span>
+      de
+      <span class="tabular-nums font-medium text-foreground">{{ totalCount() }}</span>
+    }
+  </span>
+  <div class="flex flex-wrap items-center gap-3">
+    <label class="flex items-center gap-2">
+      Por página
+      <select
+        class="filter-select h-8 min-w-[4.5rem] rounded-lg border border-border bg-background py-0 text-xs"
+        [value]="pageSize()"
+        (change)="onPageSizeSelect($event)"
+      >
+        @for (opt of pageSizeOptions; track opt) {
+          <option [value]="opt">{{ opt }}</option>
+        }
+      </select>
+    </label>
+    <div class="flex items-center gap-1">
+      <button
+        type="button"
+        class="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+        [disabled]="page() <= 1 || totalCount() === 0"
+        (click)="prev()"
+      >
+        Anterior
+      </button>
+      <span class="min-w-[4.5rem] text-center tabular-nums">{{ page() }} / {{ totalPages() }}</span>
+      <button
+        type="button"
+        class="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+        [disabled]="page() >= totalPages() || totalCount() === 0"
+        (click)="next()"
+      >
+        Próxima
+      </button>
+    </div>
+  </div>
+</div>

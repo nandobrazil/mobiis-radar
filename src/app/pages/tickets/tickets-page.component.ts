@@ -1,14 +1,16 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 import type { MovideskTicket } from '../../data/movidesk-ticket.types';
+import { DataTableComponent } from '../../shared/data-table.component';
 import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
+import { TablePaginationBarComponent } from '../../shared/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar.component';
 
 @Component({
   selector: 'app-tickets-page',
   standalone: true,
-  imports: [TopBarComponent],
+  imports: [DataTableComponent, TablePaginationBarComponent, TopBarComponent],
   templateUrl: './tickets-page.component.html',
 })
 export class TicketsPageComponent implements OnInit {
@@ -18,6 +20,9 @@ export class TicketsPageComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly q = signal('');
+
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(10);
 
   protected readonly subtitle = computed(() => {
     const n = this.filtered().length;
@@ -50,6 +55,30 @@ export class TicketsPageComponent implements OnInit {
       return hay.includes(query);
     });
   });
+
+  protected readonly pageSlice = computed(() => {
+    const rows = this.filtered();
+    const size = this.pageSize();
+    const p = this.page();
+    const start = (p - 1) * size;
+    return rows.slice(start, start + size);
+  });
+
+  constructor() {
+    effect(() => {
+      const n = this.filtered().length;
+      const size = this.pageSize();
+      const tp = Math.max(1, Math.ceil(n / Math.max(1, size)));
+      untracked(() => {
+        const p = this.page();
+        if (p > tp) {
+          this.page.set(tp);
+        } else if (p < 1) {
+          this.page.set(1);
+        }
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.load();
