@@ -1,5 +1,5 @@
-# Base image
-FROM node:22.4.0-slim as builder
+# Node 22.12+ exigido pelo Angular CLI 21 (v22.4.0 falha no build).
+FROM node:22-bookworm-slim AS builder
 
 # Definir o diretório de trabalho dentro do container
 WORKDIR /app
@@ -20,11 +20,10 @@ RUN npm run build-prod
 FROM nginx:alpine
 
 # Copiar os arquivos de build da aplicação para o diretório padrão do Nginx
-COPY --from=builder /app/dist/anunciabem-ui/* /usr/share/nginx/html/
+COPY --from=builder /app/dist/mobiis-radar-angular/browser/ /usr/share/nginx/html/
 
 # Expor a porta 80 para acesso externo
 EXPOSE 80
 
 # Iniciar o servidor Nginx quando o container for iniciado
 CMD ["nginx", "-g", "daemon off;"]
- 
