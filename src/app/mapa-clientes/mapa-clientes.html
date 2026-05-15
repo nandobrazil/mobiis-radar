@@ -1,0 +1,222 @@
+<main class="shell">
+  <header class="app-bar" role="banner">
+    <div class="brand-mark" aria-hidden="true">
+      <span class="material-symbols-outlined">hub</span>
+    </div>
+    <span class="app-title">Mapa de Clientes</span>
+    <span class="bar-spacer"></span>
+    <button
+      class="icon-button"
+      type="button"
+      [attr.aria-label]="themeToggleLabel()"
+      [title]="themeToggleLabel()"
+      (click)="toggleTheme()"
+    >
+      <span class="material-symbols-outlined" aria-hidden="true">{{ themeToggleIcon() }}</span>
+    </button>
+    <button class="mds-button secondary" type="button" aria-label="Exportar dados do mapa">
+      <span class="material-symbols-outlined" aria-hidden="true">download</span>
+      Exportar
+    </button>
+  </header>
+
+  <section class="page-heading" aria-label="Filtros do mapa">
+    <div>
+      <p class="eyebrow">Mapa de clientes</p>
+      <h1>Embarcadores ativos por regiao e produto</h1>
+    </div>
+
+    <form class="filters" aria-label="Filtros de produto e saude">
+      <label class="field">
+        <span>Produto</span>
+        <select [formControl]="productControl" aria-label="Filtrar por produto">
+          <option value="todos">Todos</option>
+          @for (productKey of productKeys; track productKey) {
+            <option [value]="productKey">{{ products[productKey].label }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Saude</span>
+        <select [formControl]="riskControl" aria-label="Filtrar por nivel de risco">
+          <option value="todos">Todos</option>
+          <option value="baixo">Baixo risco</option>
+          <option value="medio">Atencao</option>
+          <option value="alto">Alto risco</option>
+        </select>
+      </label>
+    </form>
+  </section>
+
+  <section class="metrics" aria-label="Resumo dos clientes filtrados">
+    <article class="metric-card">
+      <span class="material-symbols-outlined" aria-hidden="true">domain</span>
+      <small>Clientes</small>
+      <strong>{{ totals().customers }}</strong>
+    </article>
+    <article class="metric-card">
+      <span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>
+      <small>Cargas no mes</small>
+      <strong>{{ formatNumber(totals().loads) }}</strong>
+    </article>
+    <article class="metric-card">
+      <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+      <small>Alto risco</small>
+      <strong>{{ totals().highRisk }}</strong>
+    </article>
+    <article class="metric-card">
+      <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
+      <small>Engajamento medio</small>
+      <strong>{{ formatPercent(totals().averageEngagement) }}</strong>
+    </article>
+  </section>
+
+  <section class="workspace">
+    <article class="map-panel" aria-label="Mapa Leaflet do Brasil com clientes embarcadores">
+      <div class="map-header">
+        <div>
+          <span class="status-dot"></span>
+          Operacao nacional
+        </div>
+        <strong>{{ filteredCustomers().length }} pontos visiveis</strong>
+      </div>
+
+      <div class="map-stage">
+        <div #mapContainer class="map-container" aria-label="Mapa interativo do Brasil"></div>
+        @if (mapMessage()) {
+          <div class="map-overlay" role="status">{{ mapMessage() }}</div>
+        }
+      </div>
+
+      <div class="legend" aria-label="Legenda de risco">
+        <span><i class="risk-low"></i> Baixo risco</span>
+        <span><i class="risk-medium"></i> Atencao</span>
+        <span><i class="risk-high"></i> Alto risco</span>
+      </div>
+    </article>
+  </section>
+
+  @if (selectedCustomer(); as customer) {
+    <div class="modal-backdrop" (click)="closeCustomerModal()">
+      <section
+        class="customer-modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'Dados da empresa ' + customer.name"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="dialog-header">
+          <div>
+            <p>{{ customer.city }} - {{ customer.state }}</p>
+            <h2>{{ customer.name }}</h2>
+            <span>{{ customer.segment }} - Plano {{ customer.plan }}</span>
+          </div>
+          <span
+            class="risk-pill"
+            [class.baixo]="customer.risk === 'baixo'"
+            [class.medio]="customer.risk === 'medio'"
+            [class.alto]="customer.risk === 'alto'"
+          >
+            {{ riskLabel(customer.risk) }}
+          </span>
+        </header>
+
+        <div class="dialog-content">
+          <section class="company-card" aria-label="Dados cadastrais da empresa">
+            <h3>Dados da empresa</h3>
+            <div class="company-list">
+              <div class="company-row">
+                <span class="material-symbols-outlined" aria-hidden="true">badge</span>
+                <div>
+                  <span>CNPJ</span>
+                  <strong>{{ customer.cnpj }}</strong>
+                </div>
+              </div>
+              <div class="company-row">
+                <span class="material-symbols-outlined" aria-hidden="true">call</span>
+                <div>
+                  <span>Telefone</span>
+                  <strong>{{ customer.phone }}</strong>
+                </div>
+              </div>
+              <div class="company-row">
+                <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+                <div>
+                  <span>E-mail</span>
+                  <strong>{{ customer.email }}</strong>
+                </div>
+              </div>
+              <div class="company-row">
+                <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+                <div>
+                  <span>Endereco</span>
+                  <strong>{{ customer.address }}</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="operation-section" aria-label="Dados operacionais">
+            <h3>Operacao</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span>Responsavel</span>
+                <strong>{{ customer.contact }}</strong>
+              </div>
+              <div class="detail-item">
+                <span>Cargas/mes</span>
+                <strong>{{ formatNumber(customer.loadsMonth) }}</strong>
+              </div>
+              <div class="detail-item">
+                <span>Rotas ativas</span>
+                <strong>{{ customer.activeLanes }}</strong>
+              </div>
+              <div class="detail-item">
+                <span>Engajamento</span>
+                <strong>{{ formatPercent(customer.engagement) }}</strong>
+              </div>
+              <div class="detail-item">
+                <span>Sem login</span>
+                <strong>{{ customer.lastLoginDays }} dias</strong>
+              </div>
+              <div class="detail-item">
+                <span>Produtos</span>
+                <strong>{{ customer.products.length }}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="products-section">
+            <h3>Produtos contratados</h3>
+            <div class="product-list">
+              @for (product of productList(customer); track product.id) {
+                <article class="product-item">
+                  <div class="product-badge">{{ product.shortLabel }}</div>
+                  <div>
+                    <strong>{{ product.label }}</strong>
+                    <span>{{ product.description }}</span>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+
+          <section class="action-box">
+            <span>
+              <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+              Proxima acao sugerida
+            </span>
+            <p>{{ customer.recommendedAction }}</p>
+          </section>
+        </div>
+
+        <footer class="dialog-actions">
+          <button class="mds-button secondary" type="button" autofocus (click)="closeCustomerModal()">
+            Fechar
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+</main>

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "material": {
+      "source": "bergside/awesome-design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/material/SKILL.md",
+      "computedHash": "4ef64c83fc69df7c149df711c09dba476bfc47e0552ba63e3cc8bfd9edd5b4fc"
+    }
+  }
+}

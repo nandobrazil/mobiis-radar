@@ -1,0 +1,241 @@
+@use '@angular/material' as mat;
+
+@include mat.core();
+
+$mat-light-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$violet-palette,
+      tertiary: mat.$magenta-palette,
+    ),
+    typography: (
+      plain-family: Inter,
+      brand-family: Roboto,
+    ),
+  )
+);
+
+$mat-dark-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: dark,
+      primary: mat.$violet-palette,
+      tertiary: mat.$magenta-palette,
+    ),
+    typography: (
+      plain-family: Inter,
+      brand-family: Roboto,
+    ),
+  )
+);
+
+@mixin app-tokens-light {
+  --md-primary: #6442d6;
+  --md-secondary: #c8b3fd;
+  --md-success: #16a34a;
+  --md-warning: #d97706;
+  --md-danger: #dc2626;
+  --md-surface: #ffffff;
+  --md-text: #111827;
+
+  --color-primary: var(--md-primary);
+  --color-on-primary: #ffffff;
+  --color-secondary: var(--md-secondary);
+  --color-secondary-container: #ede9fe;
+  --color-success: var(--md-success);
+  --color-warning: var(--md-warning);
+  --color-danger: var(--md-danger);
+  --color-surface: var(--md-surface);
+  --color-surface-muted: #f3f4f6;
+  --color-text: var(--md-text);
+  --color-text-muted: #6b7280;
+  --color-outline: #e5e7eb;
+  --color-background: #f9fafb;
+
+  --risk-baixo-text: #14532d;
+  --risk-medio-text: #92400e;
+  --risk-alto-text: #991b1b;
+
+  --elevation-1: 0 1px 3px rgba(17, 24, 39, 0.08), 0 1px 2px rgba(17, 24, 39, 0.06);
+  --elevation-2: 0 4px 16px rgba(17, 24, 39, 0.1);
+  --focus-ring: 0 0 0 3px rgba(100, 66, 214, 0.4);
+  --overlay-scrim: color-mix(in srgb, var(--color-surface) 92%, transparent);
+  --marker-border: var(--color-surface);
+}
+
+@mixin app-tokens-dark {
+  --md-primary: #9b7aea;
+  --md-secondary: #c4b5fd;
+  --md-success: #22c55e;
+  --md-warning: #f59e0b;
+  --md-danger: #f87171;
+  --md-surface: #1e293b;
+  --md-text: #f1f5f9;
+
+  --color-primary: var(--md-primary);
+  --color-on-primary: #1e1b4b;
+  --color-secondary: var(--md-secondary);
+  --color-secondary-container: #312e81;
+  --color-success: var(--md-success);
+  --color-warning: var(--md-warning);
+  --color-danger: var(--md-danger);
+  --color-surface: var(--md-surface);
+  --color-surface-muted: #0f172a;
+  --color-text: var(--md-text);
+  --color-text-muted: #94a3b8;
+  --color-outline: #334155;
+  --color-background: #0b1120;
+
+  --risk-baixo-text: #86efac;
+  --risk-medio-text: #fcd34d;
+  --risk-alto-text: #fca5a5;
+
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --elevation-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --focus-ring: 0 0 0 3px rgba(155, 122, 234, 0.45);
+  --overlay-scrim: color-mix(in srgb, var(--color-background) 88%, transparent);
+  --marker-border: #334155;
+}
+
+@mixin app-aliases {
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --surface-muted: var(--color-surface-muted);
+  --ink: var(--color-text);
+  --muted: var(--color-text-muted);
+  --line: var(--color-outline);
+  --brand: var(--color-primary);
+  --brand-dark: var(--color-primary);
+  --brand-soft: var(--color-secondary-container);
+  --green: var(--color-success);
+  --amber: var(--color-warning);
+  --red: var(--color-danger);
+  --shadow: var(--elevation-2);
+
+  --mat-sys-primary: var(--md-primary);
+  --mat-sys-on-primary: var(--color-on-primary);
+  --mat-sys-secondary: var(--md-secondary);
+  --mat-sys-on-secondary: var(--md-text);
+  --mat-sys-error: var(--md-danger);
+  --mat-sys-surface: var(--md-surface);
+  --mat-sys-on-surface: var(--md-text);
+  --mat-sys-outline: var(--color-outline);
+  --mat-sys-surface-container-low: var(--color-surface-muted);
+}
+
+html {
+  color-scheme: light;
+
+  @include mat.all-component-themes($mat-light-theme);
+  @include app-tokens-light;
+  @include app-aliases;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --font-primary: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Fira Code', ui-monospace, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  font-family: var(--font-primary);
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+
+  @include mat.all-component-colors($mat-dark-theme);
+  @include app-tokens-dark;
+  @include app-aliases;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.material-symbols-outlined,
+mat-icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.mat-mdc-card,
+.mat-mdc-button-base,
+.mat-mdc-form-field,
+.mat-mdc-select,
+.mat-mdc-option,
+.mat-mdc-chip {
+  font-family: var(--font-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.mat-mdc-button-base:focus-visible,
+.marker:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
