@@ -8,12 +8,14 @@ import { ExecutivoPageComponent } from './pages/executivo/executivo-page.compone
 import { InsightsPageComponent } from './pages/insights/insights-page.component';
 import { IntegracoesPageComponent } from './pages/integracoes/integracoes-page.component';
 import { RadarPageComponent } from './pages/radar/radar-page.component';
+import { TicketsPageComponent } from './pages/tickets/tickets-page.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardPageComponent, title: 'Dashboard - Mobiis Radar' },
   { path: 'radar', component: RadarPageComponent, title: 'Radar de Clientes - Mobiis Radar' },
   { path: 'comercial', component: ComercialPageComponent, title: 'Comercial Inteligente - Mobiis Radar' },
   { path: 'executivo', component: ExecutivoPageComponent, title: 'Executivo - Mobiis Radar' },
+  { path: 'tickets', component: TicketsPageComponent, title: 'Tickets - Mobiis Radar' },
   { path: 'insights', component: InsightsPageComponent, title: 'Insights IA - Mobiis Radar' },
   { path: 'integracoes', component: IntegracoesPageComponent, title: 'Integracoes - Mobiis Radar' },
   { path: 'configuracoes', component: ConfiguracoesPageComponent, title: 'Configuracoes - Mobiis Radar' },

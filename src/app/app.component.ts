@@ -89,6 +89,7 @@ export class AppComponent {
     { title: 'Comercial', url: '/comercial', icon: '▣' },
     { title: 'Executivo', url: '/executivo', icon: '⌁' },
     { title: 'Insights IA', url: '/insights', icon: '✦' },
+    { title: 'Tickets', url: '/tickets', icon: '⌗' },
   ];
   readonly config = [
   ];
