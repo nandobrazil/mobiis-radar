@@ -80,8 +80,44 @@
 
 .map-stage {
   flex: 1;
+  isolation: isolate;
   min-height: 570px;
   position: relative;
+  z-index: 0;
+}
+
+/* Leaflet usa z-index alto (400+); manter camadas apenas dentro do mapa */
+:host ::ng-deep .map-stage .leaflet-pane {
+  z-index: 1 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-tile-pane {
+  z-index: 1 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-overlay-pane {
+  z-index: 2 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-shadow-pane {
+  z-index: 3 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-marker-pane {
+  z-index: 4 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-tooltip-pane {
+  z-index: 5 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-popup-pane {
+  z-index: 6 !important;
+}
+
+:host ::ng-deep .map-stage .leaflet-top,
+:host ::ng-deep .map-stage .leaflet-bottom {
+  z-index: 7 !important;
 }
 
 .map-container {
@@ -213,6 +249,10 @@
 .panel-footer {
   display: flex;
   justify-content: flex-end;
+}
+
+:host ::ng-deep mds-float-panel.mds-overlay {
+  z-index: 1000;
 }
 
 @media (max-width: 980px) {

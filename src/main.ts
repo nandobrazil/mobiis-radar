@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { App } from './app/app';
 import { routes } from './app/app.routes';
 import { LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
-import { iconsList } from 'lucide-angular/icons';
+import { iconsList } from '@mobiis/mds-angular';
 
 bootstrapApplication(App, {
   providers: [

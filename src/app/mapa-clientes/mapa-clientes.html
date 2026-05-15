@@ -41,24 +41,14 @@
   </mds-page-header>
 
   <section class="metrics" aria-label="Resumo dos clientes filtrados">
-    <mds-totalizer
-      label="Clientes"
-      [value]="totals().customers"
-      icon="empresa"
-      variant="brand-light"
-    />
+    <mds-totalizer label="Clientes" [value]="totals().customers" icon="empresa" variant="brand-light" />
     <mds-totalizer
       label="Cargas no mes"
       [value]="formatNumber(totals().loads)"
       icon="carga"
       variant="primary-light"
     />
-    <mds-totalizer
-      label="Alto risco"
-      [value]="totals().highRisk"
-      icon="problema"
-      variant="red-light"
-    />
+    <mds-totalizer label="Alto risco" [value]="totals().highRisk" icon="problema" variant="red-light" />
     <mds-totalizer
       label="Engajamento medio"
       [value]="formatPercent(totals().averageEngagement)"
@@ -93,95 +83,133 @@
   </section>
 
   @if (selectedCustomer(); as customer) {
-    <mds-float-panel
-      type="drawer"
-      drawerPosition="right"
-      size="lg"
-      [label]="customer.name"
-      [panelOpened]="customerPanelOpened()"
-      [showFooter]="true"
-      [closeOnEsc]="true"
-      (panelOpenedChange)="onCustomerPanelChange($event)"
-      (onClose)="closeCustomerPanel()"
-    >
-      <div data-position="after-title" class="panel-header-meta">
-        <p>{{ customer.city }} - {{ customer.state }}</p>
-        <span>{{ customer.segment }} · Plano {{ customer.plan }}</span>
-        <mds-badge
-          [label]="riskLabel(customer.risk)"
-          [variant]="riskBadgeVariant(customer.risk)"
-          [rounded]="true"
-        />
-      </div>
+    <div class="modal-backdrop" role="presentation" (click)="closeCustomerPanel()">
+      <section
+        class="customer-modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'Dados da empresa ' + customer.name"
+        (click)="$event.stopPropagation()"
+      >
+        <header class="modal-header">
+          <div>
+            <p>{{ customer.city }} - {{ customer.state }}</p>
+            <h2>{{ customer.name }}</h2>
+            <span>{{ customer.segment }} - Plano {{ customer.plan }}</span>
+          </div>
+          <div class="modal-actions">
+            <mds-badge
+              [label]="riskLabel(customer.risk)"
+              [variant]="riskBadgeVariant(customer.risk)"
+              [rounded]="true"
+            />
+            <button
+              class="modal-close"
+              type="button"
+              aria-label="Fechar detalhes do cliente"
+              (click)="closeCustomerPanel()"
+            >
+              x
+            </button>
+          </div>
+        </header>
 
-      <div role="panel-content" class="panel-content">
-        <header mdsSectionHeader label="Dados da empresa" icon="empresa" type="icon"></header>
-        <div class="company-list">
-          <mds-totalizer mode="list" label="CNPJ" [value]="customer.cnpj" icon="documento" size="sm" />
-          <mds-totalizer
-            mode="list"
-            label="Telefone"
-            [value]="customer.phone"
-            icon="telefone"
-            size="sm"
-          />
-          <mds-totalizer mode="list" label="E-mail" [value]="customer.email" icon="e-mail" size="sm" />
-          <mds-totalizer
-            mode="list"
-            label="Endereco"
-            [value]="customer.address"
-            icon="posicao"
-            size="sm"
-          />
-        </div>
-
-        <header mdsSectionHeader label="Operacao" icon="indicadores" type="icon"></header>
-        <div class="detail-grid">
-          <mds-totalizer mode="list" label="Responsavel" [value]="customer.contact" size="sm" />
-          <mds-totalizer
-            mode="list"
-            label="Cargas/mes"
-            [value]="formatNumber(customer.loadsMonth)"
-            size="sm"
-          />
-          <mds-totalizer mode="list" label="Rotas ativas" [value]="customer.activeLanes" size="sm" />
-          <mds-totalizer
-            mode="list"
-            label="Engajamento"
-            [value]="formatPercent(customer.engagement)"
-            size="sm"
-          />
-          <mds-totalizer
-            mode="list"
-            label="Sem login"
-            [value]="customer.lastLoginDays + ' dias'"
-            size="sm"
-          />
-          <mds-totalizer mode="list" label="Produtos" [value]="customer.products.length" size="sm" />
-        </div>
-
-        <header mdsSectionHeader label="Produtos contratados" icon="produtos-mobiis" type="icon"></header>
-        <div class="product-list">
-          @for (product of productList(customer); track product.id) {
-            <article class="product-item">
-              <mds-badge [value]="product.shortLabel" variant="brand-light" [rounded]="true" />
+        <div class="modal-content">
+          <header class="modal-section-header">
+            <span class="material-symbols-outlined" aria-hidden="true">business</span>
+            <h3>Dados da empresa</h3>
+          </header>
+          <div class="company-list">
+            <div class="company-row">
+              <span class="material-symbols-outlined" aria-hidden="true">badge</span>
               <div>
-                <strong>{{ product.label }}</strong>
-                <span>{{ product.description }}</span>
+                <strong>{{ customer.cnpj }}</strong>
+                <span>CNPJ</span>
               </div>
-            </article>
-          }
+            </div>
+            <div class="company-row">
+              <span class="material-symbols-outlined" aria-hidden="true">call</span>
+              <div>
+                <strong>{{ customer.phone }}</strong>
+                <span>Telefone</span>
+              </div>
+            </div>
+            <div class="company-row">
+              <span class="material-symbols-outlined" aria-hidden="true">mail</span>
+              <div>
+                <strong>{{ customer.email }}</strong>
+                <span>E-mail</span>
+              </div>
+            </div>
+            <div class="company-row">
+              <span class="material-symbols-outlined" aria-hidden="true">location_on</span>
+              <div>
+                <strong>{{ customer.address }}</strong>
+                <span>Endereco</span>
+              </div>
+            </div>
+          </div>
+
+          <header class="modal-section-header">
+            <span class="material-symbols-outlined" aria-hidden="true">monitoring</span>
+            <h3>Operacao</h3>
+          </header>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <strong>{{ customer.contact }}</strong>
+              <span>Responsavel</span>
+            </div>
+            <div class="detail-item">
+              <strong>{{ formatNumber(customer.loadsMonth) }}</strong>
+              <span>Cargas/mes</span>
+            </div>
+            <div class="detail-item">
+              <strong>{{ customer.activeLanes }}</strong>
+              <span>Rotas ativas</span>
+            </div>
+            <div class="detail-item">
+              <strong>{{ formatPercent(customer.engagement) }}</strong>
+              <span>Engajamento</span>
+            </div>
+            <div class="detail-item">
+              <strong>{{ customer.lastLoginDays }} dias</strong>
+              <span>Sem login</span>
+            </div>
+            <div class="detail-item">
+              <strong>{{ customer.products.length }}</strong>
+              <span>Produtos</span>
+            </div>
+          </div>
+
+          <header class="modal-section-header">
+            <span class="material-symbols-outlined" aria-hidden="true">apps</span>
+            <h3>Produtos contratados</h3>
+          </header>
+          <div class="product-list">
+            @for (product of productList(customer); track product.id) {
+              <article class="product-item">
+                <mds-badge [value]="product.shortLabel" variant="brand-light" [rounded]="true" />
+                <div>
+                  <strong>{{ product.label }}</strong>
+                  <span>{{ product.description }}</span>
+                </div>
+              </article>
+            }
+          </div>
+
+          <aside class="action-box" aria-label="Proxima acao sugerida">
+            <header class="modal-section-header compact">
+              <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+              <h3>Proxima acao sugerida</h3>
+            </header>
+            <p>{{ customer.recommendedAction }}</p>
+          </aside>
         </div>
 
-        <aside class="action-box" aria-label="Proxima acao sugerida">
-          <header mdsSectionHeader label="Proxima acao sugerida" icon="tarefa-ok" type="icon"></header>
-          <p>{{ customer.recommendedAction }}</p>
-        </aside>
-      </div>
-
-      <div role="panel-footer" class="panel-footer">
-        <mds-button variant="secondary" type="button" label="Fechar" (onClick)="closeCustomerPanel()" />
-      </div>
-    </mds-float-panel>
+        <footer class="panel-footer">
+          <mds-button variant="secondary" type="button" label="Fechar" (onClick)="closeCustomerPanel()" />
+        </footer>
+      </section>
+    </div>
   }
 </main>
