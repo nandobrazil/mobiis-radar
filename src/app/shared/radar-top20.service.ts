@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 import type { RelatorioClienteDetalle, RelatorioTop20Item } from '../data/top20.types';
+import { environment } from '../../environments/environment';
 
 export type NivelRiscoNorm = 'ALTO' | 'MEDIO' | 'BAIXO';
 
@@ -30,12 +31,18 @@ export function normalizeNivelRisco(nivel: string): NivelRiscoNorm {
   return 'BAIXO';
 }
 
-/** Endpoint relatorio Top 20. */
-export const RELATORIO_TOP20_URL = 'http://147.93.33.129:8999/api/relatorio/top20';
+function apiRelatorioBase(): string {
+  const root = environment.apiBaseUrl.replace(/\/$/, '');
+  return `${root}/api/relatorio`;
+}
+
+/** Endpoint relatorio Top 20 (usa `environment.apiBaseUrl`). */
+export function relatorioTop20Url(): string {
+  return `${apiRelatorioBase()}/top20`;
+}
 
 export function clienteDetalleUrl(ownerId: string): string {
-  const base = RELATORIO_TOP20_URL.replace(/\/top20\/?$/, '');
-  return `${base}/cliente/${encodeURIComponent(ownerId)}/detalhe`;
+  return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId)}/detalhe`;
 }
 
 function normId(id: string): string {
@@ -129,7 +136,7 @@ export class RadarTop20Service {
     this.loading.set(true);
     this.error.set(null);
     this.http
-      .get<RelatorioTop20Item[]>(RELATORIO_TOP20_URL)
+      .get<RelatorioTop20Item[]>(relatorioTop20Url())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (items) => {

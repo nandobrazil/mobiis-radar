@@ -1,0 +1,100 @@
+<app-top-bar title="Radar de Clientes" [subtitle]="subtitle()" />
+<main class="flex-1 space-y-4 p-4 md:p-6">
+  <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
+    @if (top20.error(); as msg) {
+      <div class="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        {{ msg }}
+      </div>
+    }
+    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+      <div class="relative flex-1">
+        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
+        <input
+          [value]="q()"
+          (input)="q.set($any($event.target).value)"
+          placeholder="Buscar cliente..."
+          class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <div class="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
+        <select class="filter-select md:min-w-[180px]" [value]="risk()" (change)="risk.set($any($event.target).value)">
+          <option [value]="ALL">Todos - Risco</option>
+          <option value="ALTO">Alto</option>
+          <option value="MEDIO">Medio</option>
+          <option value="BAIXO">Baixo</option>
+        </select>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" class="btn-outline" [disabled]="top20.loading()" (click)="top20.load()">
+          {{ top20.loading() ? 'Atualizando...' : 'Atualizar' }}
+        </button>
+        <button class="btn-outline" type="button" disabled>Filtro avancado</button>
+        <button class="btn-primary" type="button">Exportar</button>
+      </div>
+    </div>
+    <p class="mt-2 text-[11px] text-muted-foreground">Fonte: API relatorio Top 20 (em tempo real)</p>
+  </div>
+
+  <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+    @if (top20.loading() && filtered().length === 0 && !top20.error()) {
+      <div class="p-12 text-center text-sm text-muted-foreground">Carregando clientes...</div>
+    } @else if (!top20.loading() && filtered().length === 0 && !top20.error()) {
+      <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
+            <tr>
+              <th class="px-4 py-3 text-left font-medium">Cliente</th>
+              <th class="px-4 py-3 text-left font-medium">Dias sem uso</th>
+              <th class="px-4 py-3 text-left font-medium">Acoes 30d</th>
+              <th class="px-4 py-3 text-left font-medium">Acoes 90d</th>
+              <th class="px-4 py-3 text-left font-medium">Core 30d / 90d</th>
+              <th class="px-4 py-3 text-left font-medium">Usuarios</th>
+              <th class="px-4 py-3 text-left font-medium">Score IA</th>
+              <th class="px-4 py-3 text-left font-medium">Risco</th>
+              <!-- <th class="px-4 py-3 text-left font-medium">Resumo</th> -->
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            @for (row of filtered(); track row.cliente.owner_id) {
+              <tr class="group transition-colors hover:bg-muted/20">
+                <td class="px-4 py-3 align-top">
+                  <a [routerLink]="['/cliente', row.cliente.owner_id]" class="flex items-start gap-3">
+                    <div class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-xs font-semibold">
+                      {{ initials(row.cliente.nome_cliente) }}
+                    </div>
+                    <div class="min-w-0">
+                      <div class="font-medium group-hover:text-primary">{{ row.cliente.nome_cliente }}</div>
+                      <div class="truncate text-xs text-muted-foreground" [title]="row.cliente.owner_id">
+                        {{ row.cliente.owner_id }}
+                      </div>
+                    </div>
+                  </a>
+                </td>
+                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.dias_sem_atividade }}</td>
+                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.acoes_30d }}</td>
+                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.acoes_90d }}</td>
+                <td class="px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                  {{ row.cliente.acoes_core_30d }} / {{ row.cliente.acoes_core_90d }}
+                </td>
+                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
+                <td class="px-4 py-3 align-top">
+                  <app-score-bar [score]="healthScore(row)" />
+                  <span class="mt-0.5 block text-[10px] text-muted-foreground">IA {{ row.analise.score_ia }}</span>
+                </td>
+                <td class="px-4 py-3 align-top">
+                  <app-risk-badge [risk]="riskLevel(row)" />
+                  <div class="mt-1 text-[10px] uppercase text-muted-foreground">{{ row.analise.nivel_risco }}</div>
+                </td>
+                <!-- <td class="max-w-[280px] px-4 py-3 align-top text-xs leading-relaxed text-muted-foreground">
+                  {{ row.analise.resumo }}
+                </td> -->
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</main>
