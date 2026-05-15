@@ -13,6 +13,17 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  BadgeComponent,
+  ButtonComponent,
+  CardComponent,
+  FloatPanelComponent,
+  PageHeaderComponent,
+  SectionHeaderComponent,
+  SelectComponent,
+  TopbarComponent,
+  TotalizerComponent,
+} from '@mobiis/mds-angular';
 import { ThemeService } from '../core/theme.service';
 import { CUSTOMERS } from '../data/customers';
 import { PRODUCT_KEYS, PRODUCTS } from '../data/products';
@@ -20,10 +31,26 @@ import { Customer, ProductFilter, RiskFilter, RiskLevel } from '../models/custom
 import { Product } from '../models/product.model';
 import { LatLng, LeafletMap, LeafletMarker, LeafletTileLayer } from './leaflet.types';
 
+interface SelectOption<T extends string = string> {
+  value: T;
+  label: string;
+}
+
 @Component({
   selector: 'app-mapa-clientes',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [
+    BadgeComponent,
+    ButtonComponent,
+    CardComponent,
+    FloatPanelComponent,
+    PageHeaderComponent,
+    ReactiveFormsModule,
+    SectionHeaderComponent,
+    SelectComponent,
+    TopbarComponent,
+    TotalizerComponent,
+  ],
   templateUrl: './mapa-clientes.html',
   styleUrl: './mapa-clientes.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,10 +70,23 @@ export class MapaClientesComponent implements AfterViewInit, OnDestroy {
   protected readonly selectedProduct = signal<ProductFilter>('todos');
   protected readonly selectedRisk = signal<RiskFilter>('todos');
   protected readonly selectedCustomer = signal<Customer | null>(null);
+  protected readonly customerPanelOpened = signal(false);
   protected readonly mapReady = signal(false);
   protected readonly mapMessage = signal('Carregando mapa...');
 
   private readonly map = signal<LeafletMap | null>(null);
+
+  protected readonly productOptions: SelectOption<ProductFilter>[] = [
+    { value: 'todos', label: 'Todos' },
+    ...PRODUCT_KEYS.map((key) => ({ value: key, label: PRODUCTS[key].label })),
+  ];
+
+  protected readonly riskOptions: SelectOption<RiskFilter>[] = [
+    { value: 'todos', label: 'Todos' },
+    { value: 'baixo', label: 'Baixo risco' },
+    { value: 'medio', label: 'Atencao' },
+    { value: 'alto', label: 'Alto risco' },
+  ];
 
   protected readonly filteredCustomers = computed(() => {
     const product = this.selectedProduct();
@@ -106,8 +146,8 @@ export class MapaClientesComponent implements AfterViewInit, OnDestroy {
     this.themeService.toggle();
   }
 
-  protected themeToggleIcon(): string {
-    return this.themeService.toggleIcon();
+  protected themeToggleIcon(): 'tema' | 'contraste' {
+    return this.themeService.isDark() ? 'contraste' : 'tema';
   }
 
   protected themeToggleLabel(): string {
@@ -126,9 +166,19 @@ export class MapaClientesComponent implements AfterViewInit, OnDestroy {
   protected selectCustomer(customer: Customer): void {
     this.map()?.setView(this.customerCoordinates(customer), 6, { animate: true });
     this.selectedCustomer.set(customer);
+    this.customerPanelOpened.set(true);
   }
 
-  protected closeCustomerModal(): void {
+  protected onCustomerPanelChange(opened: boolean): void {
+    this.customerPanelOpened.set(opened);
+
+    if (!opened) {
+      this.selectedCustomer.set(null);
+    }
+  }
+
+  protected closeCustomerPanel(): void {
+    this.customerPanelOpened.set(false);
     this.selectedCustomer.set(null);
   }
 
@@ -155,8 +205,14 @@ export class MapaClientesComponent implements AfterViewInit, OnDestroy {
     }[risk];
   }
 
-  protected markerLabel(customer: Customer): string {
-    return `${customer.name}, ${customer.city} - ${customer.state}`;
+  protected riskBadgeVariant(risk: RiskLevel): 'success-light' | 'warning-light' | 'danger-light' {
+    const variants = {
+      alto: 'danger-light',
+      baixo: 'success-light',
+      medio: 'warning-light',
+    } as const;
+
+    return variants[risk];
   }
 
   private createMap(): void {
