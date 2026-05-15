@@ -1,0 +1,21 @@
+import { APP_INITIALIZER } from '@angular/core';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
+
+import { AppComponent } from './app/app.component';
+import { routes } from './app/app.routes';
+import { ThemeService } from './app/shared/theme.service';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideAnimations(),
+    provideRouter(routes, withComponentInputBinding()),
+    {
+      provide: APP_INITIALIZER,
+      multi: true,
+      deps: [ThemeService],
+      useFactory: (theme: ThemeService) => () => theme.mode(),
+    },
+  ],
+}).catch((error) => console.error(error));

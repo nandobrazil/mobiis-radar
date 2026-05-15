@@ -1,0 +1,99 @@
+import { Component } from '@angular/core';
+
+import { customers, funil } from '../data/mock-data';
+import { GeoMapComponent } from '../shared/geo-map.component';
+import { TopBarComponent } from '../shared/top-bar.component';
+
+@Component({
+  selector: 'app-comercial-page',
+  standalone: true,
+  imports: [GeoMapComponent, TopBarComponent],
+  template: `
+    <app-top-bar title="Comercial Inteligente" subtitle="Mapa de oportunidades e clusters operacionais" />
+    <main class="flex-1 space-y-4 p-4 md:p-6">
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-card lg:col-span-2">
+          <h3 class="text-sm font-semibold">Mapa de clientes & clusters</h3>
+          <p class="mb-3 text-xs text-muted-foreground">Passe o mouse sobre um ponto para ver o cliente</p>
+          <app-geo-map [height]="360" />
+        </div>
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <h3 class="text-sm font-semibold">Funil de oportunidades</h3>
+          <p class="text-xs text-muted-foreground">Pipeline atual</p>
+          <div class="mt-4 space-y-2">
+            @for (stage of funil; track stage.stage; let i = $index) {
+              <div>
+                <div class="mb-1 flex items-center justify-between text-xs">
+                  <span class="text-muted-foreground">{{ stage.stage }}</span>
+                  <span class="font-medium tabular-nums">{{ stage.value }}</span>
+                </div>
+                <div
+                  class="h-9 rounded-md bg-gradient-to-r from-primary/40 to-purple/30 transition-all"
+                  [style.width.%]="(stage.value / funil[0].value) * 100"
+                  [style.opacity]="1 - i * 0.1"
+                ></div>
+              </div>
+            }
+          </div>
+          <div class="mt-5 grid grid-cols-2 gap-2">
+            <div class="rounded-lg border border-border bg-background/40 p-3">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Conversao</p>
+              <p class="mt-1 text-lg font-semibold">11.6%</p>
+              <p class="text-[11px] text-success">▲ vs mes anterior</p>
+            </div>
+            <div class="rounded-lg border border-border bg-background/40 p-3">
+              <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket medio</p>
+              <p class="mt-1 text-lg font-semibold">R$ 28k</p>
+              <p class="text-[11px] text-success">▲ vs mes anterior</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        @for (card of cards; track card.title) {
+          <div class="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card">
+            <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b to-transparent" [class]="card.tint"></div>
+            <div class="relative">
+              <div class="flex items-center gap-2">
+                <span class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-background/60" [class]="card.text">{{ card.icon }}</span>
+                <div>
+                  <h3 class="text-sm font-semibold">{{ card.title }}</h3>
+                  <p class="text-[11px] text-muted-foreground">{{ card.description }}</p>
+                </div>
+              </div>
+              <ul class="mt-4 space-y-2">
+                @for (customer of card.list; track customer.id) {
+                  <li class="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-3 py-2">
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-medium">{{ customer.name }}</p>
+                      <p class="text-[11px] text-muted-foreground">{{ customer.segment }} - {{ customer.region }}</p>
+                    </div>
+                    <span class="rounded-md border border-border px-2 py-0.5 text-[10px]">{{ customer.score }}</span>
+                  </li>
+                }
+              </ul>
+              <button class="mt-4 flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-primary transition hover:bg-muted/40">
+                Ver todos <span>→</span>
+              </button>
+            </div>
+          </div>
+        }
+      </section>
+    </main>
+  `,
+})
+export class ComercialPageComponent {
+  protected readonly funil = funil;
+  private readonly semelhantes = customers.filter((customer) => customer.potential === 'alto' && customer.risk !== 'risco').slice(0, 4);
+  private readonly expansao = customers.filter((customer) => customer.score >= 70 && customer.potential !== 'baixo').slice(0, 4);
+  private readonly baixaAdocao = [...customers].sort((a, b) => a.score - b.score).slice(0, 4);
+  private readonly semUso = customers.filter((customer) => Date.now() - new Date(customer.lastUse).getTime() > 15 * 86400000).slice(0, 4);
+
+  protected readonly cards = [
+    { icon: '◉', title: 'Perfil semelhante', text: 'text-primary', tint: 'from-primary/15', description: 'Clientes com padrao operacional parecido', list: this.semelhantes },
+    { icon: '↗', title: 'Prontos para expansao', text: 'text-success', tint: 'from-success/15', description: 'Score alto e produtos complementares', list: this.expansao },
+    { icon: '↘', title: 'Baixa adocao', text: 'text-warning', tint: 'from-warning/15', description: 'Risco de nao atingir valor', list: this.baixaAdocao },
+    { icon: '✦', title: 'Sem uso ha 15+ dias', text: 'text-destructive', tint: 'from-destructive/15', description: 'Necessitam reengajamento imediato', list: this.semUso },
+  ];
+}
