@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
-import type { RelatorioTop20Item } from '../data/top20.types';
+import type { RelatorioClienteDetalle, RelatorioTop20Item } from '../data/top20.types';
 
 export type NivelRiscoNorm = 'ALTO' | 'MEDIO' | 'BAIXO';
 
@@ -33,6 +33,11 @@ export function normalizeNivelRisco(nivel: string): NivelRiscoNorm {
 /** Endpoint relatorio Top 20. */
 export const RELATORIO_TOP20_URL = 'http://147.93.33.129:8999/api/relatorio/top20';
 
+export function clienteDetalleUrl(ownerId: string): string {
+  const base = RELATORIO_TOP20_URL.replace(/\/top20\/?$/, '');
+  return `${base}/cliente/${encodeURIComponent(ownerId)}/detalhe`;
+}
+
 function normId(id: string): string {
   return id.trim().toLowerCase();
 }
@@ -45,6 +50,12 @@ export class RadarTop20Service {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly lastLoadedAt = signal<number | null>(null);
+
+  readonly clienteDetalle = signal<RelatorioClienteDetalle | null>(null);
+  readonly clienteDetalleLoading = signal(false);
+  readonly clienteDetalleError = signal<string | null>(null);
+
+  private detalleFetchSeq = 0;
 
   readonly stats = computed((): Top20Stats => {
     const items = this.items();
@@ -136,5 +147,47 @@ export class RadarTop20Service {
   itemByOwnerId(ownerId: string): RelatorioTop20Item | undefined {
     const n = normId(ownerId);
     return this.items().find((row) => normId(row.cliente.owner_id) === n);
+  }
+
+  fetchClienteDetalle(ownerId: string): void {
+    if (!ownerId?.trim()) {
+      return;
+    }
+    const seq = ++this.detalleFetchSeq;
+    this.clienteDetalle.set(null);
+    this.clienteDetalleLoading.set(true);
+    this.clienteDetalleError.set(null);
+    this.http
+      .get<RelatorioClienteDetalle>(clienteDetalleUrl(ownerId))
+      .pipe(
+        finalize(() => {
+          if (seq === this.detalleFetchSeq) {
+            this.clienteDetalleLoading.set(false);
+          }
+        }),
+      )
+      .subscribe({
+        next: (data) => {
+          if (seq !== this.detalleFetchSeq) {
+            return;
+          }
+          this.clienteDetalle.set(data);
+          this.clienteDetalleError.set(null);
+        },
+        error: () => {
+          if (seq !== this.detalleFetchSeq) {
+            return;
+          }
+          this.clienteDetalle.set(null);
+          this.clienteDetalleError.set('Nao foi possivel carregar o detalhe operacional (CORS ou rede).');
+        },
+      });
+  }
+
+  clearClienteDetalle(): void {
+    this.detalleFetchSeq++;
+    this.clienteDetalle.set(null);
+    this.clienteDetalleLoading.set(false);
+    this.clienteDetalleError.set(null);
   }
 }

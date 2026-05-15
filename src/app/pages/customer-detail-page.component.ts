@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject, input } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, effect, inject, input } from '@angular/core';
+import { JsonPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import type { RelatorioTop20Item } from '../data/top20.types';
@@ -12,7 +13,7 @@ import { formatDate, initials, nivelRiscoToRiskLevel } from '../shared/ui-helper
 @Component({
   selector: 'app-customer-detail-page',
   standalone: true,
-  imports: [LineChartComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TopBarComponent],
+  imports: [JsonPipe, LineChartComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TopBarComponent],
   template: `
     @if (report(); as r) {
       <app-top-bar
@@ -77,6 +78,98 @@ import { formatDate, initials, nivelRiscoToRiskLevel } from '../shared/ui-helper
                   <li class="leading-relaxed">{{ m }}</li>
                 }
               </ul>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-semibold">Risco operacional (detalhe)</h3>
+                  <p class="text-xs text-muted-foreground">Uso por entidade e origem</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  @if (top20.clienteDetalleLoading()) {
+                    <span class="text-xs text-muted-foreground">Carregando...</span>
+                  }
+                  <button
+                    type="button"
+                    class="text-xs font-medium text-primary hover:underline disabled:opacity-50"
+                    [disabled]="top20.clienteDetalleLoading()"
+                    (click)="top20.fetchClienteDetalle(r.cliente.owner_id)"
+                  >
+                    Atualizar
+                  </button>
+                </div>
+              </div>
+              @if (top20.clienteDetalleError(); as detErr) {
+                <p class="text-sm text-destructive">{{ detErr }}</p>
+              }
+              @if (detalleOperacional(); as d) {
+                <div class="mt-4 space-y-6">
+                  <div class="overflow-x-auto">
+                    <table class="w-full min-w-[680px] text-sm">
+                      <thead class="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                        <tr>
+                          <th class="pb-2 pr-2 font-medium">Entidade</th>
+                          <th class="pb-2 pr-2 font-medium">30d</th>
+                          <th class="pb-2 pr-2 font-medium">90d</th>
+                          <th class="pb-2 pr-2 font-medium">Neg. 30d</th>
+                          <th class="pb-2 pr-2 font-medium">Neg. 90d</th>
+                          <th class="pb-2 pr-2 font-medium">Auto 30d</th>
+                          <th class="pb-2 pr-2 font-medium">Usuarios</th>
+                          <th class="pb-2 font-medium">Ultima acao</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-border">
+                        @for (row of d.por_entidade; track row.entidade_id) {
+                          <tr>
+                            <td class="py-2 pr-2 font-medium">{{ row.entidade }}</td>
+                            <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.acoes_30d }}</td>
+                            <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.acoes_90d }}</td>
+                            <td class="py-2 pr-2 tabular-nums">{{ row.negativas_30d }}</td>
+                            <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.negativas_90d }}</td>
+                            <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.automatizadas_30d }}</td>
+                            <td class="py-2 pr-2 tabular-nums">{{ row.usuarios_distintos_30d }}</td>
+                            <td class="py-2 text-xs text-muted-foreground">{{ formatIso(row.ultima_acao) }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div>
+                    <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por origem</h4>
+                    <div class="overflow-x-auto">
+                      <table class="w-full max-w-xl text-sm">
+                        <thead class="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                          <tr>
+                            <th class="pb-2 pr-2 font-medium">Origem</th>
+                            <th class="pb-2 pr-2 font-medium">30d</th>
+                            <th class="pb-2 font-medium">90d</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                          @for (o of d.por_origem; track o.origem_id) {
+                            <tr>
+                              <td class="py-2 pr-2 font-medium">{{ o.origem }}</td>
+                              <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ o.acoes_30d }}</td>
+                              <td class="py-2 tabular-nums text-muted-foreground">{{ o.acoes_90d }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tendencia semanal</h4>
+                    @if (d.tendencia_semanal.length === 0) {
+                      <p class="text-sm text-muted-foreground">Nenhum dado de serie semanal disponivel.</p>
+                    } @else {
+                      <pre class="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 text-xs leading-relaxed">{{ d.tendencia_semanal | json }}</pre>
+                    }
+                  </div>
+                </div>
+              }
             </div>
           </div>
 
@@ -255,7 +348,7 @@ import { formatDate, initials, nivelRiscoToRiskLevel } from '../shared/ui-helper
     }
   `,
 })
-export class CustomerDetailPageComponent implements OnInit {
+export class CustomerDetailPageComponent implements OnInit, OnDestroy {
   readonly id = input<string>();
 
   protected readonly top20 = inject(RadarTop20Service);
@@ -279,6 +372,16 @@ export class CustomerDetailPageComponent implements OnInit {
   protected readonly report = computed(() => {
     const idVal = this.id();
     return idVal ? this.top20.itemByOwnerId(idVal) : undefined;
+  });
+
+  /** Detalle API so exibido quando corresponde ao cliente da rota. */
+  protected readonly detalleOperacional = computed(() => {
+    const d = this.top20.clienteDetalle();
+    const idVal = this.id();
+    if (!d || !idVal) {
+      return undefined;
+    }
+    return d.owner_id.trim().toLowerCase() === idVal.trim().toLowerCase() ? d : undefined;
   });
 
   protected readonly customer = computed(() =>
@@ -318,6 +421,21 @@ export class CustomerDetailPageComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.top20.clearClienteDetalle();
+  }
+
+  constructor() {
+    effect(() => {
+      const r = this.report();
+      if (r?.cliente.owner_id) {
+        this.top20.fetchClienteDetalle(r.cliente.owner_id);
+      } else {
+        this.top20.clearClienteDetalle();
+      }
+    });
+  }
+
   protected riskFromReport(row: RelatorioTop20Item) {
     return nivelRiscoToRiskLevel(row.analise.nivel_risco);
   }
@@ -338,6 +456,17 @@ export class CustomerDetailPageComponent implements OnInit {
       { label: 'Acoes neg. 30d', value: String(c.acoes_negativas_30d) },
       { label: 'Automacao 30d', value: String(c.acoes_automatizadas_30d) },
     ];
+  }
+
+  protected formatIso(iso: string | null): string {
+    if (!iso) {
+      return '—';
+    }
+    try {
+      return new Date(iso).toLocaleString('pt-BR');
+    } catch {
+      return iso;
+    }
   }
 
   protected aiSections(c: { score: number; potential: string }) {
