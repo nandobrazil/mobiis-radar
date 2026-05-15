@@ -1,6 +1,6 @@
 import { APP_INITIALIZER } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter, withComponentInputBinding, withHashLocation } from '@angular/router';
 
@@ -11,7 +11,7 @@ import { ThemeService } from './app/shared/theme.service';
 bootstrapApplication(AppComponent, {
   providers: [
     provideHttpClient(withFetch()),
-    provideAnimations(),
+    provideAnimationsAsync(),
     provideRouter(routes, withComponentInputBinding(), withHashLocation()),
     {
       provide: APP_INITIALIZER,

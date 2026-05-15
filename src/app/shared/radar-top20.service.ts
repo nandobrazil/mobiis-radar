@@ -38,7 +38,7 @@ function apiRelatorioBase(): string {
 
 /** Endpoint relatorio Top 20 (usa `environment.apiBaseUrl`). */
 export function relatorioTop20Url(): string {
-  return `${apiRelatorioBase()}/top20`;
+  return `${apiRelatorioBase()}/clientes`;
 }
 
 export function clienteDetalleUrl(ownerId: string): string {
