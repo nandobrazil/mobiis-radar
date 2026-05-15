@@ -1,10 +1,11 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { customers } from '../data/mock-data';
+import type { RelatorioTop20Item } from '../data/top20.types';
 import { RiskBadgeComponent, ScoreBarComponent } from '../shared/risk-badge.component';
+import { RadarTop20Service } from '../shared/radar-top20.service';
 import { TopBarComponent } from '../shared/top-bar.component';
-import { formatDate, initials } from '../shared/ui-helpers';
+import { initials, nivelRiscoToRiskLevel } from '../shared/ui-helpers';
 
 const ALL = '__all__';
 
@@ -13,9 +14,14 @@ const ALL = '__all__';
   standalone: true,
   imports: [RiskBadgeComponent, RouterLink, ScoreBarComponent, TopBarComponent],
   template: `
-    <app-top-bar title="Radar de Clientes" [subtitle]="data().length + ' clientes filtrados'" />
+    <app-top-bar title="Radar de Clientes" [subtitle]="subtitle()" />
     <main class="flex-1 space-y-4 p-4 md:p-6">
       <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
+        @if (top20.error(); as msg) {
+          <div class="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {{ msg }}
+          </div>
+        }
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div class="relative flex-1">
             <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
@@ -26,122 +32,123 @@ const ALL = '__all__';
               class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
-          <div class="grid grid-cols-2 gap-2 md:grid-cols-4 lg:flex">
-            <select class="filter-select" [value]="seg()" (change)="seg.set($any($event.target).value)">
-              <option [value]="ALL">Todos - Segmento</option>
-              @for (option of segments; track option) { <option [value]="option">{{ option }}</option> }
-            </select>
-            <select class="filter-select" [value]="region()" (change)="region.set($any($event.target).value)">
-              <option [value]="ALL">Todos - Regiao</option>
-              @for (option of regions; track option) { <option [value]="option">{{ option }}</option> }
-            </select>
-            <select class="filter-select" [value]="seller()" (change)="seller.set($any($event.target).value)">
-              <option [value]="ALL">Todos - Vendedor</option>
-              @for (option of sellers; track option) { <option [value]="option">{{ option }}</option> }
-            </select>
-            <select class="filter-select" [value]="risk()" (change)="risk.set($any($event.target).value)">
+          <div class="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
+            <select class="filter-select md:min-w-[180px]" [value]="risk()" (change)="risk.set($any($event.target).value)">
               <option [value]="ALL">Todos - Risco</option>
-              <option value="saudavel">Saudavel</option>
-              <option value="atencao">Atencao</option>
-              <option value="risco">Risco alto</option>
+              <option value="ALTO">Alto</option>
+              <option value="MEDIO">Medio</option>
+              <option value="BAIXO">Baixo</option>
             </select>
           </div>
-          <div class="flex gap-2">
-            <button class="btn-outline">Filtro avancado</button>
-            <button class="btn-primary">Exportar</button>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" class="btn-outline" [disabled]="top20.loading()" (click)="top20.load()">
+              {{ top20.loading() ? 'Atualizando...' : 'Atualizar' }}
+            </button>
+            <button class="btn-outline" type="button" disabled>Filtro avancado</button>
+            <button class="btn-primary" type="button">Exportar</button>
           </div>
         </div>
+        <p class="mt-2 text-[11px] text-muted-foreground">Fonte: API relatorio Top 20 (em tempo real)</p>
       </div>
 
       <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th class="px-4 py-3 text-left font-medium">Cliente</th>
-                <th class="px-4 py-3 text-left font-medium">Segmento</th>
-                <th class="px-4 py-3 text-left font-medium">Produtos</th>
-                <th class="px-4 py-3 text-left font-medium">Score</th>
-                <th class="px-4 py-3 text-left font-medium">Tendencia</th>
-                <th class="px-4 py-3 text-left font-medium">Risco</th>
-                <th class="px-4 py-3 text-left font-medium">Ultima utilizacao</th>
-                <th class="px-4 py-3 text-left font-medium">Potencial</th>
-                <th class="px-4 py-3 text-left font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-border">
-              @for (customer of data(); track customer.id) {
-                <tr class="group transition-colors hover:bg-muted/20">
-                  <td class="px-4 py-3">
-                    <a [routerLink]="['/cliente', customer.id]" class="flex items-center gap-3">
-                      <div class="grid h-9 w-9 place-items-center rounded-lg bg-accent text-xs font-semibold">{{ initials(customer.name) }}</div>
-                      <div>
-                        <div class="font-medium group-hover:text-primary">{{ customer.name }}</div>
-                        <div class="text-xs text-muted-foreground">{{ customer.region }} - {{ customer.seller }}</div>
-                      </div>
-                    </a>
-                  </td>
-                  <td class="px-4 py-3 text-muted-foreground">{{ customer.segment }}</td>
-                  <td class="px-4 py-3">
-                    <div class="flex flex-wrap gap-1">
-                      @for (product of customer.products.slice(0, 2); track product) {
-                        <span class="rounded-md border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-normal">{{ product }}</span>
-                      }
-                      @if (customer.products.length > 2) {
-                        <span class="rounded-md bg-muted px-2 py-0.5 text-[10px]">+{{ customer.products.length - 2 }}</span>
-                      }
-                    </div>
-                  </td>
-                  <td class="px-4 py-3"><app-score-bar [score]="customer.score" /></td>
-                  <td class="px-4 py-3">
-                    <span class="inline-flex items-center gap-1 text-xs font-medium" [class]="customer.trend >= 0 ? 'text-success' : 'text-destructive'">
-                      {{ customer.trend >= 0 ? '↗' : '↘' }} {{ abs(customer.trend) }}%
-                    </span>
-                  </td>
-                  <td class="px-4 py-3"><app-risk-badge [risk]="customer.risk" /></td>
-                  <td class="px-4 py-3 text-xs text-muted-foreground">{{ formatDate(customer.lastUse) }}</td>
-                  <td class="px-4 py-3">
-                    <span class="rounded-md border px-2 py-0.5 text-xs" [class]="potentialClass(customer.potential)">{{ customer.potential }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-xs capitalize text-muted-foreground">{{ customer.status }}</td>
+        @if (top20.loading() && filtered().length === 0 && !top20.error()) {
+          <div class="p-12 text-center text-sm text-muted-foreground">Carregando clientes...</div>
+        } @else if (!top20.loading() && filtered().length === 0 && !top20.error()) {
+          <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th class="px-4 py-3 text-left font-medium">Cliente</th>
+                  <th class="px-4 py-3 text-left font-medium">Dias sem uso</th>
+                  <th class="px-4 py-3 text-left font-medium">Acoes 30d</th>
+                  <th class="px-4 py-3 text-left font-medium">Acoes 90d</th>
+                  <th class="px-4 py-3 text-left font-medium">Core 30d / 90d</th>
+                  <th class="px-4 py-3 text-left font-medium">Usuarios</th>
+                  <th class="px-4 py-3 text-left font-medium">Score IA</th>
+                  <th class="px-4 py-3 text-left font-medium">Risco</th>
+                  <!-- <th class="px-4 py-3 text-left font-medium">Resumo</th> -->
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody class="divide-y divide-border">
+                @for (row of filtered(); track row.cliente.owner_id) {
+                  <tr class="group transition-colors hover:bg-muted/20">
+                    <td class="px-4 py-3 align-top">
+                      <a [routerLink]="['/cliente', row.cliente.owner_id]" class="flex items-start gap-3">
+                        <div class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-xs font-semibold">
+                          {{ initials(row.cliente.nome_cliente) }}
+                        </div>
+                        <div class="min-w-0">
+                          <div class="font-medium group-hover:text-primary">{{ row.cliente.nome_cliente }}</div>
+                          <div class="truncate text-xs text-muted-foreground" [title]="row.cliente.owner_id">
+                            {{ row.cliente.owner_id }}
+                          </div>
+                        </div>
+                      </a>
+                    </td>
+                    <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.dias_sem_atividade }}</td>
+                    <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.acoes_30d }}</td>
+                    <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.acoes_90d }}</td>
+                    <td class="px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                      {{ row.cliente.acoes_core_30d }} / {{ row.cliente.acoes_core_90d }}
+                    </td>
+                    <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
+                    <td class="px-4 py-3 align-top">
+                      <app-score-bar [score]="healthScore(row)" />
+                      <span class="mt-0.5 block text-[10px] text-muted-foreground">IA {{ row.analise.score_ia }}</span>
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                      <app-risk-badge [risk]="riskLevel(row)" />
+                      <div class="mt-1 text-[10px] uppercase text-muted-foreground">{{ row.analise.nivel_risco }}</div>
+                    </td>
+                    <!-- <td class="max-w-[280px] px-4 py-3 align-top text-xs leading-relaxed text-muted-foreground">
+                      {{ row.analise.resumo }}
+                    </td> -->
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
       </div>
     </main>
   `,
 })
-export class RadarPageComponent {
+export class RadarPageComponent implements OnInit {
+  protected readonly top20 = inject(RadarTop20Service);
   protected readonly ALL = ALL;
   protected readonly q = signal('');
-  protected readonly seg = signal(ALL);
   protected readonly risk = signal(ALL);
-  protected readonly region = signal(ALL);
-  protected readonly seller = signal(ALL);
   protected readonly initials = initials;
-  protected readonly formatDate = formatDate;
-  protected readonly abs = Math.abs;
-  protected readonly segments = Array.from(new Set(customers.map((customer) => customer.segment)));
-  protected readonly regions = Array.from(new Set(customers.map((customer) => customer.region)));
-  protected readonly sellers = Array.from(new Set(customers.map((customer) => customer.seller)));
 
-  protected readonly data = computed(() =>
-    customers.filter((customer) =>
-      (this.q() ? customer.name.toLowerCase().includes(this.q().toLowerCase()) : true) &&
-      (this.seg() !== ALL ? customer.segment === this.seg() : true) &&
-      (this.risk() !== ALL ? customer.risk === this.risk() : true) &&
-      (this.region() !== ALL ? customer.region === this.region() : true) &&
-      (this.seller() !== ALL ? customer.seller === this.seller() : true),
-    ),
+  protected readonly subtitle = computed(
+    () => `${this.filtered().length} de ${this.top20.items().length} clientes filtrados`,
   );
 
-  protected potentialClass(potential: string) {
-    return potential === 'alto'
-      ? 'bg-primary/15 text-primary border-primary/30'
-      : potential === 'medio'
-        ? 'bg-info/15 text-info border-info/30'
-        : 'bg-muted text-muted-foreground border-border';
+  protected readonly filtered = computed(() => {
+    const q = this.q().trim().toLowerCase();
+    const r = this.risk();
+    return this.top20.items().filter((row) => {
+      const name = row.cliente.nome_cliente.toLowerCase();
+      const matchQ = !q || name.includes(q) || row.cliente.owner_id.toLowerCase().includes(q);
+      const nr = row.analise.nivel_risco.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
+      const matchR = r === ALL || nr === r;
+      return matchQ && matchR;
+    });
+  });
+
+  ngOnInit(): void {
+    this.top20.load();
+  }
+
+  protected riskLevel(row: RelatorioTop20Item) {
+    return nivelRiscoToRiskLevel(row.analise.nivel_risco);
+  }
+
+  /** Barra de saude operacional (inverso do score de risco da IA, 0-100). */
+  protected healthScore(row: RelatorioTop20Item): number {
+    return Math.max(0, Math.min(100, 100 - row.analise.score_ia));
   }
 }

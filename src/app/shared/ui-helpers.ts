@@ -1,5 +1,17 @@
 import { RiskLevel } from '../data/mock-data';
 
+/** Nivel de risco da API (/api/relatorio/top20). */
+export function nivelRiscoToRiskLevel(nivel: string): RiskLevel {
+  const u = nivel
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase();
+  if (u === 'ALTO') return 'risco';
+  if (u === 'MEDIO') return 'atencao';
+  return 'saudavel';
+}
+
 export function initials(name: string) {
   return name
     .split(' ')
@@ -11,7 +23,7 @@ export function initials(name: string) {
 export function riskLabel(risk: RiskLevel) {
   const labels: Record<RiskLevel, string> = {
     saudavel: 'Saudavel',
-    atencao: 'Atencao',
+    atencao: 'Atenção',
     risco: 'Risco alto',
   };
   return labels[risk];

@@ -1,18 +1,104 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, OnInit, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import type { RelatorioTop20Item } from '../data/top20.types';
 import { allProducts, customers, usageSeries } from '../data/mock-data';
 import { RiskBadgeComponent, ScoreBarComponent } from '../shared/risk-badge.component';
+import { RadarTop20Service } from '../shared/radar-top20.service';
 import { LineChartComponent } from '../shared/simple-charts.component';
 import { TopBarComponent } from '../shared/top-bar.component';
-import { formatDate, initials } from '../shared/ui-helpers';
+import { formatDate, initials, nivelRiscoToRiskLevel } from '../shared/ui-helpers';
 
 @Component({
   selector: 'app-customer-detail-page',
   standalone: true,
   imports: [LineChartComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TopBarComponent],
   template: `
-    @if (customer(); as c) {
+    @if (report(); as r) {
+      <app-top-bar
+        [title]="r.cliente.nome_cliente"
+        [subtitle]="'Score IA ' + r.analise.score_ia + ' - Risco ' + r.analise.nivel_risco"
+      />
+      <main class="flex-1 p-4 md:p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <a routerLink="/radar" class="rounded-lg px-3 py-2 text-sm transition hover:bg-muted">← Voltar</a>
+          <div class="flex items-center gap-2">
+            <button type="button" class="btn-outline">Criar oportunidade</button>
+            <button type="button" class="btn-primary">Agendar contato</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_360px]">
+          <div class="space-y-4">
+            <div class="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-card">
+              <div class="absolute -right-20 -top-20 h-56 w-56 rounded-full bg-gradient-primary opacity-15 blur-3xl"></div>
+              <div class="relative flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                <div class="flex items-center gap-4">
+                  <div class="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-primary text-xl font-semibold text-primary-foreground shadow-elegant">
+                    {{ initials(r.cliente.nome_cliente) }}
+                  </div>
+                  <div class="min-w-0">
+                    <h2 class="text-xl font-semibold">{{ r.cliente.nome_cliente }}</h2>
+                    <p class="mt-1 break-all font-mono text-xs text-muted-foreground">{{ r.cliente.owner_id }}</p>
+                  </div>
+                </div>
+                <div class="flex shrink-0 flex-wrap items-start gap-6">
+                  <div class="text-center">
+                    <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Saude (est.)</p>
+                    <p class="text-4xl font-semibold tabular-nums text-gradient">{{ healthFromReport(r) }}</p>
+                    <app-score-bar [score]="healthFromReport(r)" />
+                  </div>
+                  <div class="text-center">
+                    <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Risco</p>
+                    <div class="mt-2"><app-risk-badge [risk]="riskFromReport(r)" /></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+              @for (kpi of kpis(r); track kpi.label) {
+                <div class="rounded-xl border border-border bg-card px-4 py-3 shadow-card">
+                  <p class="text-[11px] uppercase tracking-wider text-muted-foreground">{{ kpi.label }}</p>
+                  <p class="mt-1 text-lg font-semibold tabular-nums">{{ kpi.value }}</p>
+                </div>
+              }
+            </div>
+
+            <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+              <h3 class="text-sm font-semibold">Resumo</h3>
+              <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{{ r.analise.resumo }}</p>
+            </div>
+
+            <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+              <h3 class="text-sm font-semibold">Motivos</h3>
+              <ul class="mt-3 list-inside list-decimal space-y-2 text-sm text-muted-foreground">
+                @for (m of r.analise.motivos; track $index) {
+                  <li class="leading-relaxed">{{ m }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+
+          <aside class="space-y-4">
+            <div class="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-5 shadow-elegant">
+              <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/15 to-transparent"></div>
+              <div class="relative">
+                <div class="flex items-center gap-2">
+                  <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">✦</div>
+                  <div>
+                    <h3 class="text-sm font-semibold">Mobiis AI</h3>
+                    <p class="text-[11px] text-muted-foreground">Acao recomendada</p>
+                  </div>
+                </div>
+                <div class="mt-4 rounded-lg border border-border/50 bg-background/40 p-3 text-sm leading-relaxed">{{ r.analise.acao_recomendada }}</div>
+                <button type="button" class="btn-primary mt-4 w-full">Gerar plano de acao</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+    } @else if (customer(); as c) {
       <app-top-bar [title]="c.name" [subtitle]="c.segment + ' - ' + c.region" />
       <main class="flex-1 p-4 md:p-6">
         <div class="mb-4 flex items-center justify-between">
@@ -157,15 +243,22 @@ import { formatDate, initials } from '../shared/ui-helpers';
         </div>
       </main>
     } @else {
-      <app-top-bar title="Cliente nao encontrado" subtitle="Volte ao radar para selecionar outro cliente" />
-      <main class="grid flex-1 place-items-center p-10 text-sm text-muted-foreground">
-        Cliente nao encontrado. <a routerLink="/radar" class="ml-2 text-primary">Voltar ao radar</a>
-      </main>
+      @if (!top20.loading()) {
+        <app-top-bar title="Cliente nao encontrado" subtitle="Volte ao radar para selecionar outro cliente" />
+        <main class="grid flex-1 place-items-center p-10 text-sm text-muted-foreground">
+          Cliente nao encontrado. <a routerLink="/radar" class="ml-2 text-primary">Voltar ao radar</a>
+        </main>
+      } @else {
+        <app-top-bar title="Carregando..." subtitle="" />
+        <main class="grid flex-1 place-items-center p-10 text-sm text-muted-foreground">Carregando dados...</main>
+      }
     }
   `,
 })
-export class CustomerDetailPageComponent {
+export class CustomerDetailPageComponent implements OnInit {
   readonly id = input<string>();
+
+  protected readonly top20 = inject(RadarTop20Service);
   protected readonly customers = customers;
   protected readonly usageSeries = usageSeries;
   protected readonly initials = initials;
@@ -183,39 +276,74 @@ export class CustomerDetailPageComponent {
     { d: '08/04', t: 'Webhook de eventos reconfigurado', dot: 'bg-info' },
   ];
 
-  protected readonly customer = computed(() => customers.find((customer) => customer.id === this.id()));
+  protected readonly report = computed(() => {
+    const idVal = this.id();
+    return idVal ? this.top20.itemByOwnerId(idVal) : undefined;
+  });
+
+  protected readonly customer = computed(() =>
+    customers.find((customerItem) => customerItem.id === this.id()),
+  );
 
   protected readonly segmentAvg = computed(() => {
-    const customer = this.customer();
-    if (!customer) return 0;
-    const segmentCustomers = customers.filter((item) => item.segment === customer.segment);
+    const c = this.customer();
+    if (!c) return 0;
+    const segmentCustomers = customers.filter((item) => item.segment === c.segment);
     return Math.round(segmentCustomers.reduce((sum, item) => sum + item.score, 0) / segmentCustomers.length);
   });
 
   protected readonly radarData = computed(() => {
-    const customer = this.customer();
-    if (!customer) return [];
-    const segmentAvg = this.segmentAvg();
+    const c = this.customer();
+    if (!c) return [];
+    const segmentAvgVal = this.segmentAvg();
     return [
-      { dim: 'Adocao', v: customer.score, ref: segmentAvg },
-      { dim: 'Frequencia', v: Math.min(100, customer.score + 5), ref: segmentAvg },
-      { dim: 'Engajamento', v: Math.max(0, customer.score - 8), ref: segmentAvg - 4 },
-      { dim: 'Estabilidade', v: Math.min(100, customer.score + 12), ref: segmentAvg + 2 },
-      { dim: 'Suporte', v: Math.max(0, customer.score - 4), ref: segmentAvg + 6 },
-      { dim: 'Expansao', v: customer.potential === 'alto' ? 88 : customer.potential === 'medio' ? 60 : 30, ref: 55 },
+      { dim: 'Adocao', v: c.score, ref: segmentAvgVal },
+      { dim: 'Frequencia', v: Math.min(100, c.score + 5), ref: segmentAvgVal },
+      { dim: 'Engajamento', v: Math.max(0, c.score - 8), ref: segmentAvgVal - 4 },
+      { dim: 'Estabilidade', v: Math.min(100, c.score + 12), ref: segmentAvgVal + 2 },
+      { dim: 'Suporte', v: Math.max(0, c.score - 4), ref: segmentAvgVal + 6 },
+      { dim: 'Expansao', v: c.potential === 'alto' ? 88 : c.potential === 'medio' ? 60 : 30, ref: 55 },
     ];
   });
 
   protected readonly unused = computed(() => {
-    const customer = this.customer();
-    if (!customer) return [];
-    return allProducts.filter((product) => !customer.products.includes(product)).slice(0, 4);
+    const c = this.customer();
+    if (!c) return [];
+    return allProducts.filter((product) => !c.products.includes(product)).slice(0, 4);
   });
 
-  protected aiSections(customer: { score: number; potential: string }) {
+  ngOnInit(): void {
+    if (this.id() && !this.top20.loading() && this.top20.items().length === 0) {
+      this.top20.load();
+    }
+  }
+
+  protected riskFromReport(row: RelatorioTop20Item) {
+    return nivelRiscoToRiskLevel(row.analise.nivel_risco);
+  }
+
+  protected healthFromReport(row: RelatorioTop20Item): number {
+    return Math.max(0, Math.min(100, 100 - row.analise.score_ia));
+  }
+
+  protected kpis(row: RelatorioTop20Item) {
+    const c = row.cliente;
+    return [
+      { label: 'Dias sem uso', value: String(c.dias_sem_atividade) },
+      { label: 'Acoes 30d', value: String(c.acoes_30d) },
+      { label: 'Acoes 90d', value: String(c.acoes_90d) },
+      { label: 'Usuarios ativos', value: String(c.usuarios_ativos) },
+      { label: 'Core 30d / 90d', value: `${c.acoes_core_30d} / ${c.acoes_core_90d}` },
+      { label: 'Entidades', value: String(c.entidades_utilizadas) },
+      { label: 'Acoes neg. 30d', value: String(c.acoes_negativas_30d) },
+      { label: 'Automacao 30d', value: String(c.acoes_automatizadas_30d) },
+    ];
+  }
+
+  protected aiSections(c: { score: number; potential: string }) {
     const firstUnused = this.unused()[0] ?? 'Analytics+';
     return [
-      { icon: '!', title: 'Risco de churn', tone: 'bg-destructive/10 text-destructive border-destructive/30', body: `Probabilidade estimada de <strong>${Math.max(5, 100 - customer.score)}%</strong> nos proximos 60 dias.` },
+      { icon: '!', title: 'Risco de churn', tone: 'bg-destructive/10 text-destructive border-destructive/30', body: `Probabilidade estimada de <strong>${Math.max(5, 100 - c.score)}%</strong> nos proximos 60 dias.` },
       { icon: '◌', title: 'Recomendacao para CS', tone: 'bg-info/10 text-info border-info/30', body: 'Agendar QBR com sponsor + revisar SLA da Torre de Controle.' },
       { icon: '✦', title: 'Recomendacao comercial', tone: 'bg-primary/10 text-primary border-primary/30', body: `Apresentar pacote ${firstUnused} com piloto de 30 dias.` },
       { icon: '⚙', title: 'Acoes preventivas', tone: 'bg-warning/10 text-warning border-warning/30', body: 'Reativar webhook de eventos e reforcar treinamento do Planner.' },
