@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, OnDestroy, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
@@ -8,6 +8,7 @@ import type {
   RelatorioClienteParametros,
   RelatorioProcessamentoStatus,
 } from '../data/relatorio-clientes.types';
+import type { RelatorioInsightsResponse } from '../data/relatorio-insights.types';
 import type {
   RelatorioMatchCnaeRequest,
   RelatorioMatchCnaeResponse,
@@ -136,6 +137,11 @@ export function relatorioClienteReprocessarUrl(ownerId: string): string {
 /** POST match CNAE + argumento de venda (payload da BrasilAPI ou mínimo com `cnae_fiscal`). */
 export function relatorioMatchCnaeUrl(): string {
   return `${apiRelatorioBase()}/match-cnae`;
+}
+
+/** GET insights estratégicos da carteira (`/api/relatorio/insights`). */
+export function relatorioInsightsUrl(): string {
+  return `${apiRelatorioBase()}/insights`;
 }
 
 /** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo). */
@@ -498,5 +504,11 @@ export class RelatorioClientesService implements OnDestroy {
   /** Envia o payload da BrasilAPI (ou mínimo) para encontrar clientes similares e gerar argumento de venda. */
   matchCnae(body: RelatorioMatchCnaeRequest) {
     return this.http.post<RelatorioMatchCnaeResponse>(relatorioMatchCnaeUrl(), body);
+  }
+
+  fetchInsights(options?: { nocache?: boolean }) {
+    const params =
+      options?.nocache === true ? new HttpParams().set('nocache', 'true') : undefined;
+    return this.http.get<RelatorioInsightsResponse>(relatorioInsightsUrl(), { params });
   }
 }

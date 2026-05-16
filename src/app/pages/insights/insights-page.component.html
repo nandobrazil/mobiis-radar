@@ -1,64 +1,155 @@
 <div class="page-shell">
   <app-top-bar title="Mobiis AI Insights" subtitle="Recomendações geradas por inteligência artificial" />
   <main class="page-shell-body space-y-6 p-4 md:p-6">
-  <section class="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-6 shadow-elegant">
-    <div class="absolute inset-0 bg-grid opacity-30"></div>
-    <div class="absolute -right-20 -top-32 h-72 w-[520px] rounded-full bg-gradient-primary opacity-25 blur-3xl"></div>
-    <div class="relative flex items-center gap-4">
-      <div class="grid h-14 w-14 place-items-center rounded-2xl bg-gradient-primary shadow-elegant">
-        <app-icon [icon]="iconHero" size="28" strokeWidth="2" svgClass="size-7 text-primary-foreground" />
-      </div>
-      <div>
-        <span class="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-          Análise contínua
-        </span>
-        <h2 class="mt-2 text-2xl font-semibold tracking-tight">
-          A IA processou <span class="text-gradient">{{ customers.length }} clientes</span> e gerou {{ insights.length }} insights estratégicos
-        </h2>
-        <p class="text-sm text-muted-foreground">Última atualização há 4 minutos</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="grid grid-cols-1 gap-4 md:grid-cols-2">
-    @for (insight of insights; track insight.title) {
-      <div class="relative overflow-hidden rounded-2xl border bg-card p-5 shadow-card" [class]="insight.border">
-        <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b to-transparent" [class]="insight.tint"></div>
-        <div class="relative">
-          <div class="flex items-center gap-3">
-            <span class="grid h-10 w-10 place-items-center rounded-lg" [class]="insight.iconTone">
-              <app-icon [icon]="insight.icon" size="20" strokeWidth="2" svgClass="shrink-0" />
-            </span>
-            <h3 class="text-base font-semibold">{{ insight.title }}</h3>
-          </div>
-          <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{{ insight.body }}</p>
-          <button class="mt-4 inline-flex items-center gap-1 rounded-lg px-0 py-2 text-sm text-primary">
-            {{ insight.cta }} <span>→</span>
-          </button>
-        </div>
-      </div>
-    }
-  </section>
-
-  <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
-    <h3 class="text-sm font-semibold">Ações priorizadas pela IA</h3>
-    <p class="text-xs text-muted-foreground">Clientes que requerem atuação imediata</p>
-    <div class="mt-4 divide-y divide-border">
-      @for (customer of featured; track customer.id) {
-        <a [routerLink]="['/cliente', customer.id]" class="-mx-2 flex items-center gap-3 rounded-md px-2 py-3 hover:bg-muted/30">
-          <div class="grid h-10 w-10 place-items-center rounded-lg bg-gradient-primary text-xs font-semibold text-primary-foreground">
-            {{ initials(customer.name) }}
+    @if (loading()) {
+      <app-insights-page-skeleton [insightCards]="6" [tableRows]="10" />
+    } @else if (error(); as err) {
+      <section class="rounded-2xl border border-destructive/30 bg-destructive/5 p-6 shadow-card">
+        <p class="text-sm text-destructive">{{ err }}</p>
+        <button type="button" class="btn-outline mt-4 h-9 px-4 text-sm" (click)="recarregar()">Tentar novamente</button>
+      </section>
+    } @else if (data(); as d) {
+      <section class="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-6 shadow-elegant">
+        <div class="absolute inset-0 bg-grid opacity-30"></div>
+        <div class="absolute -right-20 -top-32 h-72 w-[520px] rounded-full bg-gradient-primary opacity-25 blur-3xl"></div>
+        <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-primary shadow-elegant">
+            <app-icon [icon]="iconHero" size="28" strokeWidth="2" svgClass="size-7 text-primary-foreground" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-medium">{{ customer.name }}</p>
-            <p class="text-xs text-muted-foreground">
-              Probabilidade de churn em 60 dias: <span class="font-medium text-destructive">{{ max(60, 100 - customer.score) }}%</span>
-            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary"
+              >
+                Análise da carteira
+              </span>
+              @if (d.de_cache) {
+                <span class="rounded-full border border-border bg-muted/50 px-2.5 py-0.5 text-[11px] text-muted-foreground">
+                  Cache
+                </span>
+              }
+            </div>
+            <h2 class="mt-2 text-2xl font-semibold tracking-tight">
+              A IA analisou
+              <span class="text-gradient">{{ d.total_clientes_analisados }} clientes</span>
+              e gerou {{ d.insights.length }} insights estratégicos
+            </h2>
+            @if (geradoEmFormatado(); as quando) {
+              <p class="text-sm text-muted-foreground">Gerado em {{ quando }}</p>
+            }
           </div>
-          <span class="rounded-lg border border-border px-3 py-1.5 text-xs">Abrir plano</span>
-        </a>
+          <button type="button" class="btn-outline h-9 shrink-0 px-4 text-sm" (click)="recarregar()">
+            Atualizar
+          </button>
+        </div>
+      </section>
+
+      @if (insights().length) {
+        <section class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          @for (insight of insights(); track insight.titulo) {
+            @let ui = uiInsight(insight);
+            <article class="relative overflow-hidden rounded-2xl border bg-card p-5 shadow-card" [class]="ui.border">
+              <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b to-transparent" [class]="ui.tint"></div>
+              <div class="relative">
+                <div class="flex flex-wrap items-start gap-3">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg" [class]="ui.iconTone">
+                    <app-icon [icon]="ui.icon" size="20" strokeWidth="2" svgClass="shrink-0" />
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <span class="text-[11px] font-medium text-muted-foreground">{{ ui.tipoLabel }}</span>
+                    <h3 class="mt-0.5 text-base font-semibold leading-snug">{{ insight.titulo }}</h3>
+                  </div>
+                  @if (insight.clientes_afetados > 0) {
+                    <span
+                      class="shrink-0 rounded-full border border-border bg-background/80 px-2.5 py-0.5 text-xs font-medium tabular-nums"
+                    >
+                      {{ insight.clientes_afetados }} cliente(s)
+                    </span>
+                  }
+                </div>
+                <p class="mt-3 text-sm leading-relaxed text-muted-foreground">{{ insight.descricao }}</p>
+                @if (ownerIdsExibidos(insight).length) {
+                  <div class="mt-3 flex flex-wrap gap-1.5">
+                    @for (ref of ownerIdsExibidos(insight); track ref) {
+                      @if (isOwnerUuid(ref)) {
+                        <a
+                          [routerLink]="['/cliente', ref]"
+                          class="rounded-md border border-border/80 bg-background/60 px-2 py-0.5 text-[11px] text-primary hover:underline"
+                          >{{ ref }}</a
+                        >
+                      } @else {
+                        <span
+                          class="max-w-full truncate rounded-md border border-border/80 bg-background/60 px-2 py-0.5 text-[11px] text-muted-foreground"
+                          [title]="ref"
+                          >{{ ref }}</span
+                        >
+                      }
+                    }
+                  </div>
+                }
+                <p class="mt-4 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm leading-relaxed">
+                  <span class="font-medium text-foreground">Ação sugerida:</span>
+                  {{ insight.acao_sugerida }}
+                </p>
+              </div>
+            </article>
+          }
+        </section>
+      } @else {
+        <p class="text-center text-sm text-muted-foreground">Nenhum insight retornado para a carteira atual.</p>
       }
-    </div>
-  </section>
-</main>
+
+      <section class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+        <div class="border-b border-border px-5 py-4">
+          <h3 class="text-sm font-semibold">Ações priorizadas pela IA</h3>
+          <p class="mt-0.5 text-xs text-muted-foreground">Clientes que requerem atuação imediata</p>
+        </div>
+        @if (acoesPriorizadas().length) {
+          <app-data-table [tableClass]="'min-w-[960px]'">
+            <tr data-table-head-row>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Cliente
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Risco
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Score IA
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Churn 60d
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Ação recomendada
+              </th>
+            </tr>
+            @for (acao of acoesPriorizadas(); track acao.owner_id) {
+              <tr class="group transition-colors hover:bg-muted/20">
+                <td class="px-4 py-3">
+                  <a [routerLink]="['/cliente', acao.owner_id]" class="flex items-center gap-3">
+                    <div
+                      class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-primary text-[10px] font-semibold text-primary-foreground"
+                    >
+                      {{ initials(acao.nome) }}
+                    </div>
+                    <span class="min-w-0 truncate text-sm font-medium group-hover:text-primary">{{ acao.nome }}</span>
+                  </a>
+                </td>
+                <td class="px-4 py-3">
+                  <app-risk-badge [risk]="riskLevel(acao.nivel_risco)" />
+                </td>
+                <td class="px-4 py-3 tabular-nums text-sm">{{ acao.score_ia }}</td>
+                <td class="px-4 py-3 tabular-nums text-sm">
+                  <span class="font-medium text-destructive">{{ acao.probabilidade_churn_60d }}%</span>
+                </td>
+                <td class="px-4 py-3 text-sm leading-relaxed text-muted-foreground">{{ acao.acao_recomendada }}</td>
+              </tr>
+            }
+          </app-data-table>
+        } @else {
+          <p class="p-6 text-center text-sm text-muted-foreground">Nenhuma ação priorizada no momento.</p>
+        }
+      </section>
+    }
+  </main>
 </div>
