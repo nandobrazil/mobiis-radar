@@ -7,7 +7,7 @@
     (click)="menu.open.set(true)"
     aria-label="Abrir menu"
   >
-    <svg lucideMenu class="size-5 shrink-0" strokeWidth="2" />
+    <app-icon [icon]="iconMenu" size="20" strokeWidth="2" svgClass="size-5 shrink-0" />
   </button>
 
   <div class="min-w-0 flex-1">
@@ -18,8 +18,13 @@
   </div>
 
   <div class="flex shrink-0 items-center gap-1.5 md:gap-2">
-    <div class="relative hidden md:block">
-      <svg lucideSearch class="pointer-events-none absolute left-3 top-1/2 z-[1] size-4 -translate-y-1/2 text-muted-foreground" strokeWidth="2" />
+    <!-- <div class="relative hidden md:block">
+      <app-icon
+        [icon]="iconSearch"
+        size="16"
+        strokeWidth="2"
+        svgClass="pointer-events-none absolute left-3 top-1/2 z-[1] size-4 -translate-y-1/2 text-muted-foreground"
+      />
       <input
         type="search"
         autocomplete="off"
@@ -31,7 +36,7 @@
       >
         ⌘ K
       </kbd>
-    </div>
+    </div> -->
     <button
       type="button"
       class="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
@@ -40,22 +45,22 @@
       [attr.title]="theme.dark() ? 'Modo claro' : 'Modo escuro'"
     >
       @if (theme.dark()) {
-        <svg lucideSun class="size-[18px]" strokeWidth="2" />
+        <app-icon [icon]="iconSun" size="18" strokeWidth="2" svgClass="size-[18px]" />
       } @else {
-        <svg lucideMoon class="size-[18px]" strokeWidth="2" />
+        <app-icon [icon]="iconMoon" size="18" strokeWidth="2" svgClass="size-[18px]" />
       }
     </button>
-    <button
+    <!-- <button
       type="button"
       class="relative grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:bg-muted"
       aria-label="Notificações"
     >
-      <svg lucideBell class="size-[18px]" strokeWidth="2" />
+      <app-icon [icon]="iconBell" size="18" strokeWidth="2" svgClass="size-[18px]" />
       <span
         class="absolute -right-0.5 -top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-destructive px-1 text-[10px] font-medium leading-none text-destructive-foreground"
       >
         3
       </span>
-    </button>
+    </button> -->
   </div>
 </header>

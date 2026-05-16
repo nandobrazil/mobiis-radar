@@ -1,17 +1,19 @@
 import { Component } from '@angular/core';
-import { LucideCalendarX, LucideDynamicIcon, LucideTarget, LucideTrendingDown, LucideTrendingUp } from '@lucide/angular';
+import { LucideCalendarX, LucideTarget, LucideTrendingDown, LucideTrendingUp } from '@lucide/angular';
 
 import { customers, funil } from '../../data/mock-data';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 
 @Component({
   selector: 'app-comercial-page',
   standalone: true,
-  imports: [GeoMapComponent, LucideDynamicIcon, LucideTrendingUp, TopBarComponent],
+  imports: [AppIconComponent, GeoMapComponent, TopBarComponent],
   templateUrl: './comercial-page.component.html',
 })
 export class ComercialPageComponent {
+  protected readonly iconTrendUp = LucideTrendingUp;
   protected readonly funil = funil;
   private readonly semelhantes = customers.filter((customer) => customer.potential === 'alto' && customer.risk !== 'risco').slice(0, 4);
   private readonly expansao = customers.filter((customer) => customer.score >= 70 && customer.potential !== 'baixo').slice(0, 4);

@@ -14,6 +14,7 @@ import {
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { LucideSearch } from '@lucide/angular';
 import { initials, iaRiskCaptionClass, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
@@ -22,11 +23,12 @@ const ALL = '__all__';
 @Component({
   selector: 'app-radar-page',
   standalone: true,
-  imports: [DataTableComponent, TableSkeletonComponent, LucideSearch, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
+  imports: [AppIconComponent, DataTableComponent, TableSkeletonComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
   templateUrl: './radar-page.component.html',
 })
 export class RadarPageComponent implements OnInit {
   protected readonly top20 = inject(RadarTop20Service);
+  protected readonly iconSearch = LucideSearch;
   protected readonly ALL = ALL;
   protected readonly q = signal('');
   protected readonly risk = signal(ALL);

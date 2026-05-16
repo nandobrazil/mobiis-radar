@@ -17,7 +17,7 @@
       class="grid h-10 w-10 shrink-0 place-items-center rounded-xl border shadow-sm"
       [class]="toneIconClass()"
     >
-      <svg [lucideIcon]="icon()" [size]="22" class="shrink-0" strokeWidth="2.25" />
+      <app-icon [icon]="icon()" size="22" strokeWidth="2.25" svgClass="shrink-0" />
     </div>
   </div>
   @if (delta() !== undefined) {
@@ -27,9 +27,9 @@
         [class]="positive() ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'"
       >
         @if (positive()) {
-          <svg lucideTrendingUp class="size-3.5 shrink-0" strokeWidth="2.5" />
+          <app-icon [icon]="trendUp" size="14" strokeWidth="2.5" svgClass="size-3.5 shrink-0" />
         } @else {
-          <svg lucideTrendingDown class="size-3.5 shrink-0" strokeWidth="2.5" />
+          <app-icon [icon]="trendDown" size="14" strokeWidth="2.5" svgClass="size-3.5 shrink-0" />
         }
         {{ absDelta() }}%
       </span>

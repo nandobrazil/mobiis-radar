@@ -15,6 +15,7 @@ import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
 import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import {
   LucideCircleDot,
   LucideClock,
@@ -31,13 +32,13 @@ type ResumoLoad = { ok: boolean; data: MovideskResumo | null };
   selector: 'app-movidesk-page',
   standalone: true,
   imports: [
+    AppIconComponent,
     PieChartComponent,
     PieChartPanelSkeletonComponent,
     KpiCardSkeletonComponent,
     DataTableComponent,
     TableSkeletonComponent,
     KpiCardComponent,
-    LucideSearch,
     TablePaginationBarComponent,
     TopBarComponent,
   ],
@@ -45,6 +46,8 @@ type ResumoLoad = { ok: boolean; data: MovideskResumo | null };
 })
 export class MovideskPageComponent implements OnInit {
   private readonly movidesk = inject(MovideskTicketsService);
+
+  protected readonly iconSearch = LucideSearch;
 
   protected readonly items = signal<MovideskTicket[]>([]);
   protected readonly resumo = signal<MovideskResumo | null>(null);

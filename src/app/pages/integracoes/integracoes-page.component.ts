@@ -4,7 +4,6 @@ import {
   LucideBuilding2,
   LucideCheck,
   LucideDatabase,
-  LucideDynamicIcon,
   LucideFileStack,
   LucideLoader2,
   LucidePlug,
@@ -14,15 +13,17 @@ import {
 } from '@lucide/angular';
 
 import { integrations } from '../../data/mock-data';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 
 @Component({
   selector: 'app-integracoes-page',
   standalone: true,
-  imports: [LucideDynamicIcon, LucidePlusCircle, TopBarComponent],
+  imports: [AppIconComponent, TopBarComponent],
   templateUrl: './integracoes-page.component.html',
 })
 export class IntegracoesPageComponent {
+  protected readonly iconPlus = LucidePlusCircle;
   protected readonly integrations = integrations;
   protected readonly connected = integrations.filter((item) => item.status !== 'erro').length;
   protected readonly syncing = integrations.filter((item) => item.status === 'sincronizando').length;
@@ -46,6 +47,10 @@ export class IntegracoesPageComponent {
 
   protected statusIcon(status: string): LucideIconInput {
     return status === 'erro' ? LucideTriangleAlert : status === 'sincronizando' ? LucideLoader2 : LucideCheck;
+  }
+
+  protected statusIconSvgClass(status: string): string {
+    return status === 'sincronizando' ? 'shrink-0 animate-spin' : 'shrink-0';
   }
 
   protected statusLabel(status: string) {

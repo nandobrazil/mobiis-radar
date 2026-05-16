@@ -1,11 +1,13 @@
 import { Component, input } from '@angular/core';
 import type { LucideIconInput } from '@lucide/angular';
-import { LucideDynamicIcon, LucideTrendingDown, LucideTrendingUp } from '@lucide/angular';
+import { LucideTrendingDown, LucideTrendingUp } from '@lucide/angular';
+
+import { AppIconComponent } from '../app-icon/app-icon.component';
 
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
-  imports: [LucideDynamicIcon, LucideTrendingDown, LucideTrendingUp],
+  imports: [AppIconComponent],
   templateUrl: './kpi-card.component.html',
   styleUrl: './kpi-card.component.css',
 })
@@ -48,4 +50,7 @@ export class KpiCardComponent {
   absDelta() {
     return Math.abs(this.delta() ?? 0);
   }
+
+  protected readonly trendUp = LucideTrendingUp;
+  protected readonly trendDown = LucideTrendingDown;
 }

@@ -14,7 +14,7 @@
         <div class="flex items-start justify-between gap-3">
           <div class="flex items-center gap-3">
             <div class="grid h-11 w-11 place-items-center rounded-xl border border-border bg-background/60 text-primary">
-              <svg [lucideIcon]="typeIcon(item.type)" [size]="22" strokeWidth="2" class="shrink-0" />
+              <app-icon [icon]="typeIcon(item.type)" size="22" strokeWidth="2" svgClass="shrink-0" />
             </div>
             <div>
               <h3 class="text-sm font-semibold">{{ item.name }}</h3>
@@ -22,12 +22,11 @@
             </div>
           </div>
           <span class="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium" [class]="statusClass(item.status)">
-            <svg
-              [lucideIcon]="statusIcon(item.status)"
-              [size]="12"
+            <app-icon
+              [icon]="statusIcon(item.status)"
+              size="12"
               strokeWidth="2.5"
-              class="shrink-0"
-              [class.animate-spin]="item.status === 'sincronizando'"
+              [svgClass]="statusIconSvgClass(item.status)"
             />
             {{ statusLabel(item.status) }}
           </span>
@@ -40,7 +39,7 @@
     }
 
     <button class="grid place-items-center rounded-2xl border-2 border-dashed border-border bg-card/30 p-5 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary">
-      <svg lucidePlusCircle class="mb-2 size-8 text-muted-foreground" strokeWidth="1.75" />
+      <app-icon [icon]="iconPlus" size="32" strokeWidth="1.75" svgClass="mb-2 size-8 text-muted-foreground" />
       Adicionar nova integracao
     </button>
   </section>

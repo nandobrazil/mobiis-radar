@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideCircleDashed,
-  LucideDynamicIcon,
   LucideRadar,
   LucideSparkles,
   LucideTriangleAlert,
@@ -10,15 +9,17 @@ import {
 
 import { customers } from '../../data/mock-data';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { initials } from '../../shared/ui-helpers';
 
 @Component({
   selector: 'app-insights-page',
   standalone: true,
-  imports: [LucideDynamicIcon, LucideSparkles, RouterLink, TopBarComponent],
+  imports: [AppIconComponent, RouterLink, TopBarComponent],
   templateUrl: './insights-page.component.html',
 })
 export class InsightsPageComponent {
+  protected readonly iconHero = LucideSparkles;
   protected readonly customers = customers;
   protected readonly initials = initials;
   protected readonly max = Math.max;

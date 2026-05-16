@@ -14,7 +14,7 @@
     <div class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <span class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-          <svg lucideSparkles class="size-3.5 shrink-0" strokeWidth="2" />
+          <app-icon [icon]="iconSparkles" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0" />
           Relatorio de clientes — dados em tempo real
         </span>
         @if (top20.loading() && top20.items().length === 0) {
@@ -46,7 +46,7 @@
         } @else {
           <div class="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
             <div class="grid h-10 w-10 place-items-center rounded-lg bg-warning/15 text-warning">
-              <svg lucideActivity class="size-5" strokeWidth="2" />
+              <app-icon [icon]="iconActivity" size="20" strokeWidth="2" svgClass="size-5" />
             </div>
             <div class="leading-tight">
               <p class="text-xs text-muted-foreground">Score IA medio</p>
@@ -55,7 +55,7 @@
           </div>
           <div class="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
             <div class="grid h-10 w-10 place-items-center rounded-lg bg-destructive/15 text-destructive">
-              <svg lucideAlertTriangle class="size-5" strokeWidth="2" />
+              <app-icon [icon]="iconAlertHigh" size="20" strokeWidth="2" svgClass="size-5" />
             </div>
             <div class="leading-tight">
               <p class="text-xs text-muted-foreground">Dias sem uso (media)</p>

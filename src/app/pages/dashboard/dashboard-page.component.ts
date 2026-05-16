@@ -9,7 +9,6 @@ import {
   LucideSparkles,
   LucideUsersRound,
 } from '@lucide/angular';
-
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { segmentRanking } from '../../data/mock-data';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
@@ -21,20 +20,19 @@ import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/rad
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 @Component({
   selector: 'app-dashboard-page',
   standalone: true,
   imports: [
+    AppIconComponent,
     BarChartComponent,
     BarChartPanelSkeletonComponent,
     GeoMapComponent,
     KpiCardComponent,
     KpiCardSkeletonComponent,
-    LucideActivity,
-    LucideAlertTriangle,
-    LucideSparkles,
     RiskBadgeComponent,
     RouterLink,
     ScoreBarComponent,

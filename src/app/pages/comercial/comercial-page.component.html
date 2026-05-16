@@ -32,7 +32,7 @@
             <span>11.6%</span>
           </p>
           <p class="inline-flex items-center gap-0.5 text-[11px] text-success">
-            <svg lucideTrendingUp class="size-3 shrink-0" strokeWidth="2.5" />
+            <app-icon [icon]="iconTrendUp" size="12" strokeWidth="2.5" svgClass="size-3 shrink-0" />
             vs mes anterior
           </p>
         </div>
@@ -42,7 +42,7 @@
             <span>R$ 28k</span>
           </p>
           <p class="inline-flex items-center gap-0.5 text-[11px] text-success">
-            <svg lucideTrendingUp class="size-3 shrink-0" strokeWidth="2.5" />
+            <app-icon [icon]="iconTrendUp" size="12" strokeWidth="2.5" svgClass="size-3 shrink-0" />
             vs mes anterior
           </p>
         </div>
@@ -57,7 +57,7 @@
         <div class="relative">
           <div class="flex items-center gap-2">
             <span class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-background/60" [class]="card.text">
-              <svg [lucideIcon]="card.icon" [size]="18" strokeWidth="2" class="shrink-0" />
+              <app-icon [icon]="card.icon" size="18" strokeWidth="2" svgClass="shrink-0" />
             </span>
             <div>
               <h3 class="text-sm font-semibold">{{ card.title }}</h3>

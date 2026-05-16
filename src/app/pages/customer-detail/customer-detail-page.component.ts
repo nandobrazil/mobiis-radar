@@ -1,9 +1,7 @@
 import { Component, OnDestroy, OnInit, computed, effect, inject, input } from '@angular/core';
-import { JsonPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
   LucideCircleDashed,
-  LucideDynamicIcon,
   LucideLayers,
   LucideSettings,
   LucideSparkles,
@@ -14,6 +12,7 @@ import type { RelatorioTop20Item } from '../../data/top20.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
 import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/radar-top20.service';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
+import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
@@ -23,10 +22,8 @@ import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-hel
   selector: 'app-customer-detail-page',
   standalone: true,
   imports: [
-    JsonPipe,
+    AppIconComponent,
     LineChartComponent,
-    LucideDynamicIcon,
-    LucideSparkles,
     RiskBadgeComponent,
     RouterLink,
     ScoreBarComponent,
@@ -42,6 +39,7 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
   protected readonly usageSeries = usageSeries;
   protected readonly initials = initials;
   protected readonly formatDate = formatDate;
+  protected readonly iconSparkles = LucideSparkles;
   protected readonly abs = Math.abs;
   protected readonly usageSeriesConfig = [
     { key: 'rotas', color: 'oklch(0.65 0.20 255)' },

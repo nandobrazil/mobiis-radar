@@ -3,7 +3,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { LucideIconInput } from '@lucide/angular';
 import {
   LucideBriefcase,
-  LucideDynamicIcon,
   LucideLayoutDashboard,
   LucideLineChart,
   LucideRadar,
@@ -11,12 +10,13 @@ import {
   LucideTicket,
 } from '@lucide/angular';
 
+import { AppIconComponent } from './shared/app-icon/app-icon.component';
 import { MenuService } from './shared/menu.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, LucideDynamicIcon, LucideRadar],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, AppIconComponent],
   template: `
     <div class="font-sans flex h-dvh min-h-0 w-full flex-col overflow-hidden bg-background">
       <aside
@@ -25,7 +25,7 @@ import { MenuService } from './shared/menu.service';
       >
         <a routerLink="/" class="flex h-16 shrink-0 items-center gap-2.5 border-b border-sidebar-border px-4">
           <div class="relative grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-primary shadow-elegant">
-            <svg lucideRadar class="size-[18px] text-primary-foreground" strokeWidth="2" />
+            <app-icon [icon]="brandIcon" size="18" strokeWidth="2" svgClass="size-[18px] text-primary-foreground" />
             <span class="absolute inset-0 rounded-lg animate-pulse-ring"></span>
           </div>
           <div class="min-w-0 grid leading-tight">
@@ -46,7 +46,7 @@ import { MenuService } from './shared/menu.service';
                 (click)="menu.open.set(false)"
               >
                 <span class="flex w-5 shrink-0 justify-center text-muted-foreground [.router-link-active_&]:text-sidebar-accent-foreground">
-                  <svg [lucideIcon]="item.icon" size="18" strokeWidth="2" class="shrink-0" />
+                  <app-icon [icon]="item.icon" size="18" strokeWidth="2" svgClass="shrink-0" />
                 </span>
                 <span class="truncate">{{ item.title }}</span>
               </a>
@@ -96,6 +96,7 @@ import { MenuService } from './shared/menu.service';
 })
 export class AppComponent {
   protected readonly menu = inject(MenuService);
+  protected readonly brandIcon = LucideRadar;
   readonly main: { title: string; url: string; icon: LucideIconInput }[] = [
     { title: 'Dashboard', url: '/', icon: LucideLayoutDashboard },
     { title: 'Radar de Clientes', url: '/radar', icon: LucideRadar },
