@@ -218,95 +218,129 @@
         </div>
 
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
-          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h3 class="text-sm font-semibold">Risco operacional (detalhe)</h3>
-              <p class="text-xs text-muted-foreground">Uso por entidade e origem</p>
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-warning/30 bg-warning/10 text-warning-foreground">
+                <app-icon [icon]="iconActivity" size="18" strokeWidth="2" svgClass="size-[1.125rem]" />
+              </div>
+              <div>
+                <h3 class="text-sm font-semibold">Risco operacional</h3>
+                <p class="mt-0.5 text-xs text-muted-foreground">Uso por entidade e origem</p>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <button
-                type="button"
-                class="text-xs font-medium text-primary hover:underline disabled:opacity-50"
-                [disabled]="relatorio.clienteDetalleLoading()"
-                (click)="relatorio.fetchClienteDetalle(r.cliente.owner_id)"
-              >
-                Atualizar
-              </button>
-            </div>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+              [disabled]="relatorio.clienteDetalleLoading()"
+              (click)="relatorio.fetchClienteDetalle(r.cliente.owner_id)"
+            >
+              <app-icon
+                [icon]="iconReprocessar"
+                size="14"
+                strokeWidth="2"
+                svgClass="size-3.5 shrink-0"
+                [class.animate-spin]="relatorio.clienteDetalleLoading()"
+              />
+              Atualizar
+            </button>
           </div>
           @if (relatorio.clienteDetalleError(); as detErr) {
-            <p class="text-sm text-destructive">{{ detErr }}</p>
+            <p class="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">{{ detErr }}</p>
           }
           @if (relatorio.clienteDetalleLoading() && !detalleOperacional()) {
-            <div class="mt-4">
-              <app-table-skeleton [columns]="8" [rows]="6" [tableClass]="'min-w-[680px]'" />
+            <div class="mt-4 space-y-4">
+              <app-table-skeleton [columns]="8" [rows]="2" [tableClass]="'min-w-[640px]'" />
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                @for (_ of [0, 1, 2]; track $index) {
+                  <div class="skeleton h-16 w-full rounded-lg"></div>
+                }
+              </div>
             </div>
           }
           @if (detalleOperacional(); as d) {
-            <div class="mt-4 space-y-6">
-              <div class="overflow-x-auto">
-                <table class="w-full min-w-[680px] text-sm [&_td]:whitespace-nowrap [&_th]:whitespace-nowrap">
-                  <thead class="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                    <tr>
-                      <th class="pb-2 pr-2 font-medium">Entidade</th>
-                      <th class="pb-2 pr-2 font-medium">30d</th>
-                      <th class="pb-2 pr-2 font-medium">90d</th>
-                      <th class="pb-2 pr-2 font-medium">Neg. 30d</th>
-                      <th class="pb-2 pr-2 font-medium">Neg. 90d</th>
-                      <th class="pb-2 pr-2 font-medium">Auto 30d</th>
-                      <th class="pb-2 pr-2 font-medium">Usuários</th>
-                      <th class="pb-2 font-medium">Última ação</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-border">
-                    @for (row of d.por_entidade; track row.entidade_id) {
-                      <tr>
-                        <td class="max-w-[14rem] truncate py-2 pr-2 font-medium" [title]="row.entidade">{{ row.entidade }}</td>
-                        <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.acoes_30d }}</td>
-                        <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.acoes_90d }}</td>
-                        <td class="py-2 pr-2 tabular-nums">{{ row.negativas_30d }}</td>
-                        <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.negativas_90d }}</td>
-                        <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ row.automatizadas_30d }}</td>
-                        <td class="py-2 pr-2 tabular-nums">{{ row.usuarios_distintos_30d }}</td>
-                        <td class="py-2 text-xs text-muted-foreground">{{ formatIso(row.ultima_acao) }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-
-              <div>
-                <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por origem</h4>
-                <div class="overflow-x-auto">
-                  <table class="w-full max-w-xl text-sm [&_td]:whitespace-nowrap [&_th]:whitespace-nowrap">
-                    <thead class="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                      <tr>
-                        <th class="pb-2 pr-2 font-medium">Origem</th>
-                        <th class="pb-2 pr-2 font-medium">30d</th>
-                        <th class="pb-2 font-medium">90d</th>
+            <div class="mt-4 space-y-4">
+              <section>
+                <div class="mb-1.5 flex items-center gap-2">
+                  <app-icon [icon]="iconLayers" size="14" strokeWidth="2" svgClass="size-3.5 text-muted-foreground" />
+                  <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por entidade</h4>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-border/80">
+                  <table class="w-full min-w-[640px] text-sm">
+                    <thead>
+                      <tr class="border-b border-border/80 bg-muted/40 text-[11px] uppercase tracking-wider text-muted-foreground">
+                        <th class="px-2.5 py-2 text-left font-medium">Entidade</th>
+                        <th class="px-2.5 py-2 text-right font-medium">30d</th>
+                        <th class="px-2.5 py-2 text-right font-medium">90d</th>
+                        <th class="px-2.5 py-2 text-right font-medium">Neg. 30d</th>
+                        <th class="px-2.5 py-2 text-right font-medium">Neg. 90d</th>
+                        <th class="px-2.5 py-2 text-right font-medium">Auto 30d</th>
+                        <th class="px-2.5 py-2 text-right font-medium">Usuários</th>
+                        <th class="px-2.5 py-2 text-right font-medium">Última ação</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-border">
-                      @for (o of d.por_origem; track o.origem_id) {
-                        <tr>
-                          <td class="max-w-[12rem] truncate py-2 pr-2 font-medium" [title]="o.origem">{{ o.origem }}</td>
-                          <td class="py-2 pr-2 tabular-nums text-muted-foreground">{{ o.acoes_30d }}</td>
-                          <td class="py-2 tabular-nums text-muted-foreground">{{ o.acoes_90d }}</td>
+                    <tbody class="divide-y divide-border/60 bg-card">
+                      @for (row of d.por_entidade; track row.entidade_id) {
+                        <tr class="transition-colors hover:bg-muted/30">
+                          <td class="max-w-[12rem] truncate px-2.5 py-2 font-medium text-foreground" [title]="row.entidade">{{ row.entidade }}</td>
+                          <td class="px-2.5 py-2 text-right tabular-nums text-foreground">{{ formatMetric(row.acoes_30d) }}</td>
+                          <td class="px-2.5 py-2 text-right tabular-nums text-muted-foreground">{{ formatMetric(row.acoes_90d) }}</td>
+                          <td class="px-2.5 py-2 text-right tabular-nums" [class]="negativasMetricClass(row.negativas_30d)">
+                            @if (row.negativas_30d > 0) {
+                              <span class="inline-flex min-w-[1.75rem] justify-end rounded-md bg-destructive/10 px-1.5 py-0.5">{{ formatMetric(row.negativas_30d) }}</span>
+                            } @else {
+                              {{ formatMetric(row.negativas_30d) }}
+                            }
+                          </td>
+                          <td class="px-2.5 py-2 text-right tabular-nums" [class]="negativasMetricClass(row.negativas_90d)">
+                            @if (row.negativas_90d > 0) {
+                              <span class="inline-flex min-w-[1.75rem] justify-end rounded-md bg-destructive/10 px-1.5 py-0.5">{{ formatMetric(row.negativas_90d) }}</span>
+                            } @else {
+                              {{ formatMetric(row.negativas_90d) }}
+                            }
+                          </td>
+                          <td class="px-2.5 py-2 text-right tabular-nums text-muted-foreground">{{ formatMetric(row.automatizadas_30d) }}</td>
+                          <td class="px-2.5 py-2 text-right tabular-nums text-foreground">{{ formatMetric(row.usuarios_distintos_30d) }}</td>
+                          <td class="whitespace-nowrap px-2.5 py-2 text-right text-xs text-muted-foreground">{{ formatIso(row.ultima_acao) }}</td>
                         </tr>
                       }
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </section>
 
-              <div>
-                <!-- <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tendência semanal</h4>
-                @if (d.tendencia_semanal.length === 0) {
-                  <p class="text-sm text-muted-foreground">Nenhum dado de série semanal disponível.</p>
-                } @else {
-                  <pre class="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 text-xs leading-relaxed">{{ d.tendencia_semanal | json }}</pre>
-                } -->
-              </div>
+              <section>
+                <div class="mb-1.5 flex items-center gap-2">
+                  <app-icon [icon]="iconMovidesk" size="14" strokeWidth="2" svgClass="size-3.5 text-muted-foreground" />
+                  <h4 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por origem</h4>
+                  <span class="text-[11px] text-muted-foreground">· participação 30d</span>
+                </div>
+                <ul class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  @for (o of d.por_origem; track o.origem_id) {
+                    <li class="rounded-lg border border-border/80 bg-muted/20 px-2.5 py-2 transition hover:border-border hover:bg-muted/30">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="truncate text-sm font-medium text-foreground" [title]="o.origem">{{ o.origem }}</span>
+                        <span class="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-primary">
+                          {{ origemShare30d(o, d.por_origem) }}%
+                        </span>
+                      </div>
+                      <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-muted/60" role="presentation">
+                        <div
+                          class="h-full rounded-full bg-primary/80 transition-[width] duration-500"
+                          [style.width.%]="origemShare30d(o, d.por_origem)"
+                        ></div>
+                      </div>
+                      <div class="mt-1.5 flex items-center justify-between gap-2 text-[11px]">
+                        <span class="text-muted-foreground">
+                          30d <span class="font-semibold tabular-nums text-foreground">{{ formatMetric(o.acoes_30d) }}</span>
+                        </span>
+                        <span class="text-muted-foreground">
+                          90d <span class="font-semibold tabular-nums">{{ formatMetric(o.acoes_90d) }}</span>
+                        </span>
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </section>
             </div>
           }
         </div>

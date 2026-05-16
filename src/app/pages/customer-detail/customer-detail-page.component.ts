@@ -23,6 +23,7 @@ import type { MovideskClienteIndicadores } from '../../data/movidesk-cliente-ind
 import type {
   RelatorioClienteItem,
   RelatorioClienteParametros,
+  RelatorioClientePorOrigem,
   RelatorioClienteScoreBreakdownItem,
 } from '../../data/relatorio-clientes.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
@@ -121,6 +122,8 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly iconMovidesk = LucideBarChart3;
   protected readonly iconContexto = LucideFileText;
   protected readonly iconReprocessar = LucideRefreshCw;
+  protected readonly iconActivity = LucideActivity;
+  protected readonly iconLayers = LucideLayers;
   protected readonly abs = Math.abs;
   protected readonly usageSeriesConfig = [
     { key: 'rotas', color: 'oklch(0.65 0.20 255)' },
@@ -309,6 +312,29 @@ export class CustomerDetailPageComponent implements OnDestroy {
     } catch {
       return iso;
     }
+  }
+
+  protected formatMetric(value: number | null | undefined): string {
+    if (value == null || Number.isNaN(Number(value))) {
+      return '—';
+    }
+    return new Intl.NumberFormat('pt-BR').format(Number(value));
+  }
+
+  protected origemShare30d(origem: RelatorioClientePorOrigem, todas: RelatorioClientePorOrigem[]): number {
+    const total = todas.reduce((sum, item) => sum + (Number(item.acoes_30d) || 0), 0);
+    if (total <= 0) {
+      return 0;
+    }
+    return Math.round(((Number(origem.acoes_30d) || 0) / total) * 100);
+  }
+
+  protected negativasMetricClass(value: number): string {
+    const n = Number(value) || 0;
+    if (n === 0) {
+      return 'text-muted-foreground';
+    }
+    return 'font-semibold text-destructive';
   }
 
   protected abrirModalIndicadoresMovidesk(): void {
