@@ -3,8 +3,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import {
+  LucideArrowLeft,
+  LucideBarChart3,
   LucideCircleDashed,
+  LucideFileText,
   LucideLayers,
+  LucideRefreshCw,
   LucideSettings,
   LucideSparkles,
   LucideTriangleAlert,
@@ -77,6 +81,11 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly planoParametrosError = signal<string | null>(null);
   protected readonly planoParametros = signal<RelatorioClienteParametros | null>(null);
 
+  protected readonly reprocessarModalOpen = signal(false);
+  protected readonly reprocessarLoading = signal(false);
+  protected readonly reprocessarError = signal<string | null>(null);
+  private reprocessarOwnerId: string | null = null;
+
   /** Contexto na raiz do GET `/api/relatorio/cliente/{id}`. */
   protected readonly contextoPagina = computed(() => contextoFromRelatorioRow(this.report()));
 
@@ -87,6 +96,11 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly initials = initials;
   protected readonly formatDate = formatDate;
   protected readonly iconSparkles = LucideSparkles;
+  protected readonly iconAlert = LucideTriangleAlert;
+  protected readonly iconArrowLeft = LucideArrowLeft;
+  protected readonly iconMovidesk = LucideBarChart3;
+  protected readonly iconContexto = LucideFileText;
+  protected readonly iconReprocessar = LucideRefreshCw;
   protected readonly abs = Math.abs;
   protected readonly usageSeriesConfig = [
     { key: 'rotas', color: 'oklch(0.65 0.20 255)' },
@@ -360,6 +374,55 @@ export class CustomerDetailPageComponent implements OnDestroy {
     this.contextoOwnerId = null;
     this.contextoError.set(null);
     this.contextoSaving.set(false);
+  }
+
+  protected abrirModalReprocessar(): void {
+    const ownerId = this.report()?.cliente.owner_id?.trim();
+    if (!ownerId) {
+      return;
+    }
+    this.reprocessarOwnerId = ownerId;
+    this.reprocessarModalOpen.set(true);
+    this.reprocessarError.set(null);
+  }
+
+  protected fecharModalReprocessar(): void {
+    if (this.reprocessarLoading()) {
+      return;
+    }
+    this.reprocessarModalOpen.set(false);
+    this.reprocessarOwnerId = null;
+    this.reprocessarError.set(null);
+  }
+
+  protected confirmarReprocessarAnalise(): void {
+    const ownerId = this.reprocessarOwnerId;
+    if (!ownerId || this.reprocessarLoading()) {
+      return;
+    }
+    this.reprocessarLoading.set(true);
+    this.reprocessarError.set(null);
+
+    this.relatorio
+      .reprocessarClienteAnalise(ownerId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.reprocessarLoading.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.reprocessarModalOpen.set(false);
+          this.reprocessarOwnerId = null;
+          this.planoParametros.set(null);
+          this.planoParametrosError.set(null);
+          this.relatorio.fetchRelatorioClienteResumo(ownerId);
+        },
+        error: () => {
+          this.reprocessarError.set(
+            'Não foi possível reprocessar a análise. Verifique o endpoint `/reprocessar` ou tente novamente.',
+          );
+        },
+      });
   }
 
   protected salvarModalContexto(): void {

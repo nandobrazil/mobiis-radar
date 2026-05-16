@@ -115,6 +115,11 @@ export function relatorioClienteParametrosUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}/parametros`;
 }
 
+/** POST reprocessar análise IA do cliente. */
+export function relatorioClienteReprocessarUrl(ownerId: string): string {
+  return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}/reprocessar`;
+}
+
 /** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo). */
 export const RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID = '05B79AE8-F3BA-4830-AF86-405BE38F1B67';
 
@@ -355,5 +360,13 @@ export class RelatorioClientesService {
       throw new Error('owner_id obrigatório');
     }
     return this.http.get<RelatorioClienteParametros>(relatorioClienteParametrosUrl(oid));
+  }
+
+  reprocessarClienteAnalise(ownerId: string) {
+    const oid = ownerId?.trim();
+    if (!oid) {
+      throw new Error('owner_id obrigatório');
+    }
+    return this.http.post<RelatorioClienteItem>(relatorioClienteReprocessarUrl(oid), {});
   }
 }
