@@ -22,7 +22,10 @@ export interface RelatorioAnalise {
 
 export interface RelatorioTop20Item {
   cliente: RelatorioCliente;
-  analise: RelatorioAnalise;
+  /** A API pode omitir ou enviar `null` em registos incompletos. */
+  analise?: RelatorioAnalise | null;
+  /** Quando true, a analise IA falhou mas `cliente` costuma vir preenchido. */
+  erro?: boolean;
 }
 
 export interface RelatorioClientePorEntidade {

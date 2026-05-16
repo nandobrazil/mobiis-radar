@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 
 import { customers, funil } from '../../data/mock-data';
-import { GeoMapComponent } from '../../shared/geo-map.component';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 
 @Component({
   selector: 'app-comercial-page',

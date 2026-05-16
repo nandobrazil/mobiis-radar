@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 import { integrations } from '../../data/mock-data';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 
 @Component({
   selector: 'app-integracoes-page',

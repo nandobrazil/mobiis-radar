@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 
 @Component({
   selector: 'app-configuracoes-page',

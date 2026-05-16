@@ -2,11 +2,12 @@ import { Component, OnInit, computed, effect, inject, signal, untracked } from '
 import { RouterLink } from '@angular/router';
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
-import { DataTableComponent } from '../../shared/data-table.component';
-import { RiskBadgeComponent, ScoreBarComponent } from '../../shared/risk-badge.component';
-import { RadarTop20Service } from '../../shared/radar-top20.service';
-import { TablePaginationBarComponent } from '../../shared/table-pagination-bar.component';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { DataTableComponent } from '../../shared/data-table/data-table.component';
+import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
+import { healthScoreFromRelatorioRow, normalizeNivelRisco, RadarTop20Service } from '../../shared/radar-top20.service';
+import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
+import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 const ALL = '__all__';
@@ -36,10 +37,19 @@ export class RadarPageComponent implements OnInit {
     const q = this.q().trim().toLowerCase();
     const r = this.risk();
     return this.top20.items().filter((row) => {
+      if (!row?.cliente) {
+        return false;
+      }
       const name = row.cliente.nome_cliente.toLowerCase();
       const matchQ = !q || name.includes(q) || row.cliente.owner_id.toLowerCase().includes(q);
-      const nr = row.analise.nivel_risco.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase();
-      const matchR = r === ALL || nr === r;
+      if (r === ALL) {
+        return matchQ;
+      }
+      if (!row.analise) {
+        return false;
+      }
+      const nr = normalizeNivelRisco(row.analise.nivel_risco);
+      const matchR = nr === r;
       return matchQ && matchR;
     });
   });
@@ -73,11 +83,11 @@ export class RadarPageComponent implements OnInit {
   }
 
   protected riskLevel(row: RelatorioTop20Item) {
-    return nivelRiscoToRiskLevel(row.analise.nivel_risco);
+    return nivelRiscoToRiskLevel(row.analise?.nivel_risco);
   }
 
-  /** Barra de saude operacional (inverso do score de risco da IA, 0-100). */
+  /** Saude 0-100: IA quando existe; senao heuristica operacional (ver `healthScoreFromRelatorioRow`). */
   protected healthScore(row: RelatorioTop20Item): number {
-    return Math.max(0, Math.min(100, 100 - row.analise.score_ia));
+    return healthScoreFromRelatorioRow(row);
   }
 }

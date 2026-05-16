@@ -1,0 +1,47 @@
+<header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-4 backdrop-blur-xl md:px-6">
+  <button
+    type="button"
+    class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground md:hidden"
+    (click)="menu.open.set(true)"
+    aria-label="Abrir menu"
+  >
+    <span class="text-lg">☰</span>
+  </button>
+  <div class="hidden md:block">
+    <h1 class="text-sm font-semibold tracking-tight">{{ title() }}</h1>
+    @if (subtitle()) {
+      <p class="text-xs text-muted-foreground">{{ subtitle() }}</p>
+    }
+  </div>
+  <div class="ml-auto flex items-center gap-2">
+    <div class="relative hidden md:block">
+      <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
+      <input
+        placeholder="Buscar clientes, segmentos, produtos..."
+        class="h-9 w-[320px] rounded-lg border border-border/60 bg-card pl-9 pr-16 text-sm outline-none ring-ring/0 transition focus:ring-2"
+      />
+      <kbd
+        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:flex"
+      >
+        ⌘ K
+      </kbd>
+    </div>
+    <button
+      type="button"
+      class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition hover:bg-muted"
+      (click)="theme.toggle()"
+      [attr.aria-label]="theme.dark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
+      [attr.title]="theme.dark() ? 'Modo claro' : 'Modo escuro'"
+    >
+      <span class="text-base">{{ theme.dark() ? '☀' : '☽' }}</span>
+    </button>
+    <button type="button" class="relative grid h-9 w-9 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted">
+      <span>◔</span>
+      <span
+        class="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-destructive-foreground"
+      >
+        3
+      </span>
+    </button>
+  </div>
+</header>

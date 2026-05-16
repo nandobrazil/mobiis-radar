@@ -5,6 +5,7 @@ import { Component, computed, input, output } from '@angular/core';
   selector: 'app-table-pagination-bar',
   standalone: true,
   templateUrl: './table-pagination-bar.component.html',
+  styleUrl: './table-pagination-bar.component.css',
 })
 export class TablePaginationBarComponent {
   /** Total de linhas na fonte (após filtros). */

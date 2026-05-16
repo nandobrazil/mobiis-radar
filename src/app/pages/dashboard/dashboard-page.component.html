@@ -13,7 +13,7 @@
     <div class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <span class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-          ✦ Top 20 — dados em tempo real
+          ✦ Relatorio de clientes — dados em tempo real
         </span>
         @if (top20.loading() && top20.items().length === 0) {
           <h2 class="mt-3 text-2xl font-semibold tracking-tight md:text-3xl">Carregando carteira...</h2>
@@ -50,7 +50,13 @@
   </section>
 
   <section class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-    <app-kpi-card label="Clientes Top 20" [value]="stats().total" icon="◉" tone="primary" hint="Relatorio prioritario" />
+    <app-kpi-card
+      label="Total de clientes"
+      [value]="stats().total"
+      icon="◉"
+      tone="primary"
+      [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com analise IA'"
+    />
     <app-kpi-card label="Risco alto" [value]="stats().alto" icon="!" tone="danger" [hint]="pct(stats().alto)" />
     <app-kpi-card label="Risco medio" [value]="stats().medio" icon="⌁" tone="warning" [hint]="pct(stats().medio)" />
     <app-kpi-card label="Risco baixo" [value]="stats().baixo" icon="♡" tone="success" [hint]="pct(stats().baixo)" />
@@ -68,12 +74,13 @@
       <div class="mb-4 flex items-center justify-between">
         <div>
           <h3 class="text-sm font-semibold">Distribuicao por nivel de risco</h3>
-          <p class="text-xs text-muted-foreground">Clientes no relatorio Top 20</p>
+          <p class="text-xs text-muted-foreground">Todos os clientes do relatorio (risco IA + sem IA)</p>
         </div>
         <div class="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-destructive"></span>Alto</span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-warning"></span>Medio</span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-success"></span>Baixo</span>
+          <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-muted-foreground/60"></span>Sem IA</span>
         </div>
       </div>
       @if (top20.loading() && top20.items().length === 0) {
@@ -99,7 +106,7 @@
   <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
     <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
       <h3 class="text-sm font-semibold">Segmentos mais saudaveis</h3>
-      <p class="text-xs text-muted-foreground">Referencias fixas por vertical (nao vem do Top 20)</p>
+      <p class="text-xs text-muted-foreground">Referencias fixas por vertical (dados demo, nao vem do relatorio)</p>
       <div class="mt-4 space-y-3">
         @for (segment of segmentRanking; track segment.segment; let i = $index) {
           <div class="flex items-center gap-3">
@@ -122,8 +129,8 @@
     <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-semibold">Maior risco (IA)</h3>
-          <p class="text-xs text-muted-foreground">Acao imediata recomendada pelo CS</p>
+          <h3 class="text-sm font-semibold">Destaque da carteira</h3>
+          <p class="text-xs text-muted-foreground">Ordenado por score IA quando existir; senao por uso operacional</p>
         </div>
         <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver radar completo →</a>
       </div>
@@ -147,8 +154,8 @@
                   {{ row.cliente.dias_sem_atividade }}d sem uso · {{ row.cliente.acoes_30d }} acoes/30d
                 </p>
               </div>
-              <app-score-bar [score]="healthScore(row.analise.score_ia)" />
-              <app-risk-badge [risk]="riskLevel(row.analise.nivel_risco)" />
+              <app-score-bar [score]="rowHealth(row)" />
+              <app-risk-badge [risk]="riskLevel(row.analise?.nivel_risco ?? '')" />
             </a>
           }
         </div>

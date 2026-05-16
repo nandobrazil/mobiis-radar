@@ -4,10 +4,11 @@ import { RouterLink } from '@angular/router';
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
-import { RiskBadgeComponent, ScoreBarComponent } from '../../shared/risk-badge.component';
-import { RadarTop20Service } from '../../shared/radar-top20.service';
-import { LineChartComponent } from '../../shared/simple-charts.component';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/radar-top20.service';
+import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
+import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
+import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 @Component({
@@ -105,11 +106,11 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
   }
 
   protected riskFromReport(row: RelatorioTop20Item) {
-    return nivelRiscoToRiskLevel(row.analise.nivel_risco);
+    return nivelRiscoToRiskLevel(row.analise?.nivel_risco);
   }
 
   protected healthFromReport(row: RelatorioTop20Item): number {
-    return Math.max(0, Math.min(100, 100 - row.analise.score_ia));
+    return healthScoreFromRelatorioRow(row);
   }
 
   protected kpis(row: RelatorioTop20Item) {

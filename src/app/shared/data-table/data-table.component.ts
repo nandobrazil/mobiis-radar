@@ -10,6 +10,7 @@ import { Component, input } from '@angular/core';
   standalone: true,
   imports: [NgClass],
   templateUrl: './data-table.component.html',
+  styleUrl: './data-table.component.css',
 })
 export class DataTableComponent {
   /** Classes extras na `<table>` (ex.: `min-w-[1040px]`). */

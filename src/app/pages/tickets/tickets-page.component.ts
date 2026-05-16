@@ -2,10 +2,10 @@ import { Component, OnInit, computed, effect, inject, signal, untracked } from '
 import { finalize } from 'rxjs/operators';
 
 import type { MovideskTicket } from '../../data/movidesk-ticket.types';
-import { DataTableComponent } from '../../shared/data-table.component';
+import { DataTableComponent } from '../../shared/data-table/data-table.component';
 import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
-import { TablePaginationBarComponent } from '../../shared/table-pagination-bar.component';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 
 @Component({
   selector: 'app-tickets-page',

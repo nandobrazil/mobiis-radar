@@ -32,7 +32,7 @@
         <button class="btn-primary" type="button">Exportar</button>
       </div>
     </div>
-    <p class="mt-2 text-[11px] text-muted-foreground">Fonte: API relatorio Top 20 (em tempo real)</p>
+    <p class="mt-2 text-[11px] text-muted-foreground">Fonte: API relatorio de clientes (lista completa, em tempo real)</p>
   </div>
 
   <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
@@ -77,11 +77,18 @@
                 <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
                 <td class="px-4 py-3 align-top">
                   <app-score-bar [score]="healthScore(row)" />
-                  <span class="mt-0.5 block text-[10px] text-muted-foreground">IA {{ row.analise.score_ia }}</span>
+                  <span class="mt-0.5 block text-[10px] text-muted-foreground">IA {{ row.analise?.score_ia ?? '—' }}</span>
                 </td>
                 <td class="px-4 py-3 align-top">
-                  <app-risk-badge [risk]="riskLevel(row)" />
-                  <div class="mt-1 text-[10px] uppercase text-muted-foreground">{{ row.analise.nivel_risco }}</div>
+                  @if (row.analise) {
+                    <app-risk-badge [risk]="riskLevel(row)" />
+                    <div class="mt-1 text-[10px] uppercase text-muted-foreground">{{ row.analise.nivel_risco }}</div>
+                  } @else {
+                    <span class="inline-flex rounded-md border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Sem IA</span>
+                    @if (row.erro) {
+                      <div class="mt-1 text-[10px] text-destructive/90">Erro na analise</div>
+                    }
+                  }
                 </td>
               </tr>
             }

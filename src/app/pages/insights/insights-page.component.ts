@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { customers } from '../../data/mock-data';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { initials } from '../../shared/ui-helpers';
 
 @Component({

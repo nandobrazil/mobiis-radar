@@ -7,8 +7,14 @@ import { environment } from '../../environments/environment';
 
 export type NivelRiscoNorm = 'ALTO' | 'MEDIO' | 'BAIXO';
 
-export interface Top20Stats {
+/** Agregados sobre a lista de clientes do relatorio (sem limite fixo de quantidade). */
+export interface RelatorioClientesStats {
+  /** Total de linhas com `cliente` (toda a lista devolvida pela API). */
   total: number;
+  /** Linhas com `analise` valida (IA). */
+  comAnalise: number;
+  /** Linhas com `cliente` mas sem analise (ex.: `erro: true` na API). */
+  semAnalise: number;
   alto: number;
   medio: number;
   baixo: number;
@@ -20,7 +26,13 @@ export interface Top20Stats {
   usuariosAtivosTotal: number;
 }
 
-export function normalizeNivelRisco(nivel: string): NivelRiscoNorm {
+/** @deprecated Use `RelatorioClientesStats`. */
+export type Top20Stats = RelatorioClientesStats;
+
+export function normalizeNivelRisco(nivel: string | null | undefined): NivelRiscoNorm {
+  if (nivel == null || nivel === '') {
+    return 'BAIXO';
+  }
   const u = nivel
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -31,14 +43,36 @@ export function normalizeNivelRisco(nivel: string): NivelRiscoNorm {
   return 'BAIXO';
 }
 
+/** Saude 0-100: usa score IA quando existe; senao heuristica operacional (dias sem uso, acoes 30d). */
+export function healthScoreFromRelatorioRow(row: RelatorioTop20Item): number {
+  const scoreIa = row.analise?.score_ia;
+  if (scoreIa != null && !Number.isNaN(Number(scoreIa))) {
+    return Math.max(0, Math.min(100, 100 - Number(scoreIa)));
+  }
+  const c = row.cliente;
+  if (!c) {
+    return 0;
+  }
+  let h = 100;
+  h -= Math.min(55, (Number(c.dias_sem_atividade) || 0) * 0.75);
+  const a30 = Number(c.acoes_30d) || 0;
+  h -= Math.min(35, Math.max(0, 25 - a30) * 1.2);
+  return Math.max(0, Math.min(100, Math.round(h)));
+}
+
 function apiRelatorioBase(): string {
   const root = environment.apiBaseUrl.replace(/\/$/, '');
   return `${root}/api/relatorio`;
 }
 
-/** Endpoint relatorio Top 20 (usa `environment.apiBaseUrl`). */
-export function relatorioTop20Url(): string {
+/** GET lista de clientes do relatorio (`/api/relatorio/clientes`, sem limite fixo). */
+export function relatorioClientesUrl(): string {
   return `${apiRelatorioBase()}/clientes`;
+}
+
+/** @deprecated Use `relatorioClientesUrl`. */
+export function relatorioTop20Url(): string {
+  return relatorioClientesUrl();
 }
 
 export function clienteDetalleUrl(ownerId: string): string {
@@ -64,11 +98,16 @@ export class RadarTop20Service {
 
   private detalleFetchSeq = 0;
 
-  readonly stats = computed((): Top20Stats => {
+  readonly stats = computed((): RelatorioClientesStats => {
     const items = this.items();
-    if (items.length === 0) {
+    const comCliente = items.filter((row) => row?.cliente != null);
+    const nTotal = comCliente.length;
+
+    if (nTotal === 0) {
       return {
         total: 0,
+        comAnalise: 0,
+        semAnalise: 0,
         alto: 0,
         medio: 0,
         baixo: 0,
@@ -81,6 +120,10 @@ export class RadarTop20Service {
       };
     }
 
+    const comAnalise = comCliente.filter((row) => row.analise != null);
+    const nIa = comAnalise.length;
+    const semAnalise = nTotal - nIa;
+
     let alto = 0;
     let medio = 0;
     let baixo = 0;
@@ -90,29 +133,42 @@ export class RadarTop20Service {
     let inativos30d = 0;
     let usuarios = 0;
 
-    for (const row of items) {
-      const nivel = normalizeNivelRisco(row.analise.nivel_risco);
+    for (const row of comCliente) {
+      const c = row.cliente!;
+      diasSum += Number(c.dias_sem_atividade) || 0;
+      acoes30 += Number(c.acoes_30d) || 0;
+      usuarios += Number(c.usuarios_ativos) || 0;
+      if ((Number(c.acoes_30d) || 0) === 0) inativos30d++;
+    }
+
+    for (const row of comAnalise) {
+      const analise = row.analise!;
+      const nivel = normalizeNivelRisco(analise.nivel_risco);
       if (nivel === 'ALTO') alto++;
       else if (nivel === 'MEDIO') medio++;
       else baixo++;
-
-      scoreSum += row.analise.score_ia;
-      diasSum += row.cliente.dias_sem_atividade;
-      acoes30 += row.cliente.acoes_30d;
-      usuarios += row.cliente.usuarios_ativos;
-      if (row.cliente.acoes_30d === 0) inativos30d++;
+      scoreSum += Number(analise.score_ia) || 0;
     }
 
-    const n = items.length;
-    const scoreIaMedio = Math.round(scoreSum / n);
+    const scoreIaMedio = nIa > 0 ? Math.round(scoreSum / nIa) : 0;
+    let saudeMedia = 0;
+    if (nIa > 0) {
+      saudeMedia = Math.max(0, Math.min(100, 100 - scoreIaMedio));
+    } else {
+      const sumHeur = comCliente.reduce((acc, row) => acc + healthScoreFromRelatorioRow(row), 0);
+      saudeMedia = Math.round(sumHeur / nTotal);
+    }
+
     return {
-      total: n,
+      total: nTotal,
+      comAnalise: nIa,
+      semAnalise,
       alto,
       medio,
       baixo,
-      saudeMedia: Math.max(0, Math.min(100, 100 - scoreIaMedio)),
+      saudeMedia,
       scoreIaMedio,
-      diasInativosMedio: Math.round(diasSum / n),
+      diasInativosMedio: Math.round(diasSum / nTotal),
       acoes30dTotal: acoes30,
       inativos30d,
       usuariosAtivosTotal: usuarios,
@@ -125,18 +181,36 @@ export class RadarTop20Service {
       { label: 'Alto', value: s.alto },
       { label: 'Medio', value: s.medio },
       { label: 'Baixo', value: s.baixo },
+      { label: 'Sem IA', value: s.semAnalise },
     ];
   });
 
-  readonly topRisco = computed(() =>
-    [...this.items()].sort((a, b) => b.analise.score_ia - a.analise.score_ia).slice(0, 6),
-  );
+  /** Ate 6 clientes: prioriza score IA; se ninguem tiver IA, ordena por risco operacional (dias sem uso, acoes 30d). */
+  readonly topRisco = computed(() => {
+    const rows = this.items().filter((row) => row?.cliente != null);
+    const comIa = rows.filter((row) => row.analise != null);
+    if (comIa.length > 0) {
+      return [...comIa]
+        .sort((a, b) => (b.analise?.score_ia ?? 0) - (a.analise?.score_ia ?? 0))
+        .slice(0, 6);
+    }
+    return [...rows]
+      .sort((a, b) => {
+        const da = a.cliente!.dias_sem_atividade ?? 0;
+        const db = b.cliente!.dias_sem_atividade ?? 0;
+        if (db !== da) return db - da;
+        const aa = a.cliente!.acoes_30d ?? 0;
+        const ab = b.cliente!.acoes_30d ?? 0;
+        return aa - ab;
+      })
+      .slice(0, 6);
+  });
 
   load(): void {
     this.loading.set(true);
     this.error.set(null);
     this.http
-      .get<RelatorioTop20Item[]>(relatorioTop20Url())
+      .get<RelatorioTop20Item[]>(relatorioClientesUrl())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (items) => {
@@ -153,7 +227,7 @@ export class RadarTop20Service {
 
   itemByOwnerId(ownerId: string): RelatorioTop20Item | undefined {
     const n = normId(ownerId);
-    return this.items().find((row) => normId(row.cliente.owner_id) === n);
+    return this.items().find((row) => row.cliente && normId(row.cliente.owner_id) === n);
   }
 
   fetchClienteDetalle(ownerId: string): void {

@@ -1,7 +1,7 @@
 @if (report(); as r) {
   <app-top-bar
     [title]="r.cliente.nome_cliente"
-    [subtitle]="'Score IA ' + r.analise.score_ia + ' - Risco ' + r.analise.nivel_risco"
+    [subtitle]="'Score IA ' + (r.analise?.score_ia ?? '—') + ' - Risco ' + (r.analise?.nivel_risco ?? '—')"
   />
   <main class="flex-1 p-4 md:p-6">
     <div class="mb-4 flex items-center justify-between">
@@ -51,13 +51,13 @@
 
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
           <h3 class="text-sm font-semibold">Resumo</h3>
-          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{{ r.analise.resumo }}</p>
+          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{{ r.analise?.resumo ?? 'Resumo indisponivel.' }}</p>
         </div>
 
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
           <h3 class="text-sm font-semibold">Motivos</h3>
           <ul class="mt-3 list-inside list-decimal space-y-2 text-sm text-muted-foreground">
-            @for (m of r.analise.motivos; track $index) {
+            @for (m of r.analise?.motivos ?? []; track $index) {
               <li class="leading-relaxed">{{ m }}</li>
             }
           </ul>
@@ -167,7 +167,7 @@
                 <p class="text-[11px] text-muted-foreground">Acao recomendada</p>
               </div>
             </div>
-            <div class="mt-4 rounded-lg border border-border/50 bg-background/40 p-3 text-sm leading-relaxed">{{ r.analise.acao_recomendada }}</div>
+            <div class="mt-4 rounded-lg border border-border/50 bg-background/40 p-3 text-sm leading-relaxed">{{ r.analise?.acao_recomendada ?? '—' }}</div>
             <button type="button" class="btn-primary mt-4 w-full">Gerar plano de acao</button>
           </div>
         </div>

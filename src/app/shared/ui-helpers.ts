@@ -1,7 +1,10 @@
 import { RiskLevel } from '../data/mock-data';
 
-/** Nivel de risco da API (/api/relatorio/top20). */
-export function nivelRiscoToRiskLevel(nivel: string): RiskLevel {
+/** Nivel de risco devolvido pela API de relatorio (`/api/relatorio/clientes`). */
+export function nivelRiscoToRiskLevel(nivel: string | null | undefined): RiskLevel {
+  if (nivel == null || nivel === '') {
+    return 'saudavel';
+  }
   const u = nivel
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')

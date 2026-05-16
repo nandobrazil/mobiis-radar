@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 
 import { kpis, portfolioHealth, productAdoption, segmentRanking } from '../../data/mock-data';
-import { KpiCardComponent } from '../../shared/kpi-card.component';
-import { BarChartComponent, DonutChartComponent, LineChartComponent } from '../../shared/simple-charts.component';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
+import { DonutChartComponent } from '../../shared/donut-chart/donut-chart.component';
+import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
+import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 
 @Component({
   selector: 'app-executivo-page',

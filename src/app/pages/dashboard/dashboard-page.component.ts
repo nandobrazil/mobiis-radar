@@ -1,13 +1,15 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import type { RelatorioTop20Item } from '../../data/top20.types';
 import { segmentRanking } from '../../data/mock-data';
-import { GeoMapComponent } from '../../shared/geo-map.component';
-import { KpiCardComponent } from '../../shared/kpi-card.component';
-import { RadarTop20Service } from '../../shared/radar-top20.service';
-import { RiskBadgeComponent, ScoreBarComponent } from '../../shared/risk-badge.component';
-import { BarChartComponent } from '../../shared/simple-charts.component';
-import { TopBarComponent } from '../../shared/top-bar.component';
+import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
+import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
+import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
+import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/radar-top20.service';
+import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
+import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
+import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 @Component({
@@ -34,12 +36,12 @@ export class DashboardPageComponent implements OnInit {
 
   protected readonly subtitle = computed(() => {
     if (this.top20.loading() && this.top20.items().length === 0) {
-      return 'Carregando relatorio Top 20...';
+      return 'Carregando relatorio de clientes...';
     }
     const n = this.stats().total;
     const t = this.top20.lastLoadedAt();
     const when = t ? ` · atualizado ${new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '';
-    return `${n} clientes prioritarios no relatorio${when}`;
+    return `${n} clientes no relatorio${when}`;
   });
 
   ngOnInit(): void {
@@ -54,8 +56,8 @@ export class DashboardPageComponent implements OnInit {
     return `${Math.round((count / total) * 100)}% da carteira`;
   }
 
-  protected healthScore(scoreIa: number): number {
-    return Math.max(0, Math.min(100, 100 - scoreIa));
+  protected rowHealth(row: RelatorioTop20Item): number {
+    return healthScoreFromRelatorioRow(row);
   }
 
   protected riskLevel(nivel: string) {
