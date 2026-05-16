@@ -8,7 +8,7 @@ import { RelatorioClientesService } from '../relatorio-clientes.service';
   template: `
     @if (relatorio.processandoAnalise()) {
       <div
-        class="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 shadow-sm"
+        class="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 shadow-sm mb-4"
         role="status"
         aria-live="polite"
       >
