@@ -72,3 +72,39 @@
   margin-top: -1.375rem;
   font-size: 0.8125rem;
 }
+
+:host ::ng-deep .geo-map-popup-pane .leaflet-popup-content-wrapper {
+  background: var(--leaflet-tooltip-bg);
+  color: var(--leaflet-tooltip-fg);
+  border: 1px solid var(--leaflet-tooltip-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px -8px oklch(0 0 0 / 25%);
+}
+
+:host ::ng-deep .geo-map-popup-pane .leaflet-popup-content {
+  margin: 0.65rem 0.75rem;
+  line-height: 1.4;
+}
+
+:host ::ng-deep .geo-map-popup-pane .leaflet-popup-tip {
+  background: var(--leaflet-tooltip-bg);
+  border: 1px solid var(--leaflet-tooltip-border);
+}
+
+:host ::ng-deep .geo-map-popup-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+:host ::ng-deep .geo-map-popup-link {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+:host ::ng-deep .geo-map-popup-link:hover {
+  text-decoration: underline;
+}

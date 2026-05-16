@@ -45,12 +45,15 @@ export function relatorioRowToGeoMarker(row: RelatorioClienteItem): GeoMapMarker
   const local = [owner?.municipio, owner?.uf].filter(Boolean).join('/');
   const label = local ? `${nome} · ${local}` : nome;
 
+  const ownerId = (owner?.id ?? cliente.owner_id)?.trim();
+
   return {
     lat: Number(lat),
     lng: Number(lng),
     label,
     color: COMERCIAL_MAP_RISK_COLOR[risk],
     radius: 8,
+    ownerId: ownerId || undefined,
   };
 }
 

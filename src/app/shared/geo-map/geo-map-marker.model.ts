@@ -7,6 +7,8 @@ export interface GeoMapMarker {
   color?: string;
   /** Raio do círculo em px. Padrão: 8. */
   radius?: number;
+  /** `owner_id` para link ao detalhe (`#/cliente/{id}`). */
+  ownerId?: string;
 }
 
 /** Item da legenda opcional no canto do mapa. */

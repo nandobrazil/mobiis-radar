@@ -30,6 +30,18 @@ const TILE_LAYERS = {
 
 const BRAZIL_OVERVIEW: L.LatLngTuple = [-14.2, -51.9];
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function clienteDetailHashUrl(ownerId: string): string {
+  return `#/cliente/${encodeURIComponent(ownerId.trim())}`;
+}
+
 @Component({
   selector: 'app-geo-map',
   standalone: true,
@@ -156,6 +168,17 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
 
     marker.on('mouseover', () => marker.openTooltip());
     marker.on('mouseout', () => marker.closeTooltip());
+
+    const ownerId = point.ownerId?.trim();
+    if (ownerId) {
+      const href = clienteDetailHashUrl(ownerId);
+      const popupHtml = `<div class="geo-map-popup">
+        <p class="geo-map-popup-title">${escapeHtml(point.label)}</p>
+        <a href="${href}" class="geo-map-popup-link">Ver detalhes do cliente</a>
+      </div>`;
+      marker.bindPopup(popupHtml, { closeButton: true, maxWidth: 280, className: 'geo-map-popup-pane' });
+      marker.on('click', () => marker.openPopup());
+    }
 
     return marker;
   }
