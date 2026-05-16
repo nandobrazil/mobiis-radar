@@ -20,6 +20,7 @@ export interface RelatorioAnalise {
   acao_recomendada: string;
 }
 
+/** Item do relatorio (GET `/api/relatorio/clientes` ou GET `/api/relatorio/cliente/{owner_id}`). */
 export interface RelatorioTop20Item {
   cliente: RelatorioCliente;
   /** A API pode omitir ou enviar `null` em registos incompletos. */

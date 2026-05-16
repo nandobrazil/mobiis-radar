@@ -78,6 +78,14 @@ export function clienteDetalleUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId)}/detalhe`;
 }
 
+/** GET item do relatorio (mesmo formato de `/clientes`). Usado na pagina de detalhe sem listar todos. */
+export function relatorioClienteResumoUrl(ownerId: string): string {
+  return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}`;
+}
+
+/** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo/hackathon). */
+export const RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID = '05B79AE8-F3BA-4830-AF86-405BE38F1B67';
+
 function normId(id: string): string {
   return id.trim().toLowerCase();
 }
@@ -95,7 +103,12 @@ export class RadarTop20Service {
   readonly clienteDetalleLoading = signal(false);
   readonly clienteDetalleError = signal<string | null>(null);
 
+  readonly relatorioClienteResumo = signal<RelatorioTop20Item | null>(null);
+  readonly relatorioClienteResumoLoading = signal(false);
+  readonly relatorioClienteResumoError = signal<string | null>(null);
+
   private detalleFetchSeq = 0;
+  private resumoFetchSeq = 0;
 
   readonly stats = computed((): RelatorioClientesStats => {
     const items = this.items();
@@ -227,6 +240,51 @@ export class RadarTop20Service {
   itemByOwnerId(ownerId: string): RelatorioTop20Item | undefined {
     const n = normId(ownerId);
     return this.items().find((row) => row.cliente && normId(row.cliente.owner_id) === n);
+  }
+
+  fetchRelatorioClienteResumo(ownerId: string): void {
+    const oid = ownerId?.trim();
+    if (!oid) {
+      return;
+    }
+    const seq = ++this.resumoFetchSeq;
+    this.relatorioClienteResumo.set(null);
+    this.relatorioClienteResumoLoading.set(true);
+    this.relatorioClienteResumoError.set(null);
+    this.http
+      .get<RelatorioTop20Item>(relatorioClienteResumoUrl(oid))
+      .pipe(
+        finalize(() => {
+          if (seq === this.resumoFetchSeq) {
+            this.relatorioClienteResumoLoading.set(false);
+          }
+        }),
+      )
+      .subscribe({
+        next: (row) => {
+          if (seq !== this.resumoFetchSeq) {
+            return;
+          }
+          this.relatorioClienteResumo.set(row ?? null);
+          this.relatorioClienteResumoError.set(null);
+        },
+        error: () => {
+          if (seq !== this.resumoFetchSeq) {
+            return;
+          }
+          this.relatorioClienteResumo.set(null);
+          this.relatorioClienteResumoError.set(
+            'Nao foi possivel carregar os dados deste cliente. Verifique o endpoint `/api/relatorio/cliente/{id}` ou a rede.',
+          );
+        },
+      });
+  }
+
+  clearRelatorioClienteResumo(): void {
+    this.resumoFetchSeq++;
+    this.relatorioClienteResumo.set(null);
+    this.relatorioClienteResumoLoading.set(false);
+    this.relatorioClienteResumoError.set(null);
   }
 
   fetchClienteDetalle(ownerId: string): void {

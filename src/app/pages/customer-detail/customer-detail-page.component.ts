@@ -1,5 +1,8 @@
-import { Component, OnDestroy, OnInit, computed, effect, inject, input } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, computed, effect, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
+import { catchError, finalize, map, of, switchMap, tap, throwError } from 'rxjs';
 import {
   LucideCircleDashed,
   LucideLayers,
@@ -10,13 +13,17 @@ import {
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
-import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/radar-top20.service';
+import { healthScoreFromRelatorioRow, RadarTop20Service, RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID } from '../../shared/radar-top20.service';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import type { ClienteContextoDto } from '../../shared/cliente-contexto.service';
+import { ClienteContextoService } from '../../shared/cliente-contexto.service';
 import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
+
+const CONTEXTO_AUTOR_PADRAO = 'CS';
 
 @Component({
   selector: 'app-customer-detail-page',
@@ -31,10 +38,22 @@ import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-hel
   ],
   templateUrl: './customer-detail-page.component.html',
 })
-export class CustomerDetailPageComponent implements OnInit, OnDestroy {
+export class CustomerDetailPageComponent implements OnDestroy {
   readonly id = input<string>();
 
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly top20 = inject(RadarTop20Service);
+  private readonly clienteContexto = inject(ClienteContextoService);
+
+  protected readonly contextoModalOpen = signal(false);
+  protected readonly contextoLoading = signal(false);
+  protected readonly contextoSaving = signal(false);
+  protected readonly contextoError = signal<string | null>(null);
+  protected readonly contextoDraft = signal('');
+  protected readonly contextoCarregado = signal<ClienteContextoDto | null>(null);
+
+  /** `owner_id` do cliente quando o modal esta aberto (salvar/get). */
+  private contextoOwnerId: string | null = null;
   protected readonly customers = customers;
   protected readonly usageSeries = usageSeries;
   protected readonly initials = initials;
@@ -46,6 +65,9 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
     { key: 'torre', color: 'oklch(0.65 0.22 295)' },
     { key: 'planner', color: 'oklch(0.78 0.15 200)' },
   ];
+  /** Slots para placeholders do skeleton (lista + detalhes). */
+  protected readonly kpisSkeletonLabels = [0, 1, 2, 3, 4, 5, 6];
+  protected readonly linhasMotivosSkeleton = [0, 1, 2, 3];
   protected readonly incidents = [
     { d: '12/05', t: 'Atraso na sincronizacao ERP', dot: 'bg-warning' },
     { d: '03/05', t: 'Queda de 12% nas operacoes de roteirizacao', dot: 'bg-destructive' },
@@ -53,15 +75,18 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
     { d: '08/04', t: 'Webhook de eventos reconfigurado', dot: 'bg-info' },
   ];
 
+  /** `cliente/:id` ou GUID padrao (demo); usado nos GET diretos ao sem lista geral. */
+  protected readonly effectiveOwnerId = computed(() => this.id()?.trim() || RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID);
+
   protected readonly report = computed(() => {
-    const idVal = this.id();
-    return idVal ? this.top20.itemByOwnerId(idVal) : undefined;
+    const row = this.top20.relatorioClienteResumo();
+    return row == null ? undefined : row;
   });
 
   /** Detalle API so exibido quando corresponde ao cliente da rota. */
   protected readonly detalleOperacional = computed(() => {
     const d = this.top20.clienteDetalle();
-    const idVal = this.id();
+    const idVal = this.effectiveOwnerId();
     if (!d || !idVal) {
       return undefined;
     }
@@ -69,7 +94,7 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
   });
 
   protected readonly customer = computed(() =>
-    customers.find((customerItem) => customerItem.id === this.id()),
+    customers.find((customerItem) => customerItem.id === this.effectiveOwnerId()),
   );
 
   protected readonly segmentAvg = computed(() => {
@@ -99,25 +124,28 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
     return allProducts.filter((product) => !c.products.includes(product)).slice(0, 4);
   });
 
-  ngOnInit(): void {
-    if (this.id() && !this.top20.loading() && this.top20.items().length === 0) {
-      this.top20.load();
-    }
-  }
-
   ngOnDestroy(): void {
     this.top20.clearClienteDetalle();
+    this.top20.clearRelatorioClienteResumo();
   }
 
   constructor() {
     effect(() => {
-      const r = this.report();
-      if (r?.cliente.owner_id) {
-        this.top20.fetchClienteDetalle(r.cliente.owner_id);
+      const oid = this.effectiveOwnerId();
+      if (oid) {
+        this.top20.fetchRelatorioClienteResumo(oid);
+        this.top20.fetchClienteDetalle(oid);
       } else {
         this.top20.clearClienteDetalle();
+        this.top20.clearRelatorioClienteResumo();
       }
     });
+  }
+
+  protected recarregarDetalhesClientePagina(): void {
+    const oid = this.effectiveOwnerId();
+    this.top20.fetchRelatorioClienteResumo(oid);
+    this.top20.fetchClienteDetalle(oid);
   }
 
   protected riskFromReport(row: RelatorioTop20Item) {
@@ -134,10 +162,10 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
       { label: 'Dias sem uso', value: String(c.dias_sem_atividade) },
       { label: 'Ações 30d', value: String(c.acoes_30d) },
       { label: 'Ações 90d', value: String(c.acoes_90d) },
-      { label: 'Usuarios ativos', value: String(c.usuarios_ativos) },
+      { label: 'Usuários ativos', value: String(c.usuarios_ativos) },
       { label: 'Entidades', value: String(c.entidades_utilizadas) },
       { label: 'Ações neg. 30d', value: String(c.acoes_negativas_30d) },
-      { label: 'Automacao 30d', value: String(c.acoes_automatizadas_30d) },
+      { label: 'Automação 30d', value: String(c.acoes_automatizadas_30d) },
     ];
   }
 
@@ -150,6 +178,113 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
     } catch {
       return iso;
     }
+  }
+
+  /** GET contexto (404 tratado como “sem registro” => null). */
+  private getContextoModal$(ownerId: string) {
+    return this.clienteContexto.get(ownerId).pipe(
+      catchError((err: unknown) => {
+        const status =
+          err instanceof HttpErrorResponse
+            ? err.status
+            : typeof err === 'object' &&
+                err !== null &&
+                'status' in err &&
+                typeof (err as { status: unknown }).status === 'number'
+              ? (err as { status: number }).status
+              : NaN;
+        if (status === 404) {
+          return of(null);
+        }
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  protected abrirModalContexto(): void {
+    const row = this.report();
+    const ownerId = row?.cliente.owner_id?.trim();
+    if (!ownerId) {
+      return;
+    }
+    this.contextoOwnerId = ownerId;
+    this.contextoModalOpen.set(true);
+    this.contextoError.set(null);
+    this.contextoCarregado.set(null);
+    this.contextoDraft.set('');
+    this.contextoLoading.set(true);
+
+    this.getContextoModal$(ownerId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.contextoLoading.set(false)),
+      )
+      .subscribe({
+        next: (dto) => {
+          if (dto === null) {
+            this.contextoCarregado.set(null);
+            this.contextoDraft.set('');
+          } else {
+            this.contextoCarregado.set(dto);
+            this.contextoDraft.set(dto.contexto ?? '');
+          }
+        },
+        error: () => {
+          this.contextoError.set('Nao foi possivel carregar o contexto.');
+        },
+      });
+  }
+
+  protected fecharModalContexto(): void {
+    this.contextoModalOpen.set(false);
+    this.contextoOwnerId = null;
+    this.contextoError.set(null);
+    this.contextoLoading.set(false);
+    this.contextoSaving.set(false);
+  }
+
+  protected salvarModalContexto(): void {
+    const ownerId = this.contextoOwnerId;
+    if (!ownerId || this.contextoSaving()) {
+      return;
+    }
+    this.contextoSaving.set(true);
+    this.contextoError.set(null);
+
+    this.clienteContexto
+      .save(ownerId, {
+        contexto: this.contextoDraft(),
+        autor: CONTEXTO_AUTOR_PADRAO,
+      })
+      .pipe(
+        tap(() => this.contextoLoading.set(true)),
+        switchMap((savedDto: ClienteContextoDto) =>
+          this.getContextoModal$(ownerId).pipe(
+            map((fresh) => (fresh == null ? savedDto : fresh)),
+            catchError(() => of(savedDto)),
+          ),
+        ),
+        finalize(() => {
+          this.contextoLoading.set(false);
+          this.contextoSaving.set(false);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (dto) => {
+          if (dto === null) {
+            this.contextoCarregado.set(null);
+            this.contextoDraft.set('');
+          } else {
+            this.contextoCarregado.set(dto);
+            this.contextoDraft.set(dto.contexto ?? '');
+          }
+          this.fecharModalContexto();
+        },
+        error: () => {
+          this.contextoError.set('Nao foi possivel salvar o contexto.');
+        },
+      });
   }
 
   protected aiSections(c: { score: number; potential: string }) {
