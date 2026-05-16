@@ -30,10 +30,8 @@ const CONTEXTO_AUTOR_PADRAO = 'CS';
   standalone: true,
   imports: [
     AppIconComponent,
-    LineChartComponent,
     RiskBadgeComponent,
     RouterLink,
-    ScoreBarComponent,
     TopBarComponent,
   ],
   templateUrl: './customer-detail-page.component.html',

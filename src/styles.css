@@ -203,7 +203,10 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+    scrollbar-width: thin;
+  }
   html, body, app-root {
     height: 100%;
     max-height: 100dvh;
@@ -220,6 +223,39 @@
   }
   app-root {
     font-family: inherit;
+  }
+
+  /**
+   * Barras de rolagem alinhadas ao tema (ex.: .page-shell-body com overflow-y).
+   * Firefox: scrollbar-color; Chromium/WebKit: pseudo-elementos.
+   */
+  :root:not(.dark) {
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 55%, var(--background)) var(--muted);
+  }
+  :root.dark,
+  :root.dark * {
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 40%, var(--background)) var(--background);
+  }
+
+  :root *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  :root:not(.dark) *::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+  :root:not(.dark) *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--muted-foreground) 55%, var(--background));
+    border-radius: 9999px;
+    border: 2px solid var(--muted);
+  }
+  :root.dark *::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  :root.dark *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--muted-foreground) 35%, var(--card));
+    border-radius: 9999px;
+    border: 2px solid var(--background);
   }
 }
 
