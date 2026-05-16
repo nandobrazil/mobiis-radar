@@ -101,6 +101,9 @@
         <div class="mb-4 flex items-center justify-between">
           <a routerLink="/radar" class="rounded-lg px-3 py-2 text-sm transition hover:bg-muted">← Voltar</a>
           <div class="flex items-center gap-2">
+            <button type="button" class="btn-outline" (click)="abrirModalIndicadoresMovidesk()">
+              Ver indicadores Movidesk
+            </button>
             <button type="button" class="btn-outline" (click)="abrirModalContexto()">Adicionar Contexto</button>
             <!-- <button type="button" class="btn-primary">Agendar contato</button> -->
           </div>
@@ -383,6 +386,114 @@
         >
           {{ contextoSaving() ? 'Salvando...' : 'Salvar e gerar análise' }}
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (movideskIndicadoresModalOpen()) {
+  <div
+    class="fixed inset-0 z-[110] flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
+    role="presentation"
+    (click)="fecharModalIndicadoresMovidesk()"
+  >
+    <div
+      class="relative flex max-h-[90vh] w-full max-w-2xl flex-col rounded-2xl border border-border bg-card shadow-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="movidesk-indicadores-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="shrink-0 border-b border-border px-6 py-4 pr-14">
+        <h2 id="movidesk-indicadores-title" class="text-base font-semibold">Indicadores Movidesk</h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">Tickets e suporte vinculados ao cliente</p>
+      </div>
+      <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+        @if (movideskIndicadoresLoading()) {
+          <div class="space-y-3 py-8">
+            <div class="skeleton h-4 w-full max-w-xs rounded"></div>
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+              @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+                <div class="skeleton h-20 rounded-xl"></div>
+              }
+            </div>
+          </div>
+        } @else if (movideskIndicadoresError(); as movErr) {
+          <p class="text-sm text-destructive">{{ movErr }}</p>
+        } @else if (movideskIndicadores(); as ind) {
+          <div>
+            <p class="text-sm font-medium">{{ ind.nome_cliente }}</p>
+            <p class="mt-0.5 break-all font-mono text-[11px] text-muted-foreground">{{ ind.owner_id }}</p>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Total</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.total_tickets }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">90 dias</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.tickets_90d }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">30 dias</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.tickets_30d }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Abertos</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.tickets_abertos }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Pendentes</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.tickets_pendentes }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Encerrados</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.tickets_encerrados }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Alta urgência</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.tickets_alta_urgencia }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tempo médio</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ formatHorasIndicadores(ind.tempo_medio_resolucao_horas) }}</p>
+            </div>
+            <div class="rounded-xl border border-border bg-muted/15 px-3 py-3">
+              <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Score suporte</p>
+              <p class="mt-1 text-xl font-semibold tabular-nums">{{ ind.score_suporte }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 rounded-xl border border-border bg-muted/10 px-4 py-3">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Tendência</p>
+            <p class="mt-1 text-sm">
+              <span class="font-medium">{{ tendenciaMovideskLabel(ind.tendencia) }}</span>
+              @if (hasValidTendenciaDeltaPct(ind.tendencia_delta_pct)) {
+                <span class="text-muted-foreground"> · {{ formatDeltaPct(ind.tendencia_delta_pct) }} no período</span>
+              }
+            </p>
+          </div>
+
+          <div class="mt-4">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Por categoria</h3>
+            @if (movideskPorCategoriaRows().length === 0) {
+              <p class="mt-2 text-sm text-muted-foreground">Sem dados.</p>
+            } @else {
+              <ul class="mt-2 divide-y divide-border rounded-lg border border-border">
+                @for (row of movideskPorCategoriaRows(); track row.label) {
+                  <li class="flex items-center justify-between gap-4 px-3 py-2 text-sm">
+                    <span class="min-w-0 truncate font-medium">{{ row.label }}</span>
+                    <span class="shrink-0 tabular-nums text-muted-foreground">{{ row.value }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+      <div class="shrink-0 border-t border-border px-6 py-4">
+        <button type="button" class="btn-outline w-full sm:w-auto" (click)="fecharModalIndicadoresMovidesk()">Fechar</button>
       </div>
     </div>
   </div>

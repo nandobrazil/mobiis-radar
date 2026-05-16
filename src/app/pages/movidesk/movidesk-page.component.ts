@@ -17,6 +17,9 @@ import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/t
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import {
+  LucideArrowDown,
+  LucideArrowUp,
+  LucideArrowUpDown,
   LucideCircleDot,
   LucideClock,
   LucideListChecks,
@@ -27,6 +30,18 @@ import {
 
 type ChamadosLoad = { error: boolean; rows: MovideskTicket[] };
 type ResumoLoad = { ok: boolean; data: MovideskResumo | null };
+
+type MovideskSortColumn =
+  | 'id'
+  | 'subject'
+  | 'tags'
+  | 'status'
+  | 'urgency'
+  | 'category'
+  | 'ownerTeam'
+  | 'clients'
+  | 'createdDate'
+  | 'lastUpdate';
 
 @Component({
   selector: 'app-movidesk-page',
@@ -48,6 +63,9 @@ export class MovideskPageComponent implements OnInit {
   private readonly movidesk = inject(MovideskTicketsService);
 
   protected readonly iconSearch = LucideSearch;
+  protected readonly iconSortUp = LucideArrowUp;
+  protected readonly iconSortDown = LucideArrowDown;
+  protected readonly iconSortBoth = LucideArrowUpDown;
 
   protected readonly items = signal<MovideskTicket[]>([]);
   protected readonly resumo = signal<MovideskResumo | null>(null);
@@ -58,6 +76,22 @@ export class MovideskPageComponent implements OnInit {
 
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
+
+  /** Ordenação ativa; null = ordem devolvida pela API após o filtro de busca. */
+  protected readonly tableSort = signal<{ column: MovideskSortColumn; direction: 'asc' | 'desc' } | null>(null);
+
+  protected readonly sortableColumns: Record<MovideskSortColumn, boolean> = {
+    id: true,
+    subject: true,
+    tags: true,
+    status: true,
+    urgency: true,
+    category: true,
+    ownerTeam: true,
+    clients: true,
+    createdDate: true,
+    lastUpdate: true,
+  };
 
   /** Slots para skeletons de KPI (layout espelha os 5 cards reais). */
   protected readonly kpiSkeletonSlots = [0, 1, 2, 3, 4] as const;
@@ -109,8 +143,18 @@ export class MovideskPageComponent implements OnInit {
     });
   });
 
-  protected readonly pageSlice = computed(() => {
+  protected readonly sortedFiltered = computed(() => {
     const rows = this.filtered();
+    const s = this.tableSort();
+    if (!s) {
+      return rows;
+    }
+    const dir = s.direction;
+    return [...rows].sort((a, b) => this.compareTicketRow(a, b, s.column, dir));
+  });
+
+  protected readonly pageSlice = computed(() => {
+    const rows = this.sortedFiltered();
     const size = this.pageSize();
     const p = this.page();
     const start = (p - 1) * size;
@@ -202,6 +246,83 @@ export class MovideskPageComponent implements OnInit {
   }
 
   protected readonly statusLabelPt = movideskStatusLabelPt;
+
+  protected toggleSort(column: MovideskSortColumn): void {
+    if (!this.sortableColumns[column]) {
+      return;
+    }
+    const cur = this.tableSort();
+    if (cur == null || cur.column !== column) {
+      this.tableSort.set({ column, direction: 'asc' });
+    } else if (cur.direction === 'asc') {
+      this.tableSort.set({ column, direction: 'desc' });
+    } else {
+      this.tableSort.set(null);
+    }
+    this.page.set(1);
+  }
+
+  protected ariaSort(column: MovideskSortColumn): 'ascending' | 'descending' | 'none' {
+    const s = this.tableSort();
+    if (s == null || s.column !== column) {
+      return 'none';
+    }
+    return s.direction === 'asc' ? 'ascending' : 'descending';
+  }
+
+  protected activeSortDirection(column: MovideskSortColumn): 'asc' | 'desc' | null {
+    const s = this.tableSort();
+    if (s?.column === column) {
+      return s.direction;
+    }
+    return null;
+  }
+
+  private compareTicketRow(
+    a: MovideskTicket,
+    b: MovideskTicket,
+    column: MovideskSortColumn,
+    direction: 'asc' | 'desc',
+  ): number {
+    const mult = direction === 'asc' ? 1 : -1;
+    switch (column) {
+      case 'id':
+        return mult * (a.id - b.id);
+      case 'subject':
+        return mult * a.subject.localeCompare(b.subject, 'pt-BR', { sensitivity: 'base' });
+      case 'tags': {
+        const ta = a.tags.join(' ').toLowerCase();
+        const tb = b.tags.join(' ').toLowerCase();
+        return mult * ta.localeCompare(tb, 'pt-BR', { sensitivity: 'base' });
+      }
+      case 'status':
+        return mult * movideskStatusLabelPt(a.status).localeCompare(movideskStatusLabelPt(b.status), 'pt-BR', {
+          sensitivity: 'base',
+        });
+      case 'urgency':
+        return mult * a.urgency.localeCompare(b.urgency, 'pt-BR', { sensitivity: 'base' });
+      case 'category': {
+        const ca = (a.category ?? '').toLowerCase();
+        const cb = (b.category ?? '').toLowerCase();
+        return mult * ca.localeCompare(cb, 'pt-BR', { sensitivity: 'base' });
+      }
+      case 'ownerTeam':
+        return mult * a.ownerTeam.localeCompare(b.ownerTeam, 'pt-BR', { sensitivity: 'base' });
+      case 'clients':
+        return mult * this.clientsLabel(a).localeCompare(this.clientsLabel(b), 'pt-BR', { sensitivity: 'base' });
+      case 'createdDate':
+        return mult * (this.parseTicketDate(a.createdDate) - this.parseTicketDate(b.createdDate));
+      case 'lastUpdate':
+        return mult * (this.parseTicketDate(a.lastUpdate) - this.parseTicketDate(b.lastUpdate));
+      default:
+        return 0;
+    }
+  }
+
+  private parseTicketDate(iso: string): number {
+    const t = Date.parse(iso);
+    return Number.isNaN(t) ? 0 : t;
+  }
 
   protected statusTone(status: string): string {
     const s = status.toLowerCase();

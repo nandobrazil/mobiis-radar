@@ -97,7 +97,6 @@
     <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
       <div class="border-b border-border px-4 py-3">
         <h2 class="text-sm font-semibold">Chamados Movidesk</h2>
-        <p class="text-xs text-muted-foreground">Lista via GET /api/movidesk/tickets</p>
       </div>
       <div class="border-b border-border bg-muted/15 px-4 py-3">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -133,16 +132,236 @@
         <div class="flex flex-col">
           <app-data-table [tableClass]="'min-w-[1040px]'">
             <tr data-table-head-row>
-              <th class="px-4 py-3 text-left font-medium">ID</th>
-              <th class="px-4 py-3 text-left font-medium">Assunto</th>
-              <th class="px-4 py-3 text-left font-medium">Tags</th>
-              <th class="px-4 py-3 text-left font-medium">Status</th>
-              <th class="px-4 py-3 text-left font-medium">Urgência</th>
-              <th class="px-4 py-3 text-left font-medium">Categoria</th>
-              <th class="px-4 py-3 text-left font-medium">Equipe</th>
-              <th class="px-4 py-3 text-left font-medium">Clientes</th>
-              <th class="px-4 py-3 text-left font-medium">Criado</th>
-              <th class="px-4 py-3 text-left font-medium">Atualizado</th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.id) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('id')"
+                    [attr.aria-sort]="ariaSort('id')"
+                  >
+                    <span>ID</span>
+                    @if (activeSortDirection('id'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  ID
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.subject) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('subject')"
+                    [attr.aria-sort]="ariaSort('subject')"
+                  >
+                    <span>Assunto</span>
+                    @if (activeSortDirection('subject'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Assunto
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.tags) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('tags')"
+                    [attr.aria-sort]="ariaSort('tags')"
+                  >
+                    <span>Tags</span>
+                    @if (activeSortDirection('tags'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Tags
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.status) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('status')"
+                    [attr.aria-sort]="ariaSort('status')"
+                  >
+                    <span>Status</span>
+                    @if (activeSortDirection('status'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Status
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.urgency) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('urgency')"
+                    [attr.aria-sort]="ariaSort('urgency')"
+                  >
+                    <span>Urgência</span>
+                    @if (activeSortDirection('urgency'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Urgência
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.category) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('category')"
+                    [attr.aria-sort]="ariaSort('category')"
+                  >
+                    <span>Categoria</span>
+                    @if (activeSortDirection('category'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Categoria
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.ownerTeam) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('ownerTeam')"
+                    [attr.aria-sort]="ariaSort('ownerTeam')"
+                  >
+                    <span>Equipe</span>
+                    @if (activeSortDirection('ownerTeam'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Equipe
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.clients) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('clients')"
+                    [attr.aria-sort]="ariaSort('clients')"
+                  >
+                    <span>Clientes</span>
+                    @if (activeSortDirection('clients'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Clientes
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.createdDate) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('createdDate')"
+                    [attr.aria-sort]="ariaSort('createdDate')"
+                  >
+                    <span>Criado</span>
+                    @if (activeSortDirection('createdDate'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Criado
+                }
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                @if (sortableColumns.lastUpdate) {
+                  <button
+                    type="button"
+                    class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
+                    (click)="toggleSort('lastUpdate')"
+                    [attr.aria-sort]="ariaSort('lastUpdate')"
+                  >
+                    <span>Atualizado</span>
+                    @if (activeSortDirection('lastUpdate'); as dir) {
+                      @if (dir === 'asc') {
+                        <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      } @else {
+                        <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
+                      }
+                    } @else {
+                      <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    }
+                  </button>
+                } @else {
+                  Atualizado
+                }
+              </th>
             </tr>
             @for (row of pageSlice(); track row.id) {
               <tr class="transition-colors hover:bg-muted/20">

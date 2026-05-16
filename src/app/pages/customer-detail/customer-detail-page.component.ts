@@ -11,6 +11,7 @@ import {
   LucideTriangleAlert,
 } from '@lucide/angular';
 
+import type { MovideskClienteIndicadores } from '../../data/movidesk-cliente-indicadores.types';
 import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
 import { healthScoreFromRelatorioRow, RelatorioClientesService, RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID } from '../../shared/relatorio-clientes.service';
@@ -23,6 +24,7 @@ import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import type { ClienteContextoDto } from '../../shared/cliente-contexto.service';
 import { ClienteContextoService } from '../../shared/cliente-contexto.service';
 import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
+import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
 
 const CONTEXTO_AUTOR_PADRAO = 'CS';
 
@@ -44,6 +46,20 @@ export class CustomerDetailPageComponent implements OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly relatorio = inject(RelatorioClientesService);
   private readonly clienteContexto = inject(ClienteContextoService);
+  private readonly movideskTickets = inject(MovideskTicketsService);
+
+  protected readonly movideskIndicadoresModalOpen = signal(false);
+  protected readonly movideskIndicadoresLoading = signal(false);
+  protected readonly movideskIndicadoresError = signal<string | null>(null);
+  protected readonly movideskIndicadores = signal<MovideskClienteIndicadores | null>(null);
+
+  protected readonly movideskPorCategoriaRows = computed(() => {
+    const p = this.movideskIndicadores()?.por_categoria;
+    if (!p) {
+      return [] as { label: string; value: number }[];
+    }
+    return Object.entries(p).map(([label, value]) => ({ label, value }));
+  });
 
   protected readonly contextoModalOpen = signal(false);
   protected readonly contextoLoading = signal(false);
@@ -213,6 +229,67 @@ export class CustomerDetailPageComponent implements OnDestroy {
     } catch {
       return iso;
     }
+  }
+
+  protected abrirModalIndicadoresMovidesk(): void {
+    const row = this.report();
+    const ownerId = row?.cliente.owner_id?.trim();
+    if (!ownerId) {
+      return;
+    }
+    this.movideskIndicadoresModalOpen.set(true);
+    this.movideskIndicadoresLoading.set(true);
+    this.movideskIndicadoresError.set(null);
+    this.movideskIndicadores.set(null);
+
+    this.movideskTickets
+      .clienteIndicadores(ownerId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.movideskIndicadoresLoading.set(false)),
+      )
+      .subscribe({
+        next: (data) => {
+          this.movideskIndicadores.set(data);
+        },
+        error: () => {
+          this.movideskIndicadoresError.set('Não foi possível carregar os indicadores Movidesk.');
+        },
+      });
+  }
+
+  protected fecharModalIndicadoresMovidesk(): void {
+    this.movideskIndicadoresModalOpen.set(false);
+    this.movideskIndicadoresLoading.set(false);
+    this.movideskIndicadoresError.set(null);
+    this.movideskIndicadores.set(null);
+  }
+
+  protected tendenciaMovideskLabel(t: string | undefined): string {
+    const u = t?.trim().toLowerCase() ?? '';
+    if (u === 'crescendo') return 'Crescendo';
+    if (u === 'decrescendo' || u === 'diminuindo') return 'Em queda';
+    if (u === 'estavel' || u === 'estável') return 'Estável';
+    return t?.trim() || '—';
+  }
+
+  protected hasValidTendenciaDeltaPct(n: number | null | undefined): boolean {
+    return n != null && !Number.isNaN(Number(n));
+  }
+
+  protected formatDeltaPct(n: number): string {
+    if (n == null || Number.isNaN(n)) {
+      return '—';
+    }
+    const sign = n > 0 ? '+' : '';
+    return `${sign}${n}%`;
+  }
+
+  protected formatHorasIndicadores(h: number | null): string {
+    if (h == null || Number.isNaN(Number(h))) {
+      return '—';
+    }
+    return `${Number(h).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`;
   }
 
   /** GET contexto (404 tratado como “sem registro” => null). */
