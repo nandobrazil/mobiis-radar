@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
+@import "@ng-select/ng-select/themes/default.theme.css";
 @source "./**/*.{html,ts}";
 
 @custom-variant dark (&:is(.dark *));
@@ -439,6 +440,80 @@
   }
 }
 
+
+/** ng-select — tokens do tema (claro/escuro). */
+.ng-select {
+  min-width: 0;
+  font-size: 0.875rem;
+}
+
+/** Filtro de risco na lista de clientes: largura fixa (evita “Tod…” / painel estreito). */
+.filter-ng-select.ng-select {
+  width: 13.75rem;
+  min-width: 13.75rem;
+  max-width: 100%;
+}
+.filter-ng-select .ng-select-container .ng-value-container .ng-value .ng-value-label {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+.ng-select .ng-select-container {
+  background-color: var(--background) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+  border-radius: 0.5rem;
+  box-shadow: none !important;
+  min-height: 2.5rem;
+}
+.ng-select.ng-select-single .ng-select-container {
+  height: 2.5rem;
+}
+.ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+  border-color: var(--ring) !important;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 35%, transparent) !important;
+}
+.ng-select .ng-select-container .ng-value-container .ng-placeholder {
+  color: var(--muted-foreground) !important;
+}
+.ng-select .ng-arrow-wrapper .ng-arrow {
+  border-top-color: var(--muted-foreground) !important;
+}
+.ng-dropdown-panel {
+  background-color: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-card);
+  z-index: 1050;
+}
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
+  background-color: var(--muted) !important;
+  color: var(--foreground) !important;
+}
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected {
+  background-color: color-mix(in oklch, var(--primary) 18%, var(--card)) !important;
+  color: var(--foreground) !important;
+}
+
+/** ng-select compacto (paginação). */
+.ng-select-pagination .ng-select-container {
+  min-height: 2rem !important;
+  height: 2rem !important;
+}
+.ng-select-pagination.ng-select-single .ng-select-container {
+  height: 2rem !important;
+}
+.ng-select-pagination .ng-select-container .ng-value-container {
+  padding-left: 0.5rem;
+  padding-right: 0.25rem;
+  font-size: 0.75rem;
+}
+.ng-select-pagination .ng-select-container .ng-value-container .ng-input > input {
+  font-size: 0.75rem;
+}
 
 button {
   cursor: pointer;

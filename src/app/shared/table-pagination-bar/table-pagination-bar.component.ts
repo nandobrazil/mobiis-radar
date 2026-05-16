@@ -1,9 +1,12 @@
 import { Component, computed, input, output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 /** Controles de paginação apenas no cliente (fatia dos dados já carregados). */
 @Component({
   selector: 'app-table-pagination-bar',
   standalone: true,
+  imports: [FormsModule, NgSelectComponent],
   templateUrl: './table-pagination-bar.component.html',
   styleUrl: './table-pagination-bar.component.css',
 })
@@ -17,7 +20,7 @@ export class TablePaginationBarComponent {
   pageChange = output<number>();
   pageSizeChange = output<number>();
 
-  protected readonly pageSizeOptions = [10, 25, 50, 100] as const;
+  protected readonly pageSizeOptionsList: number[] = [10, 25, 50, 100];
 
   protected readonly totalPages = computed(() =>
     Math.max(1, Math.ceil(Math.max(0, this.totalCount()) / Math.max(1, this.pageSize()))),
@@ -73,12 +76,12 @@ export class TablePaginationBarComponent {
     }
   }
 
-  protected onPageSizeSelect(ev: Event): void {
-    const v = Number((ev.target as HTMLSelectElement).value);
-    if (!Number.isFinite(v) || v < 1) {
+  protected onPageSizeSelect(v: number | string): void {
+    const n = typeof v === 'string' ? Number(v) : v;
+    if (!Number.isFinite(n) || n < 1) {
       return;
     }
-    this.pageSizeChange.emit(v);
+    this.pageSizeChange.emit(n);
     this.pageChange.emit(1);
   }
 }

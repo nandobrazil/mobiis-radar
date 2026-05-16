@@ -16,15 +16,16 @@
   <div class="flex flex-wrap items-center gap-3">
     <label class="flex items-center gap-2">
       Por página
-      <select
-        class="filter-select h-8 min-w-[4.5rem] rounded-lg border border-border bg-background py-0 text-xs"
-        [value]="pageSize()"
-        (change)="onPageSizeSelect($event)"
-      >
-        @for (opt of pageSizeOptions; track opt) {
-          <option [value]="opt">{{ opt }}</option>
-        }
-      </select>
+      <ng-select
+        class="ng-select-pagination w-[4.5rem]"
+        [items]="pageSizeOptionsList"
+        [clearable]="false"
+        [searchable]="false"
+        appendTo="body"
+        [ngModel]="pageSize()"
+        (ngModelChange)="onPageSizeSelect($event)"
+        aria-label="Itens por pagina"
+      />
     </label>
     <nav class="flex items-center gap-1" aria-label="Paginação">
       <button

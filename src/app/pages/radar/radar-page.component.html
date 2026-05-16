@@ -22,19 +22,32 @@
           class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
-      <div class="grid grid-cols-2 gap-2 md:flex md:flex-wrap">
-        <select class="filter-select md:min-w-[180px]" [value]="risk()" (change)="risk.set($any($event.target).value); page.set(1)">
-          <option [value]="ALL">Todos - Risco</option>
-          <option value="ALTO">Alto</option>
-          <option value="MEDIO">Medio</option>
-          <option value="BAIXO">Baixo</option>
-        </select>
+      <div class="flex flex-wrap items-center gap-2">
+        <ng-select
+          class="filter-ng-select"
+          [items]="riskFilterOptions"
+          bindLabel="label"
+          bindValue="value"
+          [clearable]="false"
+          [searchable]="false"
+          appendTo="body"
+          [ngModel]="risk()"
+          (ngModelChange)="onRiskFilterChange($event)"
+          aria-label="Filtrar por nivel de risco"
+        />
       </div>
       <div class="flex flex-wrap gap-2">
         <button type="button" class="btn-outline" [disabled]="relatorio.loading()" (click)="relatorio.load()">
           {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
         </button>
-        <button class="btn-primary" type="button">Exportar</button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="relatorio.loading() || sortedFiltered().length === 0"
+          (click)="exportarPlanilha()"
+        >
+          Exportar
+        </button>
       </div>
     </div>
     <p class="mt-2 text-[11px] text-muted-foreground">

@@ -1,5 +1,7 @@
 import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { NgSelectComponent } from '@ng-select/ng-select';
 
 import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
@@ -14,6 +16,7 @@ import {
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { exportRelatorioClientesToXlsx } from '../../shared/export-relatorio-clientes-xlsx';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { LucideArrowDown, LucideArrowUp, LucideArrowUpDown, LucideSearch } from '@lucide/angular';
 import { initials, iaRiskCaptionClass, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
@@ -33,7 +36,18 @@ export type ClientesSortColumn =
 @Component({
   selector: 'app-radar-page',
   standalone: true,
-  imports: [AppIconComponent, DataTableComponent, TableSkeletonComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
+  imports: [
+    AppIconComponent,
+    DataTableComponent,
+    FormsModule,
+    NgSelectComponent,
+    TableSkeletonComponent,
+    RiskBadgeComponent,
+    RouterLink,
+    ScoreBarComponent,
+    TablePaginationBarComponent,
+    TopBarComponent,
+  ],
   templateUrl: './radar-page.component.html',
 })
 export class RadarPageComponent implements OnInit {
@@ -43,6 +57,12 @@ export class RadarPageComponent implements OnInit {
   protected readonly iconSortDown = LucideArrowDown;
   protected readonly iconSortBoth = LucideArrowUpDown;
   protected readonly ALL = ALL;
+  protected readonly riskFilterOptions: { label: string; value: string }[] = [
+    { label: 'Todos - Risco', value: ALL },
+    { label: 'Alto', value: 'ALTO' },
+    { label: 'Medio', value: 'MEDIO' },
+    { label: 'Baixo', value: 'BAIXO' },
+  ];
   protected readonly q = signal('');
   protected readonly risk = signal(ALL);
   protected readonly initials = initials;
@@ -126,6 +146,20 @@ export class RadarPageComponent implements OnInit {
         }
       });
     });
+  }
+
+  protected onRiskFilterChange(value: string): void {
+    this.risk.set(value);
+    this.page.set(1);
+  }
+
+  /** Exporta a lista atual (filtros + ordenação da tabela) para Excel, gerado no navegador. */
+  protected exportarPlanilha(): void {
+    const rows = this.sortedFiltered();
+    if (rows.length === 0) {
+      return;
+    }
+    exportRelatorioClientesToXlsx(rows, 'relatorio-clientes');
   }
 
   protected toggleSort(column: ClientesSortColumn): void {
