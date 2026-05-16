@@ -167,7 +167,10 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
       fillOpacity: 0.92,
     });
 
-    marker.bindTooltip(point.label, {
+    const tooltipText = point.tooltip?.trim() || point.label;
+    const popupTitle = point.popupTitle?.trim() || point.label;
+
+    marker.bindTooltip(tooltipText, {
       direction: 'top',
       offset: L.point(0, -10),
       opacity: 1,
@@ -181,7 +184,7 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
     if (ownerId) {
       const href = clienteDetailHashUrl(ownerId);
       const popupHtml = `<div class="geo-map-popup">
-        <p class="geo-map-popup-title">${escapeHtml(point.label)}</p>
+        <p class="geo-map-popup-title">${escapeHtml(popupTitle)}</p>
         <a href="${href}" class="geo-map-popup-link">Ver detalhes do cliente</a>
       </div>`;
       marker.bindPopup(popupHtml, { closeButton: true, maxWidth: 280, className: 'geo-map-popup-pane' });

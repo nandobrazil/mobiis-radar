@@ -120,19 +120,6 @@
                 </dd>
               </div>
             </div>
-            @if (e.qsa?.length) {
-              <div>
-                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Sócios (amostra)</dt>
-                <dd class="mt-2 space-y-1.5">
-                  @for (s of (e.qsa ?? []).slice(0, 6); track s.nome_socio) {
-                    <p class="rounded-md border border-border/60 bg-background/40 px-2 py-1 text-xs">
-                      <span class="font-medium">{{ s.nome_socio }}</span>
-                      <span class="text-muted-foreground"> · {{ s.qualificacao_socio }}</span>
-                    </p>
-                  }
-                </dd>
-              </div>
-            }
           </dl>
         </section>
       } @else {
@@ -151,17 +138,16 @@
           <p class="mt-0.5 text-xs text-muted-foreground">
             CNAE
             <span class="font-mono tabular-nums">{{ e.cnae_fiscal }}</span>
-            · matches por similaridade
+            · clique no marcador para ver CNAEs em comum
           </p>
         } @else {
           <p class="mt-0.5 text-xs text-muted-foreground">Todas as empresas do relatório com localização</p>
         }
         <p class="mb-3 mt-2 text-xs text-muted-foreground">
           {{ mapResumo() }}
+          · cor por nível de risco (IA)
           @if (matchResult()) {
             · roxo = prospect pesquisado
-          } @else {
-            · cor por nível de risco (IA)
           }
         </p>
         @if (matchLoading()) {
@@ -334,10 +320,18 @@
               <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
                 Empresa
               </th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Similaridade</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Local</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score IA</th>
-              <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Módulos</th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Similaridade
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Local
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Score IA
+              </th>
+              <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+                Módulos
+              </th>
             </tr>
             @for (m of matchesPageSlice(); track m.owner_id) {
               <tr class="group transition-colors hover:bg-muted/20">

@@ -291,6 +291,11 @@
     vertical-align: middle;
   }
 
+  app-data-table table thead th {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
   app-dashboard-page,
   app-radar-page,
   app-comercial-page,

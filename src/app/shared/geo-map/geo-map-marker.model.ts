@@ -2,7 +2,12 @@
 export interface GeoMapMarker {
   lat: number;
   lng: number;
+  /** Conteúdo padrão (popup e tooltip quando os campos específicos não forem informados). */
   label: string;
+  /** Tooltip no hover; se omitido, usa `label`. */
+  tooltip?: string;
+  /** Título do popup no clique; se omitido, usa `label`. */
+  popupTitle?: string;
   /** Cor de preenchimento (hex ou valor CSS). */
   color?: string;
   /** Raio do círculo em px. Padrão: 8. */

@@ -1,6 +1,6 @@
 <div class="overflow-x-auto" role="status" aria-busy="true" aria-label="Carregando tabela">
   <table class="w-full text-sm" [class]="tableClass() || undefined">
-    <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
+    <thead class="bg-muted/30 text-sm font-medium normal-case tracking-normal text-muted-foreground">
       <tr>
         @for (_ of colKeys(); track $index) {
           <th class="whitespace-nowrap px-4 py-3 text-left">

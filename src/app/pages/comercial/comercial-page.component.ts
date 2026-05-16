@@ -30,7 +30,6 @@ import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-pr
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import {
-  COMERCIAL_MAP_DIVISAO_COLOR,
   COMERCIAL_MAP_RISK_COLOR,
   matchCnaeToGeoMarker,
   relatorioRowToGeoMarker,
@@ -100,8 +99,6 @@ export class ComercialPageComponent implements OnInit {
   });
 
   protected readonly comercialMapLegend: GeoMapLegendItem[] = [
-    { label: 'CNAE exato', color: COMERCIAL_MAP_RISK_COLOR.saudavel },
-    { label: 'Mesma divisão CNAE', color: COMERCIAL_MAP_DIVISAO_COLOR },
     { label: 'Risco alto', color: COMERCIAL_MAP_RISK_COLOR.risco },
     { label: 'Atenção', color: COMERCIAL_MAP_RISK_COLOR.atencao },
     { label: 'Saudável', color: COMERCIAL_MAP_RISK_COLOR.saudavel },
