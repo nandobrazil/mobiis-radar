@@ -3,6 +3,7 @@ import { GeoMapComponent } from "../../../../shared/geo-map/geo-map.component";
 import type { GeoMapLegendItem, GeoMapMarker } from '../../../../shared/geo-map/geo-map-marker.model';
 import type { RelatorioClienteItem } from '../../../../data/relatorio-clientes.types';
 import { normalizeNivelRisco } from '../../../../shared/relatorio-clientes.service';
+import { JsonPipe } from '@angular/common';
 
 const RISK_COLOR: Record<string, string> = {
   ALTO: '#f87171',
@@ -16,7 +17,7 @@ const RISK_COLOR: Record<string, string> = {
   imports: [GeoMapComponent],
   template: `
     <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-      <div class="border-b border-border px-4 py-3">
+      <div class="border-b border-border px-4 py-3 flex items-center" style="height: 65px;">
         <h2 class="text-sm font-semibold">Mapa de clientes</h2>
       </div>
       <app-geo-map [height]="600" [markers]="markers()" [legendItems]="legend" />
@@ -29,18 +30,25 @@ export class RadarMapComponent {
   protected readonly markers = computed(() => {
     return this.data()
       .map(row => {
-        const lat = row.owner?.lat ?? row.cliente.lat;
-        const lng = row.owner?.lng ?? row.cliente.lng;
-        const name = row.owner?.nome ?? row.cliente.nome_cliente;
+        // Tenta pegar lat/lng do owner, senão do cliente
+        const rawLat = row.owner?.lat ?? row.cliente?.lat;
+        const rawLng = row.owner?.lng ?? row.cliente?.lng;
         
-        if (lat == null || lng == null) return null;
+        if (rawLat == null || rawLng == null) return null;
         
+        const lat = Number(rawLat);
+        const lng = Number(rawLng);
+        
+        if (isNaN(lat) || isNaN(lng)) return null;
+
+        const name = row.owner?.nome || row.cliente?.nome_cliente || 'Cliente';
         const nr = normalizeNivelRisco(row.analise?.nivel_risco);
+        
         return {
           lat,
           lng,
           label: name,
-          color: RISK_COLOR[nr],
+          color: RISK_COLOR[nr] || RISK_COLOR['BAIXO'],
         } as GeoMapMarker;
       })
       .filter((m): m is GeoMapMarker => m !== null);
