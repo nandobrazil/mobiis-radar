@@ -28,16 +28,22 @@ export class RadarMapComponent {
 
   protected readonly markers = computed(() => {
     return this.data()
-      .filter(row => row.cliente.lat != null && row.cliente.lng != null)
       .map(row => {
+        const lat = row.owner?.lat ?? row.cliente.lat;
+        const lng = row.owner?.lng ?? row.cliente.lng;
+        const name = row.owner?.nome ?? row.cliente.nome_cliente;
+        
+        if (lat == null || lng == null) return null;
+        
         const nr = normalizeNivelRisco(row.analise?.nivel_risco);
         return {
-          lat: row.cliente.lat!,
-          lng: row.cliente.lng!,
-          label: row.cliente.nome_cliente,
+          lat,
+          lng,
+          label: name,
           color: RISK_COLOR[nr],
         } as GeoMapMarker;
-      });
+      })
+      .filter((m): m is GeoMapMarker => m !== null);
   });
 
   protected readonly legend: GeoMapLegendItem[] = [

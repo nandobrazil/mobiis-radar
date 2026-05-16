@@ -52,10 +52,12 @@ export class RadarSegmentsComponent {
     }> = {};
 
     rows.forEach((row) => {
-      const seg = row.cliente.segmento || 'Sem Segmento';
-      if (!groups[seg]) {
-        groups[seg] = {
-          name: seg,
+      const cnaeCode = row.owner?.cnae_fiscal?.toString() || '0';
+      const cnaeDesc = row.owner?.cnae_fiscal_descricao || 'Sem Segmento';
+
+      if (!groups[cnaeCode]) {
+        groups[cnaeCode] = {
+          name: cnaeDesc,
           total: 0,
           alto: 0,
           medio: 0,
@@ -66,7 +68,7 @@ export class RadarSegmentsComponent {
           acoes30d: 0,
         };
       }
-      const g = groups[seg];
+      const g = groups[cnaeCode];
       g.total++;
       g.usuarios += row.cliente.usuarios_ativos;
       g.acoes30d += row.cliente.acoes_30d;
