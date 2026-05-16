@@ -1,6 +1,8 @@
 <div class="page-shell">
   <app-top-bar title="Clientes" [subtitle]="subtitle()" />
   <main class="page-shell-body space-y-6 p-4 md:p-6">
+  <app-relatorio-processamento-banner />
+
   @if (relatorio.error(); as msg) {
     <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
       {{ msg }}

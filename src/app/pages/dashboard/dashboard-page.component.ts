@@ -10,6 +10,7 @@ import type { GeoMapLegendItem, GeoMapMarker } from '../../shared/geo-map/geo-ma
 import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
 import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { healthScoreFromRelatorioRow, RelatorioClientesService } from '../../shared/relatorio-clientes.service';
+import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-processamento-banner/relatorio-processamento-banner.component';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
@@ -49,6 +50,7 @@ const DASHBOARD_MAP_LEGEND: GeoMapLegendItem[] = [
     RouterLink,
     ScoreBarComponent,
     TopBarComponent,
+    RelatorioProcessamentoBannerComponent,
   ],
   templateUrl: './dashboard-page.component.html',
 })

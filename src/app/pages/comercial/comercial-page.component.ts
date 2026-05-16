@@ -8,6 +8,7 @@ import type { BrasilApiCnpj } from '../../shared/brasil-api-cnpj.types';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
 import type { GeoMapLegendItem, GeoMapMarker } from '../../shared/geo-map/geo-map-marker.model';
 import { RelatorioClientesService } from '../../shared/relatorio-clientes.service';
+import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-processamento-banner/relatorio-processamento-banner.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import {
   COMERCIAL_MAP_RISK_COLOR,
@@ -34,7 +35,7 @@ function formatCep(cep: string): string {
 @Component({
   selector: 'app-comercial-page',
   standalone: true,
-  imports: [CurrencyPipe, GeoMapComponent, TopBarComponent],
+  imports: [CurrencyPipe, GeoMapComponent, TopBarComponent, RelatorioProcessamentoBannerComponent],
   templateUrl: './comercial-page.component.html',
 })
 export class ComercialPageComponent implements OnInit {

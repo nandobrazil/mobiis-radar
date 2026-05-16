@@ -1,11 +1,12 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { HttpClient, HttpResponse } from '@angular/common/http';
+import { Injectable, OnDestroy, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 import type {
   RelatorioClienteDetalle,
   RelatorioClienteItem,
   RelatorioClienteParametros,
+  RelatorioProcessamentoStatus,
 } from '../data/relatorio-clientes.types';
 import type { ClienteContextoDto } from './cliente-contexto.service';
 import { environment } from '../../environments/environment';
@@ -101,6 +102,14 @@ export function relatorioClientesUrl(): string {
   return `${apiRelatorioBase()}/clientes`;
 }
 
+/** GET status do processamento em lote da IA (`/api/relatorio/status`). */
+export function relatorioStatusUrl(): string {
+  return `${apiRelatorioBase()}/status`;
+}
+
+/** Intervalo de polling quando `/clientes` retorna 202. */
+export const RELATORIO_STATUS_POLL_MS = 2500;
+
 export function clienteDetalleUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId)}/detalhe`;
 }
@@ -128,13 +137,30 @@ function normId(id: string): string {
 }
 
 @Injectable({ providedIn: 'root' })
-export class RelatorioClientesService {
+export class RelatorioClientesService implements OnDestroy {
   private readonly http = inject(HttpClient);
 
   readonly items = signal<RelatorioClienteItem[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly lastLoadedAt = signal<number | null>(null);
+  readonly processamentoStatus = signal<RelatorioProcessamentoStatus | null>(null);
+
+  readonly processandoAnalise = computed(() => this.processamentoStatus()?.processando === true);
+
+  readonly processamentoProgressoPct = computed(() => {
+    const s = this.processamentoStatus();
+    if (!s) {
+      return 0;
+    }
+    if (s.chunks_total != null && s.chunks_total > 0) {
+      return Math.round(((s.chunks_concluidos ?? 0) / s.chunks_total) * 100);
+    }
+    if (s.clientes_total != null && s.clientes_total > 0) {
+      return Math.round(((s.clientes_analisados ?? 0) / s.clientes_total) * 100);
+    }
+    return 0;
+  });
 
   readonly clienteDetalle = signal<RelatorioClienteDetalle | null>(null);
   readonly clienteDetalleLoading = signal(false);
@@ -146,6 +172,8 @@ export class RelatorioClientesService {
 
   private detalleFetchSeq = 0;
   private resumoFetchSeq = 0;
+  private loadSeq = 0;
+  private pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   readonly stats = computed((): RelatorioClientesStats => {
     const items = this.items();
@@ -243,19 +271,107 @@ export class RelatorioClientesService {
     return [...rows].sort((a, b) => carteiraPioridadeRank(b) - carteiraPioridadeRank(a)).slice(0, 6);
   });
 
+  ngOnDestroy(): void {
+    this.stopPolling();
+  }
+
   load(): void {
+    this.stopPolling();
+    const seq = ++this.loadSeq;
+    this.fetchClientes(seq);
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimeoutId != null) {
+      clearTimeout(this.pollTimeoutId);
+      this.pollTimeoutId = null;
+    }
+  }
+
+  private schedulePoll(seq: number): void {
+    this.stopPolling();
+    this.pollTimeoutId = setTimeout(() => this.pollStatus(seq), RELATORIO_STATUS_POLL_MS);
+  }
+
+  private onProcessamentoEmAndamento(status: RelatorioProcessamentoStatus, seq: number): void {
+    if (seq !== this.loadSeq) {
+      return;
+    }
+    this.processamentoStatus.set(status);
+    if (status.processando) {
+      this.schedulePoll(seq);
+    } else {
+      this.fetchClientes(seq);
+    }
+  }
+
+  private pollStatus(seq: number): void {
+    this.http.get<RelatorioProcessamentoStatus>(relatorioStatusUrl()).subscribe({
+      next: (status) => {
+        if (seq !== this.loadSeq) {
+          return;
+        }
+        this.processamentoStatus.set(status);
+        if (status.processando) {
+          this.schedulePoll(seq);
+        } else {
+          this.stopPolling();
+          this.fetchClientes(seq);
+        }
+      },
+      error: () => {
+        if (seq !== this.loadSeq) {
+          return;
+        }
+        this.schedulePoll(seq);
+      },
+    });
+  }
+
+  private fetchClientes(seq: number): void {
     this.loading.set(true);
     this.error.set(null);
+
     this.http
-      .get<RelatorioClienteItem[]>(relatorioClientesUrl())
-      .pipe(finalize(() => this.loading.set(false)))
+      .get<RelatorioClienteItem[]>(relatorioClientesUrl(), { observe: 'response' })
+      .pipe(
+        finalize(() => {
+          if (seq === this.loadSeq && !this.processandoAnalise()) {
+            this.loading.set(false);
+          }
+        }),
+      )
       .subscribe({
-        next: (items) => {
-          this.items.set(items ?? []);
-          this.lastLoadedAt.set(Date.now());
-          this.error.set(null);
+        next: (res: HttpResponse<RelatorioClienteItem[]>) => {
+          if (seq !== this.loadSeq) {
+            return;
+          }
+          if (res.status === 202) {
+            this.items.set([]);
+            const status = res.body as unknown as RelatorioProcessamentoStatus;
+            if (status && typeof status === 'object') {
+              this.onProcessamentoEmAndamento(status, seq);
+            } else {
+              this.pollStatus(seq);
+            }
+            return;
+          }
+          if (res.status === 200 && Array.isArray(res.body)) {
+            this.processamentoStatus.set(null);
+            this.stopPolling();
+            this.items.set(res.body);
+            this.lastLoadedAt.set(Date.now());
+            this.error.set(null);
+            this.loading.set(false);
+          }
         },
         error: () => {
+          if (seq !== this.loadSeq) {
+            return;
+          }
+          this.stopPolling();
+          this.processamentoStatus.set(null);
+          this.loading.set(false);
           this.error.set('Falha ao carregar clientes do relatório. Verifique conexão ou CORS do servidor.');
           this.items.set([]);
         },

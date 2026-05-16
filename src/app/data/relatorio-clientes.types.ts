@@ -143,6 +143,16 @@ export interface RelatorioClienteAlertaParametro {
   mensagem: string;
 }
 
+/** GET `/api/relatorio/status` e corpo do 202 em `/api/relatorio/clientes`. */
+export interface RelatorioProcessamentoStatus {
+  processando: boolean;
+  iniciado_em?: string;
+  chunks_total?: number;
+  chunks_concluidos?: number;
+  clientes_total?: number;
+  clientes_analisados?: number;
+}
+
 /** Resposta GET `/api/relatorio/cliente/{owner_id}/parametros`. */
 export interface RelatorioClienteParametros {
   metricas_brutas?: Record<string, number | string | null>;

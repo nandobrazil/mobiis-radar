@@ -14,6 +14,7 @@ import {
 import { RadarListComponent } from './screens/radar-list/radar-list.component';
 import { RadarSegmentsComponent } from './screens/radar-segments/radar-segments.component';
 import { RadarMapComponent } from './screens/radar-map/radar-map.component';
+import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-processamento-banner/relatorio-processamento-banner.component';
 
 type RadarTab = 'list' | 'segments' | 'map';
 const ALL = '__all__';
@@ -31,6 +32,7 @@ const ALL = '__all__';
     AppIconComponent,
     FormsModule,
     NgSelectComponent,
+    RelatorioProcessamentoBannerComponent,
   ],
   templateUrl: './radar-page.component.html',
 })
