@@ -1,4 +1,5 @@
 import type { MovideskResumo } from './movidesk-resumo.types';
+import { MOVIDESK_GRAFICO_NAO_DEFINIDO } from './movidesk-grafico-labels';
 
 /** Chaves que representam categoria/urgência/status sem valor no Movidesk. */
 function isChaveSemValor(rawKey: string): boolean {
@@ -11,21 +12,21 @@ function isChaveSemValor(rawKey: string): boolean {
 }
 
 /**
- * Soma contagens cuja chave é "null" (ou vazia) em **Outros**.
- * Se já existir a chave "Outros", acumula nela.
+ * Soma contagens cuja chave é "null" (ou vazia) em **Não definido**.
+ * Se já existir essa chave, acumula nela.
  */
 export function agruparChavesNulasComoOutros(dist: Record<string, number>): Record<string, number> {
   const next: Record<string, number> = {};
-  let outros = 0;
+  let indefinidos = 0;
   for (const [rawKey, count] of Object.entries(dist ?? {})) {
     if (isChaveSemValor(rawKey)) {
-      outros += count;
+      indefinidos += count;
       continue;
     }
     next[rawKey] = (next[rawKey] ?? 0) + count;
   }
-  if (outros > 0) {
-    next['Outros'] = (next['Outros'] ?? 0) + outros;
+  if (indefinidos > 0) {
+    next[MOVIDESK_GRAFICO_NAO_DEFINIDO] = (next[MOVIDESK_GRAFICO_NAO_DEFINIDO] ?? 0) + indefinidos;
   }
   return next;
 }

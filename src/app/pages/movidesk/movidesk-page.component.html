@@ -34,11 +34,6 @@
           {{ loading() ? 'Atualizando...' : 'Atualizar' }}
         </button>
       </div>
-      <p class="mt-2 text-[11px] text-muted-foreground">
-        Fontes: <code class="rounded bg-muted px-1">GET /api/movidesk/tickets</code> e
-        <code class="rounded bg-muted px-1">GET /api/movidesk/resumo</code>
-        — base URL em <code class="rounded bg-muted px-1">environment.apiBaseUrl</code>
-      </p>
     </div>
 
     @if (resumo(); as r) {
@@ -67,7 +62,6 @@
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div class="mb-3">
             <h3 class="text-sm font-semibold">Por status</h3>
-            <p class="text-xs text-muted-foreground">Valores sem classificação entram em Outros</p>
           </div>
           @if (chartStatus().length === 0) {
             <div class="grid h-[200px] place-items-center text-sm text-muted-foreground">Sem dados.</div>
@@ -80,7 +74,6 @@
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div class="mb-3">
             <h3 class="text-sm font-semibold">Por categoria</h3>
-            <p class="text-xs text-muted-foreground">Chave null agrupada em Outros</p>
           </div>
           @if (chartCategoria().length === 0) {
             <div class="grid h-[200px] place-items-center text-sm text-muted-foreground">Sem dados.</div>
@@ -93,7 +86,6 @@
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div class="mb-3">
             <h3 class="text-sm font-semibold">Por urgência</h3>
-            <p class="text-xs text-muted-foreground">Chave null agrupada em Outros</p>
           </div>
           @if (chartUrgencia().length === 0) {
             <div class="grid h-[200px] place-items-center text-sm text-muted-foreground">Sem dados.</div>
@@ -159,7 +151,7 @@
                     class="inline-flex rounded-md border px-2 py-0.5 text-[11px] font-medium"
                     [class]="statusTone(row.status)"
                   >
-                    {{ row.status }}
+                    {{ statusLabelPt(row.status) }}
                   </span>
                   <div class="mt-0.5 text-[10px] text-muted-foreground">{{ row.baseStatus }}</div>
                 </td>

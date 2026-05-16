@@ -3,6 +3,8 @@ import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 
 import type { MovideskResumo } from '../../data/movidesk-resumo.types';
+import { movideskRotuloGrafico } from '../../data/movidesk-grafico-labels';
+import { movideskStatusLabelPt } from '../../data/movidesk-status-i18n';
 import type { MovideskTicket } from '../../data/movidesk-ticket.types';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
@@ -65,7 +67,9 @@ export class MovideskPageComponent implements OnInit {
     return `${n} de ${t} chamados${suffix}`;
   });
 
-  protected readonly chartStatus = computed(() => this.chartFromRecord(this.resumo()?.por_status));
+  protected readonly chartStatus = computed(() =>
+    this.chartFromRecord(this.resumo()?.por_status, 14, movideskStatusLabelPt),
+  );
   protected readonly chartCategoria = computed(() => this.chartFromRecord(this.resumo()?.por_categoria));
   protected readonly chartUrgencia = computed(() => this.chartFromRecord(this.resumo()?.por_urgencia));
 
@@ -184,26 +188,44 @@ export class MovideskPageComponent implements OnInit {
     return names.length ? names.join(' · ') : '—';
   }
 
+  protected readonly statusLabelPt = movideskStatusLabelPt;
+
   protected statusTone(status: string): string {
     const s = status.toLowerCase();
-    if (s.includes('conclu') || s.includes('fechad')) {
+    if (
+      s.includes('closed') ||
+      s.includes('resolved') ||
+      s.includes('conclu') ||
+      s.includes('fechad') ||
+      s.includes('resolv')
+    ) {
       return 'text-success bg-success/15 border-success/30';
     }
     if (s.includes('cancel')) {
       return 'text-muted-foreground bg-muted/40 border-border';
     }
-    if (s.includes('novo')) {
+    if (s.includes('new') || s.includes('novo')) {
       return 'text-primary bg-primary/15 border-primary/30';
     }
     return 'text-info bg-info/15 border-info/30';
   }
 
-  private chartFromRecord(rec: Record<string, number> | undefined, max = 14): { label: string; value: number }[] {
+  private chartFromRecord(
+    rec: Record<string, number> | undefined,
+    max = 14,
+    labelDePara?: (chaveApi: string) => string,
+  ): { label: string; value: number }[] {
     if (!rec) {
       return [];
     }
     return Object.entries(rec)
-      .map(([label, value]) => ({ label, value }))
+      .map(([chave, value]) => {
+        const bruto = labelDePara ? labelDePara(chave) : chave;
+        return {
+          label: movideskRotuloGrafico(bruto),
+          value,
+        };
+      })
       .sort((a, b) => b.value - a.value)
       .slice(0, max);
   }

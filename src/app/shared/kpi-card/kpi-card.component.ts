@@ -17,13 +17,26 @@ export class KpiCardComponent {
   readonly tone = input<'default' | 'success' | 'warning' | 'danger' | 'primary'>('default');
   readonly hint = input<string>();
 
-  toneClass() {
+  /** Faixa superior do card (gradiente). */
+  toneGradientClass(): string {
     const map = {
-      default: 'from-muted/40 to-muted/0 text-foreground',
-      success: 'from-success/15 to-success/0 text-success',
-      warning: 'from-warning/15 to-warning/0 text-warning',
-      danger: 'from-destructive/15 to-destructive/0 text-destructive',
-      primary: 'from-primary/20 to-primary/0 text-primary',
+      default: 'from-muted/55 to-transparent',
+      success: 'from-success/28 to-transparent',
+      warning: 'from-warning/38 to-transparent',
+      danger: 'from-destructive/28 to-transparent',
+      primary: 'from-primary/32 to-transparent',
+    };
+    return map[this.tone()];
+  }
+
+  /** Ícone: texto e fundo/borda com contraste legível sobre o card. */
+  toneIconClass(): string {
+    const map = {
+      default: 'text-foreground border-foreground/20 bg-muted',
+      success: 'text-success border-success/40 bg-success/16',
+      warning: 'text-warning-foreground border-warning/50 bg-warning/24',
+      danger: 'text-destructive border-destructive/40 bg-destructive/14',
+      primary: 'text-primary border-primary/40 bg-primary/16',
     };
     return map[this.tone()];
   }

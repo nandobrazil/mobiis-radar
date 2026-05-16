@@ -28,7 +28,7 @@ export class MovideskTicketsService {
     return this.http.get<MovideskTicket[]>(this.ticketsUrl());
   }
 
-  /** Indicadores agregados; chaves `null` nas distribuições viram **Outros**. */
+  /** Indicadores agregados; chaves `null` nas distribuições viram **Não definido**. */
   resumo(): Observable<MovideskResumo> {
     return this.http.get<MovideskResumo>(this.resumoUrl()).pipe(map((raw) => normalizarResumoMovidesk(raw)));
   }
