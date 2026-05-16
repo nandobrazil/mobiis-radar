@@ -116,12 +116,12 @@ export class RadarPageComponent implements OnInit {
     this.activeTab.set(tab);
   }
 
-  protected onRiskFilterChange(value: string): void {
-    this.risk.set(value);
+  protected onRiskFilterChange(value: string | null): void {
+    this.risk.set(value || ALL);
   }
 
-  protected onCnaeFilterChange(value: string): void {
-    this.cnae.set(value);
+  protected onCnaeFilterChange(value: string | null): void {
+    this.cnae.set(value || ALL);
   }
 
   protected selectSegment(segment: string) {

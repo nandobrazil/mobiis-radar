@@ -45,29 +45,36 @@
         />
       </div>
       <ng-select
-        class="filter-ng-select w-full shrink-0 sm:w-[11.5rem]"
+        class="filter-ng-select w-full shrink-0 sm:w-[11.5rem] rounded-sm"
         [items]="riskFilterOptions"
         bindLabel="label"
         bindValue="value"
-        [clearable]="false"
+        [clearable]="risk() !== ALL"
         [searchable]="false"
         appendTo="body"
         [ngModel]="risk()"
+        placeholder="Risco..."
         (ngModelChange)="onRiskFilterChange($event)"
         aria-label="Filtrar por nível de risco"
+        [class.outline]="risk() !== ALL"
+        [class.outline-primary]="risk() !== ALL"
+        [class.outline-2]="risk() !== ALL"
       />
       <ng-select
-        class="filter-ng-select w-full shrink-0 sm:w-[15rem]"
+        class="filter-ng-select w-full shrink-0 sm:w-[15rem] rounded-sm"
         [items]="cnaeOptions()"
         bindLabel="label"
         bindValue="value"
-        [clearable]="false"
+        [clearable]="cnae() !== ALL"
         [searchable]="true"
         appendTo="body"
         [ngModel]="cnae()"
         (ngModelChange)="onCnaeFilterChange($event)"
         aria-label="Filtrar por segmento"
         placeholder="Segmento..."
+        [class.outline]="cnae() !== ALL"
+        [class.outline-primary]="cnae() !== ALL"
+        [class.outline-2]="cnae() !== ALL"
       />
       <div class="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
         <button
