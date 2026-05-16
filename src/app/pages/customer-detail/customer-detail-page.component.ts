@@ -2,9 +2,13 @@ import { Component, DestroyRef, OnDestroy, computed, effect, inject, input, sign
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+import type { LucideIconInput } from '@lucide/angular';
 import {
+  LucideActivity,
   LucideArrowLeft,
   LucideBarChart3,
+  LucideBot,
+  LucideCalendarClock,
   LucideCircleDashed,
   LucideFileText,
   LucideLayers,
@@ -12,6 +16,7 @@ import {
   LucideSettings,
   LucideSparkles,
   LucideTriangleAlert,
+  LucideUsers,
 } from '@lucide/angular';
 
 import type { MovideskClienteIndicadores } from '../../data/movidesk-cliente-indicadores.types';
@@ -29,6 +34,8 @@ import {
 } from '../../shared/relatorio-clientes.service';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
+import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
+import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
@@ -39,6 +46,17 @@ import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
 
 const CONTEXTO_AUTOR_PADRAO = 'CS';
 
+type CustomerDetailKpiTone = 'default' | 'success' | 'warning' | 'danger' | 'primary';
+
+interface CustomerDetailKpi {
+  label: string;
+  value: string | number;
+  icon: LucideIconInput;
+  tone: CustomerDetailKpiTone;
+  hint?: string;
+  delta?: number;
+}
+
 @Component({
   selector: 'app-customer-detail-page',
   standalone: true,
@@ -46,6 +64,8 @@ const CONTEXTO_AUTOR_PADRAO = 'CS';
     AppIconComponent,
     RiskBadgeComponent,
     RouterLink,
+    KpiCardComponent,
+    KpiCardSkeletonComponent,
     TableSkeletonComponent,
     TopBarComponent,
   ],
@@ -183,16 +203,100 @@ export class CustomerDetailPageComponent implements OnDestroy {
     return healthScoreFromRelatorioRow(row);
   }
 
-  protected kpis(row: RelatorioClienteItem) {
+  protected kpis(row: RelatorioClienteItem): CustomerDetailKpi[] {
     const c = row.cliente;
+    const dias = Number(c.dias_sem_atividade) || 0;
+    const acoes30 = Number(c.acoes_30d) || 0;
+    const acoes90 = Number(c.acoes_90d) || 0;
+    const usuarios = Number(c.usuarios_ativos) || 0;
+    const entidades = Number(c.entidades_utilizadas) || 0;
+    const neg30 = Number(c.acoes_negativas_30d) || 0;
+    const auto30 = Number(c.acoes_automatizadas_30d) || 0;
+
+    const taxaDiaria30 = acoes30 / 30;
+    const taxaDiaria90 = acoes90 / 90;
+    let deltaUso30d: number | undefined;
+    if (taxaDiaria90 > 0) {
+      deltaUso30d = Math.round(((taxaDiaria30 - taxaDiaria90) / taxaDiaria90) * 100);
+    }
+
+    const fmt = (n: number) => n.toLocaleString('pt-BR');
+    const mediaDiaria30 = acoes30 > 0 ? `~${(taxaDiaria30).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/dia` : 'Sem ações no período';
+
+    let diasTone: CustomerDetailKpiTone = 'success';
+    let diasHint = 'Uso recente na plataforma';
+    if (dias > 7) {
+      diasTone = 'danger';
+      diasHint = 'Inatividade prolongada — priorize reengajamento';
+    } else if (dias > 0) {
+      diasTone = 'warning';
+      diasHint = dias === 1 ? 'Último uso há 1 dia' : `Último uso há ${dias} dias`;
+    }
+
+    let acoes30Tone: CustomerDetailKpiTone = 'default';
+    if (acoes30 === 0) {
+      acoes30Tone = 'danger';
+    } else if (taxaDiaria90 > 0 && taxaDiaria30 < taxaDiaria90 * 0.7) {
+      acoes30Tone = 'warning';
+    } else if (acoes30 >= 20) {
+      acoes30Tone = 'success';
+    } else {
+      acoes30Tone = 'primary';
+    }
+
+    const pctAuto = acoes30 > 0 ? Math.round((auto30 / acoes30) * 100) : 0;
+
     return [
-      { label: 'Dias sem uso', value: String(c.dias_sem_atividade) },
-      { label: 'Ações 30d', value: String(c.acoes_30d) },
-      { label: 'Ações 90d', value: String(c.acoes_90d) },
-      { label: 'Usuários ativos', value: String(c.usuarios_ativos) },
-      { label: 'Entidades', value: String(c.entidades_utilizadas) },
-      { label: 'Ações neg. 30d', value: String(c.acoes_negativas_30d) },
-      { label: 'Automação 30d', value: String(c.acoes_automatizadas_30d) },
+      {
+        label: 'Dias sem uso',
+        value: dias,
+        icon: LucideCalendarClock,
+        tone: diasTone,
+        hint: diasHint,
+      },
+      {
+        label: 'Ações 30d',
+        value: fmt(acoes30),
+        icon: LucideActivity,
+        tone: acoes30Tone,
+        hint: mediaDiaria30,
+        delta: deltaUso30d,
+      },
+      {
+        label: 'Ações 90d',
+        value: fmt(acoes90),
+        icon: LucideBarChart3,
+        tone: 'primary',
+        hint: acoes90 > 0 ? `~${(taxaDiaria90).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/dia no período` : 'Histórico sem movimentação',
+      },
+      {
+        label: 'Usuários ativos',
+        value: usuarios,
+        icon: LucideUsers,
+        tone: usuarios === 0 ? 'warning' : usuarios >= 3 ? 'success' : 'default',
+        hint: usuarios === 0 ? 'Nenhum usuário ativo no período' : usuarios === 1 ? '1 pessoa usando o produto' : `${usuarios} pessoas usando o produto`,
+      },
+      {
+        label: 'Entidades',
+        value: entidades,
+        icon: LucideLayers,
+        tone: entidades === 0 ? 'warning' : 'default',
+        hint: entidades === 0 ? 'Nenhum módulo/entidade em uso' : 'Tipos de entidade com registro de ação',
+      },
+      {
+        label: 'Ações neg. 30d',
+        value: neg30,
+        icon: LucideTriangleAlert,
+        tone: neg30 === 0 ? 'success' : neg30 >= 5 ? 'danger' : 'warning',
+        hint: neg30 === 0 ? 'Sem eventos negativos recentes' : 'Exclusões, erros ou fluxos revertidos',
+      },
+      {
+        label: 'Automação 30d',
+        value: fmt(auto30),
+        icon: LucideBot,
+        tone: auto30 === 0 ? 'warning' : 'success',
+        hint: acoes30 > 0 ? `${pctAuto}% das ações 30d automatizadas` : 'Sem ações para calcular adoção técnica',
+      },
     ];
   }
 
