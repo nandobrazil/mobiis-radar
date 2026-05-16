@@ -8,6 +8,7 @@ import {
   computed,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -23,8 +24,10 @@ import { BrasilApiCnpjService } from '../../shared/brasil-api-cnpj.service';
 import type { BrasilApiCnpj } from '../../shared/brasil-api-cnpj.types';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
 import type { GeoMapLegendItem, GeoMapMarker } from '../../shared/geo-map/geo-map-marker.model';
+import { DataTableComponent } from '../../shared/data-table/data-table.component';
 import { RelatorioClientesService } from '../../shared/relatorio-clientes.service';
 import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-processamento-banner/relatorio-processamento-banner.component';
+import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import {
   COMERCIAL_MAP_DIVISAO_COLOR,
@@ -59,8 +62,10 @@ function brasilApiToMatchCnaePayload(data: BrasilApiCnpj): RelatorioMatchCnaeReq
   standalone: true,
   imports: [
     CurrencyPipe,
+    DataTableComponent,
     GeoMapComponent,
     RouterLink,
+    TablePaginationBarComponent,
     TopBarComponent,
     RelatorioProcessamentoBannerComponent,
   ],
@@ -72,6 +77,7 @@ export class ComercialPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   private readonly argumentoGerandoBanner = viewChild<ElementRef<HTMLElement>>('argumentoGerandoBanner');
+  private readonly argumentoResultado = viewChild<ElementRef<HTMLElement>>('argumentoResultado');
 
   protected readonly cnpjDraft = signal('');
   protected readonly loading = signal(false);
@@ -80,6 +86,18 @@ export class ComercialPageComponent implements OnInit {
   protected readonly matchError = signal<string | null>(null);
   protected readonly empresa = signal<BrasilApiCnpj | null>(null);
   protected readonly matchResult = signal<RelatorioMatchCnaeResponse | null>(null);
+
+  protected readonly matchesPage = signal(1);
+  protected readonly matchesPageSize = signal(10);
+
+  protected readonly matchMatches = computed(() => this.matchResult()?.matches ?? []);
+
+  protected readonly matchesPageSlice = computed(() => {
+    const rows = this.matchMatches();
+    const size = this.matchesPageSize();
+    const start = (this.matchesPage() - 1) * size;
+    return rows.slice(start, start + size);
+  });
 
   protected readonly comercialMapLegend: GeoMapLegendItem[] = [
     { label: 'CNAE exato', color: COMERCIAL_MAP_RISK_COLOR.saudavel },
@@ -123,14 +141,38 @@ export class ComercialPageComponent implements OnInit {
       if (!this.matchLoading()) {
         return;
       }
-      const timerId = window.setTimeout(() => this.scrollParaBannerGerando(), 0);
+      const timerId = window.setTimeout(() => this.scrollPara(this.argumentoGerandoBanner), 0);
       onCleanup(() => window.clearTimeout(timerId));
+    });
+
+    effect((onCleanup) => {
+      if (!this.matchResult()?.insights) {
+        return;
+      }
+      const timerId = window.setTimeout(() => this.scrollPara(this.argumentoResultado), 0);
+      onCleanup(() => window.clearTimeout(timerId));
+    });
+
+    effect(() => {
+      this.matchResult();
+      untracked(() => this.matchesPage.set(1));
+    });
+
+    effect(() => {
+      const n = this.matchMatches().length;
+      const size = this.matchesPageSize();
+      const totalPages = Math.max(1, Math.ceil(n / Math.max(1, size)));
+      untracked(() => {
+        if (this.matchesPage() > totalPages) {
+          this.matchesPage.set(totalPages);
+        }
+      });
     });
   }
 
-  private scrollParaBannerGerando(): void {
+  private scrollPara(ref: () => ElementRef<HTMLElement> | undefined): void {
     requestAnimationFrame(() => {
-      this.argumentoGerandoBanner()?.nativeElement.scrollIntoView({
+      ref()?.nativeElement.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
