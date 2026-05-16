@@ -1,12 +1,13 @@
 <div class="page-shell">
   <app-top-bar title="Clientes" [subtitle]="subtitle()" />
-  <main class="page-shell-body space-y-4 p-4 md:p-6">
+  <main class="page-shell-body space-y-6 p-4 md:p-6">
   @if (relatorio.error(); as msg) {
     <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
       {{ msg }}
       <button type="button" class="ml-3 underline" (click)="relatorio.load()">Tentar novamente</button>
     </div>
   }
+
   <section class="grid grid-cols-2 gap-4 md:grid-cols-2">
     @if (relatorio.loading() && !relatorio.error()) {
       @for (i of kpiSkeletonSlots; track i) {
@@ -24,52 +25,94 @@
     }
   </section>
 
-  <!-- ABAS -->
-  <div class="flex items-center gap-1 rounded-xl bg-muted/20 p-1 w-fit">
-    <button
-      (click)="setTab('list')"
-      class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-      [class.bg-card]="activeTab() === 'list'"
-      [class.shadow-sm]="activeTab() === 'list'"
-      [class.text-primary]="activeTab() === 'list'"
-      [class.text-muted-foreground]="activeTab() !== 'list'"
-    >
-      Lista de clientes
-    </button>
-    <button
-      (click)="setTab('segments')"
-      class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-      [class.bg-card]="activeTab() === 'segments'"
-      [class.shadow-sm]="activeTab() === 'segments'"
-      [class.text-primary]="activeTab() === 'segments'"
-      [class.text-muted-foreground]="activeTab() !== 'segments'"
-    >
-      Segmentos
-    </button>
-    <button
-      (click)="setTab('map')"
-      class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
-      [class.bg-card]="activeTab() === 'map'"
-      [class.shadow-sm]="activeTab() === 'map'"
-      [class.text-primary]="activeTab() === 'map'"
-      [class.text-muted-foreground]="activeTab() !== 'map'"
-    >
-      Mapa
-    </button>
-  </div>
+  <div class="space-y-4">
+    <!-- FILTROS GLOBAIS -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+      <div class="relative min-w-0 flex-1 basis-[min(100%,16rem)]">
+        <app-icon
+          [icon]="iconSearch"
+          size="16"
+          strokeWidth="2"
+          svgClass="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <input
+          [value]="q()"
+          (input)="q.set($any($event.target).value)"
+          placeholder="Buscar cliente..."
+          class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
+        />
+      </div>
+      <ng-select
+        class="filter-ng-select w-full shrink-0 sm:w-[11.5rem]"
+        [items]="riskFilterOptions"
+        bindLabel="label"
+        bindValue="value"
+        [clearable]="false"
+        [searchable]="false"
+        appendTo="body"
+        [ngModel]="risk()"
+        (ngModelChange)="onRiskFilterChange($event)"
+        aria-label="Filtrar por nível de risco"
+      />
+      <div class="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
+        <button
+          type="button"
+          class="btn-outline w-full shrink-0 sm:w-auto"
+          [disabled]="relatorio.loading()"
+          (click)="relatorio.load()"
+        >
+          {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
+        </button>
+      </div>
+    </div>
 
-  <div class="mt-4">
-    @switch (activeTab()) {
-      @case ('list') {
-        <app-radar-list />
+    <!-- ABAS -->
+    <div class="flex items-center gap-1 rounded-xl bg-muted/20 p-1 w-fit">
+      <button
+        (click)="setTab('list')"
+        class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+        [class.bg-card]="activeTab() === 'list'"
+        [class.shadow-sm]="activeTab() === 'list'"
+        [class.text-primary]="activeTab() === 'list'"
+        [class.text-muted-foreground]="activeTab() !== 'list'"
+      >
+        Lista de clientes
+      </button>
+      <button
+        (click)="setTab('segments')"
+        class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+        [class.bg-card]="activeTab() === 'segments'"
+        [class.shadow-sm]="activeTab() === 'segments'"
+        [class.text-primary]="activeTab() === 'segments'"
+        [class.text-muted-foreground]="activeTab() !== 'segments'"
+      >
+        Segmentos
+      </button>
+      <button
+        (click)="setTab('map')"
+        class="px-4 py-2 text-sm font-medium rounded-lg transition-all"
+        [class.bg-card]="activeTab() === 'map'"
+        [class.shadow-sm]="activeTab() === 'map'"
+        [class.text-primary]="activeTab() === 'map'"
+        [class.text-muted-foreground]="activeTab() !== 'map'"
+      >
+        Mapa
+      </button>
+    </div>
+
+    <div class="mt-4">
+      @switch (activeTab()) {
+        @case ('list') {
+          <app-radar-list [data]="filtered()" [loading]="relatorio.loading()" />
+        }
+        @case ('segments') {
+          <app-radar-segments [data]="filtered()" [loading]="relatorio.loading()" />
+        }
+        @case ('map') {
+          <app-radar-map [data]="filtered()" />
+        }
       }
-      @case ('segments') {
-        <app-radar-segments />
-      }
-      @case ('map') {
-        <app-radar-map />
-      }
-    }
+    </div>
   </div>
 
   </main>

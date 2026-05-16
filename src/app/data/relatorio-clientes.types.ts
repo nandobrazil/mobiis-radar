@@ -10,6 +10,9 @@ export interface RelatorioCliente {
   entidades_utilizadas: number;
   usuarios_ativos: number;
   acoes_automatizadas_30d: number;
+  segmento?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface RelatorioAnalise {

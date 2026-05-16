@@ -1,8 +1,5 @@
-import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, computed, input, signal, untracked, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgSelectComponent } from '@ng-select/ng-select';
-
 import type { RelatorioClienteItem } from '../../../../data/relatorio-clientes.types';
 import { DataTableComponent } from '../../../../shared/data-table/data-table.component';
 import { TableSkeletonComponent } from '../../../../shared/table-skeleton/table-skeleton.component';
@@ -10,8 +7,6 @@ import { RiskBadgeComponent } from '../../../../shared/risk-badge/risk-badge.com
 import {
   hasRelatorioScoreIa,
   healthScoreFromRelatorioRow,
-  normalizeNivelRisco,
-  RelatorioClientesService,
 } from '../../../../shared/relatorio-clientes.service';
 import { ScoreBarComponent } from '../../../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../../../shared/table-pagination-bar/table-pagination-bar.component';
@@ -21,11 +16,8 @@ import {
   LucideArrowDown,
   LucideArrowUp,
   LucideArrowUpDown,
-  LucideSearch,
 } from '@lucide/angular';
-import { initials, iaRiskCaptionClass, nivelRiscoToRiskLevel } from '../../../../shared/ui-helpers';
-
-const ALL = '__all__';
+import { initials, nivelRiscoToRiskLevel } from '../../../../shared/ui-helpers';
 
 export type ClientesSortColumn =
   | 'cliente'
@@ -43,8 +35,6 @@ export type ClientesSortColumn =
   imports: [
     AppIconComponent,
     DataTableComponent,
-    FormsModule,
-    NgSelectComponent,
     TableSkeletonComponent,
     RiskBadgeComponent,
     RouterLink,
@@ -53,31 +43,20 @@ export type ClientesSortColumn =
   ],
   templateUrl: './radar-list.component.html',
 })
-export class RadarListComponent implements OnInit {
-  protected readonly relatorio = inject(RelatorioClientesService);
-  protected readonly iconSearch = LucideSearch;
+export class RadarListComponent {
+  /** Dados filtrados vindos do pai. */
+  data = input.required<RelatorioClienteItem[]>();
+  loading = input<boolean>(false);
+
   protected readonly iconSortUp = LucideArrowUp;
   protected readonly iconSortDown = LucideArrowDown;
   protected readonly iconSortBoth = LucideArrowUpDown;
-  protected readonly ALL = ALL;
-  protected readonly riskFilterOptions: { label: string; value: string }[] = [
-    { label: 'Todos - Risco', value: ALL },
-    { label: 'Alto', value: 'ALTO' },
-    { label: 'Médio', value: 'MEDIO' },
-    { label: 'Baixo', value: 'BAIXO' },
-  ];
-  protected readonly q = signal('');
-  protected readonly risk = signal(ALL);
   protected readonly initials = initials;
 
-  /** Paginação somente no front (sobre `sortedFiltered()`). */
+  /** Paginação somente no front (sobre `sortedData()`). */
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
 
-  /**
-   * Lig/desl por coluna: `false` = cabeçalho sem ordenação (ex.: coluna só visual/composta).
-   * Ajuste aqui conforme a tabela.
-   */
   protected readonly sortableColumns: Record<ClientesSortColumn, boolean> = {
     cliente: true,
     dias_sem_uso: true,
@@ -89,42 +68,17 @@ export class RadarListComponent implements OnInit {
     risco: true,
   };
 
-  /** Ordenação ativa; null = ordem original da API após filtros. */
   protected readonly tableSort = signal<{ column: ClientesSortColumn; direction: 'asc' | 'desc' } | null>(null);
 
-  protected readonly filtered = computed(() => {
-    const q = this.q().trim().toLowerCase();
-    const r = this.risk();
-    return this.relatorio.items().filter((row) => {
-      if (!row?.cliente) {
-        return false;
-      }
-      const name = row.cliente.nome_cliente.toLowerCase();
-      const matchQ = !q || name.includes(q) || row.cliente.owner_id.toLowerCase().includes(q);
-      if (r === ALL) {
-        return matchQ;
-      }
-      if (!row.analise) {
-        return false;
-      }
-      const nr = normalizeNivelRisco(row.analise.nivel_risco);
-      const matchR = nr === r;
-      return matchQ && matchR;
-    });
-  });
-
-  protected readonly sortedFiltered = computed(() => {
-    const rows = this.filtered();
+  protected readonly sortedData = computed(() => {
+    const rows = this.data();
     const s = this.tableSort();
-    if (!s) {
-      return rows;
-    }
-    const dir = s.direction;
-    return [...rows].sort((a, b) => this.compareClientesRow(a, b, s.column, dir));
+    if (!s) return rows;
+    return [...rows].sort((a, b) => this.compareClientesRow(a, b, s.column, s.direction));
   });
 
   protected readonly pageSlice = computed(() => {
-    const rows = this.sortedFiltered();
+    const rows = this.sortedData();
     const size = this.pageSize();
     const p = this.page();
     const start = (p - 1) * size;
@@ -133,38 +87,24 @@ export class RadarListComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const n = this.filtered().length;
+      const n = this.data().length;
       const size = this.pageSize();
       const tp = Math.max(1, Math.ceil(n / Math.max(1, size)));
       untracked(() => {
         const p = this.page();
-        if (p > tp) {
-          this.page.set(tp);
-        } else if (p < 1) {
-          this.page.set(1);
-        }
+        if (p > tp) this.page.set(tp);
       });
     });
   }
 
-  protected onRiskFilterChange(value: string): void {
-    this.risk.set(value);
-    this.page.set(1);
-  }
-
-  /** Exporta a lista atual (filtros + ordenação da tabela) para Excel, gerado no navegador. */
   protected exportarPlanilha(): void {
-    const rows = this.sortedFiltered();
-    if (rows.length === 0) {
-      return;
-    }
+    const rows = this.sortedData();
+    if (rows.length === 0) return;
     exportRelatorioClientesToXlsx(rows, 'relatorio-clientes');
   }
 
   protected toggleSort(column: ClientesSortColumn): void {
-    if (!this.sortableColumns[column]) {
-      return;
-    }
+    if (!this.sortableColumns[column]) return;
     const cur = this.tableSort();
     if (cur == null || cur.column !== column) {
       this.tableSort.set({ column, direction: 'asc' });
@@ -178,29 +118,13 @@ export class RadarListComponent implements OnInit {
 
   protected ariaSort(column: ClientesSortColumn): 'ascending' | 'descending' | 'none' {
     const s = this.tableSort();
-    if (s == null || s.column !== column) {
-      return 'none';
-    }
+    if (s == null || s.column !== column) return 'none';
     return s.direction === 'asc' ? 'ascending' : 'descending';
   }
 
-  /** Direção ativa para esta coluna, ou null se outra coluna está ordenando / sem ordenação. */
   protected activeSortDirection(column: ClientesSortColumn): 'asc' | 'desc' | null {
     const s = this.tableSort();
-    if (s?.column === column) {
-      return s.direction;
-    }
-    return null;
-  }
-
-  private riscoSortRank(row: RelatorioClienteItem): number {
-    if (!row.analise) {
-      return 0;
-    }
-    const n = normalizeNivelRisco(row.analise.nivel_risco);
-    if (n === 'ALTO') return 3;
-    if (n === 'MEDIO') return 2;
-    return 1;
+    return s?.column === column ? s.direction : null;
   }
 
   private compareClientesRow(
@@ -224,41 +148,32 @@ export class RadarListComponent implements OnInit {
       case 'usuarios':
         return mult * (a.cliente.usuarios_ativos - b.cliente.usuarios_ativos);
       case 'score_ia': {
-        const va = a.analise?.score_ia;
-        const vb = b.analise?.score_ia;
-        const na = va != null && Number.isFinite(Number(va)) ? Number(va) : Number.POSITIVE_INFINITY;
-        const nb = vb != null && Number.isFinite(Number(vb)) ? Number(vb) : Number.POSITIVE_INFINITY;
+        const na = a.analise?.score_ia ?? Number.POSITIVE_INFINITY;
+        const nb = b.analise?.score_ia ?? Number.POSITIVE_INFINITY;
         return mult * (na - nb);
       }
       case 'risco':
-        return mult * (this.riscoSortRank(a) - this.riscoSortRank(b));
+        return mult * (this.riscoRank(a) - this.riscoRank(b));
       default:
         return 0;
-      }
     }
-
-  /** Cor da legenda "Risco IA" (nota bruta: maior = pior). */
-  protected iaRiskLineClass(row: RelatorioClienteItem): string {
-    const n = Number(row.analise?.score_ia);
-    return iaRiskCaptionClass(Number.isFinite(n) ? n : 0);
   }
 
-  ngOnInit(): void {
-    if (this.relatorio.items().length === 0) {
-      this.relatorio.load();
-    }
+  private riscoRank(row: RelatorioClienteItem): number {
+    const r = row.analise?.nivel_risco?.toUpperCase();
+    if (r === 'ALTO') return 3;
+    if (r === 'MEDIO') return 2;
+    return 1;
   }
 
   protected riskLevel(row: RelatorioClienteItem) {
     return nivelRiscoToRiskLevel(row.analise?.nivel_risco);
   }
 
-  /** Saude 0-100: IA quando existe; senao heuristica operacional (ver `healthScoreFromRelatorioRow`). */
   protected healthScore(row: RelatorioClienteItem): number {
     return healthScoreFromRelatorioRow(row);
   }
 
-  /** Barra na coluna "Saude IA": so quando a API enviou `score_ia` numerico. */
   protected hasScoreIa(row: RelatorioClienteItem): boolean {
     return hasRelatorioScoreIa(row);
   }

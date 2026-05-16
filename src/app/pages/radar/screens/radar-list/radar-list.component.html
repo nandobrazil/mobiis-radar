@@ -1,273 +1,67 @@
 <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-  <div class="border-b border-border px-4 py-3">
+  <div class="flex items-center justify-between border-b border-border px-4 py-3">
     <h2 class="text-sm font-semibold">Lista de clientes</h2>
-  </div>
-  <div class="border-b border-border bg-muted/15 px-4 py-3">
-    <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-      <div class="relative min-w-0 flex-1 basis-[min(100%,16rem)]">
-        <app-icon
-          [icon]="iconSearch"
-          size="16"
-          strokeWidth="2"
-          svgClass="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <input
-          [value]="q()"
-          (input)="q.set($any($event.target).value); page.set(1)"
-          placeholder="Buscar cliente..."
-          class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
-      <ng-select
-        class="filter-ng-select w-full shrink-0 sm:w-[11.5rem]"
-        [items]="riskFilterOptions"
-        bindLabel="label"
-        bindValue="value"
-        [clearable]="false"
-        [searchable]="false"
-        appendTo="body"
-        [ngModel]="risk()"
-        (ngModelChange)="onRiskFilterChange($event)"
-        aria-label="Filtrar por nível de risco"
-      />
-      <div class="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
-        <button
-          type="button"
-          class="btn-outline w-full shrink-0 sm:w-auto"
-          [disabled]="relatorio.loading()"
-          (click)="relatorio.load()"
-        >
-          {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
-        </button>
-        <button
-          type="button"
-          class="btn-primary w-full shrink-0 sm:w-auto"
-          [disabled]="relatorio.loading() || sortedFiltered().length === 0"
-          (click)="exportarPlanilha()"
-        >
-          Exportar
-        </button>
-      </div>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        class="btn-primary h-8 px-3 text-xs"
+        [disabled]="loading() || sortedData().length === 0"
+        (click)="exportarPlanilha()"
+      >
+        Exportar Lista
+      </button>
     </div>
-    <p class="mt-2 text-[11px] text-muted-foreground">Dados dos últimos 90 dias.</p>
   </div>
-  @if (relatorio.loading() && !relatorio.error()) {
+
+  @if (loading() && data().length === 0) {
     <div class="flex flex-col">
       <app-table-skeleton [columns]="8" [rows]="10" />
-      <div class="border-t border-border bg-muted/10 px-4 py-3">
-        <div class="skeleton mx-auto h-4 w-48 max-w-full rounded-md"></div>
-      </div>
     </div>
-  } @else if (!relatorio.loading() && filtered().length === 0 && !relatorio.error()) {
-    <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</div>
+  } @else if (data().length === 0) {
+    <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado nos filtros selecionados.</div>
   } @else {
     <div class="flex flex-col">
       <app-data-table>
           <tr data-table-head-row>
             <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
               @if (sortableColumns.cliente) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('cliente')"
-                  [attr.aria-sort]="ariaSort('cliente')"
-                >
+                <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('cliente')" [attr.aria-sort]="ariaSort('cliente')">
                   <span>Cliente</span>
                   @if (activeSortDirection('cliente'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
+                    <app-icon [icon]="dir === 'asc' ? iconSortUp : iconSortDown" size="14" svgClass="size-3.5 text-primary" />
                   } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    <app-icon [icon]="iconSortBoth" size="14" svgClass="size-3.5 opacity-30" />
                   }
                 </button>
-              } @else {
-                Cliente
-              }
+              } @else { Cliente }
             </th>
-            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-              @if (sortableColumns.dias_sem_uso) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('dias_sem_uso')"
-                  [attr.aria-sort]="ariaSort('dias_sem_uso')"
-                >
-                  <span>Dias sem uso</span>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">
+                <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('dias_sem_uso')" [attr.aria-sort]="ariaSort('dias_sem_uso')">
+                  <span>Dias s/ uso</span>
                   @if (activeSortDirection('dias_sem_uso'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
+                    <app-icon [icon]="dir === 'asc' ? iconSortUp : iconSortDown" size="14" svgClass="size-3.5 text-primary" />
                   } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
+                    <app-icon [icon]="iconSortBoth" size="14" svgClass="size-3.5 opacity-30" />
                   }
                 </button>
-              } @else {
-                Dias sem uso
-              }
             </th>
-            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-              @if (sortableColumns.acoes_30d) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('acoes_30d')"
-                  [attr.aria-sort]="ariaSort('acoes_30d')"
-                >
-                  <span>Ações 30d</span>
-                  @if (activeSortDirection('acoes_30d'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
-                  } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
-                  }
-                </button>
-              } @else {
-                Ações 30d
-              }
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-              @if (sortableColumns.acoes_90d) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('acoes_90d')"
-                  [attr.aria-sort]="ariaSort('acoes_90d')"
-                >
-                  <span>Ações 90d</span>
-                  @if (activeSortDirection('acoes_90d'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
-                  } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
-                  }
-                </button>
-              } @else {
-                Ações 90d
-              }
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-              @if (sortableColumns.core) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('core')"
-                  [attr.aria-sort]="ariaSort('core')"
-                >
-                  <span>Core 30d / 90d</span>
-                  @if (activeSortDirection('core'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
-                  } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
-                  }
-                </button>
-              } @else {
-                Core 30d / 90d
-              }
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-              @if (sortableColumns.usuarios) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('usuarios')"
-                  [attr.aria-sort]="ariaSort('usuarios')"
-                >
-                  <span>Usuários</span>
-                  @if (activeSortDirection('usuarios'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
-                  } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
-                  }
-                </button>
-              } @else {
-                Usuários
-              }
-            </th>
-            <th
-              class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground"
-              scope="col"
-            >
-              @if (sortableColumns.score_ia) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('score_ia')"
-                  [attr.aria-sort]="ariaSort('score_ia')"
-                  title="Saúde 0-100: quanto maior, melhor. A linha 'Risco IA' é a nota bruta (maior = mais risco)."
-                >
-                  <span>Score IA</span>
-                  @if (activeSortDirection('score_ia'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
-                  } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
-                  }
-                </button>
-              } @else {
-                <span title="Saúde 0-100: quanto maior, melhor. A linha 'Risco IA' é a nota bruta (maior = mais risco).">Score IA</span>
-              }
-            </th>
-            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-              @if (sortableColumns.risco) {
-                <button
-                  type="button"
-                  class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
-                  (click)="toggleSort('risco')"
-                  [attr.aria-sort]="ariaSort('risco')"
-                >
-                  <span>Risco</span>
-                  @if (activeSortDirection('risco'); as dir) {
-                    @if (dir === 'asc') {
-                      <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    } @else {
-                      <app-icon [icon]="iconSortDown" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
-                    }
-                  } @else {
-                    <app-icon [icon]="iconSortBoth" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 opacity-35" />
-                  }
-                </button>
-              } @else {
-                Risco
-              }
-            </th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 30d</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 90d</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Core (30/90)</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Usuários</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score IA</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Risco</th>
           </tr>
           @for (row of pageSlice(); track row.cliente.owner_id) {
             <tr class="group transition-colors hover:bg-muted/20">
               <td class="px-4 py-3">
-                <a
-                  [routerLink]="['/cliente', row.cliente.owner_id]"
-                  class="flex max-w-[min(380px,48vw)] items-center gap-3"
-                  [title]="row.cliente.nome_cliente + ' · ' + row.cliente.owner_id"
-                >
-                  <div class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-xs font-semibold">
+                <a [routerLink]="['/cliente', row.cliente.owner_id]" class="flex items-center gap-3">
+                  <div class="grid h-8 w-8 place-items-center rounded-lg bg-accent text-[10px] font-semibold">
                     {{ initials(row.cliente.nome_cliente) }}
                   </div>
                   <div class="min-w-0 flex-1 truncate text-sm">
                     <span class="font-medium group-hover:text-primary">{{ row.cliente.nome_cliente }}</span>
-                    <span class="text-muted-foreground"> · </span>
-                    <span class="text-xs text-muted-foreground">{{ row.cliente.owner_id }}</span>
+                    <p class="text-[10px] text-muted-foreground">{{ row.cliente.owner_id }}</p>
                   </div>
                 </a>
               </td>
@@ -280,37 +74,23 @@
               <td class="px-4 py-3 tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
               <td class="px-4 py-3">
                 @if (hasScoreIa(row)) {
-                  <div class="inline-flex items-center gap-3">
-                    <app-score-bar [score]="healthScore(row)" />
-                  </div>
+                  <app-score-bar [score]="healthScore(row)" />
                 } @else {
-                  <span class="inline-flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
-                    <span>—</span>
-                    <span class="text-[10px] leading-none">Sem score IA</span>
-                  </span>
+                  <span class="text-[10px] text-muted-foreground">Sem IA</span>
                 }
               </td>
               <td class="px-4 py-3">
                 @if (row.analise) {
-                  <div class="inline-flex items-center gap-2">
-                    <app-risk-badge [risk]="riskLevel(row)" />
-                  </div>
+                  <app-risk-badge [risk]="riskLevel(row)" />
                 } @else {
-                  <span class="inline-flex items-center gap-2">
-                    <span
-                      class="inline-flex rounded-md border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
-                      >Sem IA</span>
-                    @if (row.erro) {
-                      <span class="truncate text-[10px] text-destructive/90" title="Erro na análise">Erro na análise</span>
-                    }
-                  </span>
+                  <span class="text-[10px] text-muted-foreground">N/A</span>
                 }
               </td>
             </tr>
           }
       </app-data-table>
       <app-table-pagination-bar
-        [totalCount]="filtered().length"
+        [totalCount]="data().length"
         [page]="page()"
         [pageSize]="pageSize()"
         (pageChange)="page.set($event)"

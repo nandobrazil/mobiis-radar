@@ -1,27 +1,15 @@
-import { Component } from '@angular/core';
-import { GeoMapComponent } from "src/app/shared/geo-map/geo-map.component";
-import type { GeoMapLegendItem, GeoMapMarker } from 'src/app/shared/geo-map/geo-map-marker.model';
-import type { Customer } from 'src/app/data/mock-data';
-import { customers } from 'src/app/data/mock-data';
+import { Component, input, computed } from '@angular/core';
+import { GeoMapComponent } from "../../../../shared/geo-map/geo-map.component";
+import type { GeoMapLegendItem, GeoMapMarker } from '../../../../shared/geo-map/geo-map-marker.model';
+import type { RelatorioClienteItem } from '../../../../data/relatorio-clientes.types';
+import { normalizeNivelRisco } from '../../../../shared/relatorio-clientes.service';
 
-const DASHBOARD_RISK_COLOR: Record<Customer['risk'], string> = {
-  saudavel: '#4ade80',
-  atencao: '#facc15',
-  risco: '#f87171',
+const RISK_COLOR: Record<string, string> = {
+  ALTO: '#f87171',
+  MEDIO: '#facc15',
+  BAIXO: '#4ade80',
 };
 
-const DASHBOARD_MAP_MARKERS: GeoMapMarker[] = customers.map((c) => ({
-  lat: c.lat,
-  lng: c.lng,
-  label: c.name,
-  color: DASHBOARD_RISK_COLOR[c.risk],
-}));
-
-const DASHBOARD_MAP_LEGEND: GeoMapLegendItem[] = [
-  { label: 'Saudável', color: DASHBOARD_RISK_COLOR.saudavel },
-  { label: 'Atenção', color: DASHBOARD_RISK_COLOR.atencao },
-  { label: 'Risco', color: DASHBOARD_RISK_COLOR.risco },
-];
 @Component({
   selector: 'app-radar-map',
   standalone: true,
@@ -31,12 +19,30 @@ const DASHBOARD_MAP_LEGEND: GeoMapLegendItem[] = [
       <div class="border-b border-border px-4 py-3">
         <h2 class="text-sm font-semibold">Mapa de clientes</h2>
       </div>
-      <app-geo-map  [height]="600" [markers]="dashboardMapMarkers" [legendItems]="dashboardMapLegend" />
+      <app-geo-map [height]="600" [markers]="markers()" [legendItems]="legend" />
     </div>
   `,
 })
 export class RadarMapComponent {
-  protected readonly dashboardMapMarkers = DASHBOARD_MAP_MARKERS;
-  protected readonly dashboardMapLegend = DASHBOARD_MAP_LEGEND;
+  data = input.required<RelatorioClienteItem[]>();
 
+  protected readonly markers = computed(() => {
+    return this.data()
+      .filter(row => row.cliente.lat != null && row.cliente.lng != null)
+      .map(row => {
+        const nr = normalizeNivelRisco(row.analise?.nivel_risco);
+        return {
+          lat: row.cliente.lat!,
+          lng: row.cliente.lng!,
+          label: row.cliente.nome_cliente,
+          color: RISK_COLOR[nr],
+        } as GeoMapMarker;
+      });
+  });
+
+  protected readonly legend: GeoMapLegendItem[] = [
+    { label: 'Saudável', color: RISK_COLOR['BAIXO'] },
+    { label: 'Atenção', color: RISK_COLOR['MEDIO'] },
+    { label: 'Risco', color: RISK_COLOR['ALTO'] },
+  ];
 }

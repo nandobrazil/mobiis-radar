@@ -1,0 +1,48 @@
+<div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+  <div class="border-b border-border px-4 py-3">
+    <h2 class="text-sm font-semibold">Análise por Segmentos</h2>
+  </div>
+
+  @if (loading() && data().length === 0) {
+    <div class="flex flex-col">
+      <app-table-skeleton [columns]="6" [rows]="5" />
+    </div>
+  } @else if (segmentsData().length === 0) {
+    <div class="p-12 text-center text-sm text-muted-foreground">Nenhum dado disponível para os filtros atuais.</div>
+  } @else {
+    <div class="flex flex-col">
+      <app-data-table>
+          <tr data-table-head-row>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Segmento</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Total Clientes</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Risco (A/M/B)</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score Médio</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 30d (Total)</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Usuários Ativos</th>
+          </tr>
+          @for (seg of segmentsData(); track seg.name) {
+            <tr class="group transition-colors hover:bg-muted/20">
+              <td class="px-4 py-3">
+                <span class="font-medium text-foreground">{{ seg.name }}</span>
+              </td>
+              <td class="px-4 py-3 tabular-nums">{{ seg.total }}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-medium text-destructive" [title]="seg.alto + ' em risco alto'">{{ seg.alto }}</span>
+                  <span class="text-xs text-muted-foreground">/</span>
+                  <span class="text-xs font-medium text-warning" [title]="seg.medio + ' em risco médio'">{{ seg.medio }}</span>
+                  <span class="text-xs text-muted-foreground">/</span>
+                  <span class="text-xs font-medium text-success" [title]="seg.baixo + ' em risco baixo'">{{ seg.baixo }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3">
+                <app-score-bar [score]="100 - seg.avgScore" />
+              </td>
+              <td class="px-4 py-3 tabular-nums text-muted-foreground">{{ seg.acoes30d }}</td>
+              <td class="px-4 py-3 tabular-nums text-muted-foreground">{{ seg.usuarios }}</td>
+            </tr>
+          }
+      </app-data-table>
+    </div>
+  }
+</div>
