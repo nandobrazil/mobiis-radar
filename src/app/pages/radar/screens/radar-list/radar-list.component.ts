@@ -21,6 +21,7 @@ import { initials, nivelRiscoToRiskLevel } from '../../../../shared/ui-helpers';
 
 export type ClientesSortColumn =
   | 'cliente'
+  | 'perfil_uso'
   | 'dias_sem_uso'
   | 'acoes_30d'
   | 'acoes_90d'
@@ -59,6 +60,7 @@ export class RadarListComponent {
 
   protected readonly sortableColumns: Record<ClientesSortColumn, boolean> = {
     cliente: true,
+    perfil_uso: true,
     dias_sem_uso: true,
     acoes_30d: true,
     acoes_90d: true,
@@ -137,6 +139,8 @@ export class RadarListComponent {
     switch (column) {
       case 'cliente':
         return mult * a.cliente.nome_cliente.localeCompare(b.cliente.nome_cliente, 'pt-BR', { sensitivity: 'base' });
+      case 'perfil_uso':
+        return mult * (a.analise?.perfil_uso || '').localeCompare(b.analise?.perfil_uso || '', 'pt-BR', { sensitivity: 'base' });
       case 'dias_sem_uso':
         return mult * (a.cliente.dias_sem_atividade - b.cliente.dias_sem_atividade);
       case 'acoes_30d':
