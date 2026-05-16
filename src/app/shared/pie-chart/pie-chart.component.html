@@ -1,0 +1,13 @@
+<div class="pie-chart-root">
+  <div class="pie-disc" [style.background]="gradient()" role="img" [attr.aria-label]="'Gráfico de pizza, ' + data().length + ' fatias'"></div>
+  <ul class="pie-legend">
+    @for (item of data(); track trackSlice(item, $index); let i = $index) {
+      <li class="pie-legend-row">
+        <span class="pie-swatch" [style.background]="colors[i % colors.length]"></span>
+        <span class="pie-label truncate" [title]="asString(item[labelKey()])">{{ item[labelKey()] }}</span>
+        <span class="pie-value tabular-nums">{{ item[valueKey()] }}</span>
+        <span class="pie-pct tabular-nums text-muted-foreground">{{ pct(asNumber(item[valueKey()])) }}</span>
+      </li>
+    }
+  </ul>
+</div>

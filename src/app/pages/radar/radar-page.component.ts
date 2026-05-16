@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
+import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import {
   hasRelatorioScoreIa,
@@ -21,7 +22,7 @@ const ALL = '__all__';
 @Component({
   selector: 'app-radar-page',
   standalone: true,
-  imports: [DataTableComponent, LucideSearch, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
+  imports: [DataTableComponent, TableSkeletonComponent, LucideSearch, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
   templateUrl: './radar-page.component.html',
 })
 export class RadarPageComponent implements OnInit {

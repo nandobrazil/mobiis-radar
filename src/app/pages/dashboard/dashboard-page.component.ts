@@ -13,8 +13,10 @@ import {
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { segmentRanking } from '../../data/mock-data';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
+import { BarChartPanelSkeletonComponent } from '../../shared/bar-chart-panel-skeleton/bar-chart-panel-skeleton.component';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
 import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
+import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/radar-top20.service';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
@@ -26,8 +28,10 @@ import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
   standalone: true,
   imports: [
     BarChartComponent,
+    BarChartPanelSkeletonComponent,
     GeoMapComponent,
     KpiCardComponent,
+    KpiCardSkeletonComponent,
     LucideActivity,
     LucideAlertTriangle,
     LucideSparkles,
@@ -55,6 +59,11 @@ export class DashboardPageComponent implements OnInit {
     const when = t ? ` · atualizado ${new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '';
     return `${n} clientes no relatorio${when}`;
   });
+
+  /** Índices para skeletons de layout (hero / KPI / lista). */
+  protected readonly heroStatSkeletonSlots = [0, 1] as const;
+  protected readonly kpiSkeletonSlots = [0, 1, 2, 3, 4] as const;
+  protected readonly highlightSkeletonSlots = [0, 1, 2, 3, 4, 5] as const;
 
   ngOnInit(): void {
     if (this.top20.items().length === 0 && !this.top20.loading()) {

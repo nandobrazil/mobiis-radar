@@ -1,0 +1,24 @@
+<div class="overflow-x-auto" role="status" aria-busy="true" aria-label="Carregando tabela">
+  <table class="w-full text-sm" [class]="tableClass() || undefined">
+    <thead class="bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
+      <tr>
+        @for (_ of colKeys(); track $index) {
+          <th class="px-4 py-3 text-left">
+            <div class="skeleton h-3 rounded" [style.width]="headerWidth($index)"></div>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-border">
+      @for (r of rowKeys(); track r) {
+        <tr>
+          @for (c of colKeys(); track c) {
+            <td class="px-4 py-3">
+              <div class="skeleton h-4 rounded" [class]="cellClass(r, c)"></div>
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -6,8 +6,11 @@ import type { MovideskResumo } from '../../data/movidesk-resumo.types';
 import { movideskRotuloGrafico } from '../../data/movidesk-grafico-labels';
 import { movideskStatusLabelPt } from '../../data/movidesk-status-i18n';
 import type { MovideskTicket } from '../../data/movidesk-ticket.types';
-import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
+import { PieChartComponent } from '../../shared/pie-chart/pie-chart.component';
+import { PieChartPanelSkeletonComponent } from '../../shared/pie-chart-panel-skeleton/pie-chart-panel-skeleton.component';
+import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
+import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
 import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
 import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
@@ -28,8 +31,11 @@ type ResumoLoad = { ok: boolean; data: MovideskResumo | null };
   selector: 'app-movidesk-page',
   standalone: true,
   imports: [
-    BarChartComponent,
+    PieChartComponent,
+    PieChartPanelSkeletonComponent,
+    KpiCardSkeletonComponent,
     DataTableComponent,
+    TableSkeletonComponent,
     KpiCardComponent,
     LucideSearch,
     TablePaginationBarComponent,
@@ -49,6 +55,10 @@ export class MovideskPageComponent implements OnInit {
 
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
+
+  /** Slots para skeletons de KPI (layout espelha os 5 cards reais). */
+  protected readonly kpiSkeletonSlots = [0, 1, 2, 3, 4] as const;
+  protected readonly chartSkeletonSlots = [0, 1, 2] as const;
 
   protected readonly iconTotal = LucideTicket;
   protected readonly iconAbertos = LucideCircleDot;
