@@ -56,6 +56,17 @@ export function healthScoreFromRelatorioRow(row: RelatorioClienteItem): number {
   return scoreIa ?? 0;
 }
 
+/** Maior valor = pior situação (ordenar por esta chave em ordem decrescente). */
+function carteiraPioridadeRank(row: RelatorioClienteItem): number {
+  if (hasRelatorioScoreIa(row)) {
+    return Number(row.analise!.score_ia);
+  }
+  const c = row.cliente!;
+  const dias = Number(c.dias_sem_atividade) || 0;
+  const acoes = Number(c.acoes_30d) || 0;
+  return Math.min(100, dias * 2 + Math.max(0, 40 - acoes));
+}
+
 function apiRelatorioBase(): string {
   const root = environment.apiBaseUrl.replace(/\/$/, '');
   return `${root}/api/relatorio`;
@@ -190,27 +201,12 @@ export class RelatorioClientesService {
   });
 
   /**
-   * Amostra para destaque no dashboard (ate 6): prioriza score IA;
-   * se ninguem tiver IA, ordena por indicadores operacionais.
+   * Até 6 clientes em pior situação: maior score de risco IA quando houver análise;
+   * sem IA, prioriza inatividade e poucas ações (heurística ~0–100).
    */
-  readonly clientesDestaque = computed(() => {
+  readonly clientesPioresCarteira = computed(() => {
     const rows = this.items().filter((row) => row?.cliente != null);
-    const comIa = rows.filter((row) => row.analise != null);
-    if (comIa.length > 0) {
-      return [...comIa]
-        .sort((a, b) => (b.analise?.score_ia ?? 0) - (a.analise?.score_ia ?? 0))
-        .slice(0, 6);
-    }
-    return [...rows]
-      .sort((a, b) => {
-        const da = a.cliente!.dias_sem_atividade ?? 0;
-        const db = b.cliente!.dias_sem_atividade ?? 0;
-        if (db !== da) return db - da;
-        const aa = a.cliente!.acoes_30d ?? 0;
-        const ab = b.cliente!.acoes_30d ?? 0;
-        return aa - ab;
-      })
-      .slice(0, 6);
+    return [...rows].sort((a, b) => carteiraPioridadeRank(b) - carteiraPioridadeRank(a)).slice(0, 6);
   });
 
   load(): void {

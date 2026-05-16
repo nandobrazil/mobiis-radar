@@ -1,14 +1,6 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import {
-  LucideActivity,
-  LucideAlertCircle,
-  LucideAlertTriangle,
-  LucideCircleOff,
-  LucideHeart,
-  LucideSparkles,
-  LucideUsersRound,
-} from '@lucide/angular';
+import { LucideActivity, LucideAlertTriangle, LucideCircleOff, LucideSparkles } from '@lucide/angular';
 import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
 import { segmentRanking } from '../../data/mock-data';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
@@ -60,19 +52,13 @@ export class DashboardPageComponent implements OnInit {
 
   /** Índices para skeletons de layout (hero / KPI / lista). */
   protected readonly heroStatSkeletonSlots = [0, 1] as const;
-  protected readonly kpiSkeletonSlots = [0, 1, 2, 3, 4] as const;
+  protected readonly kpiSkeletonSlots = [0] as const;
   protected readonly highlightSkeletonSlots = [0, 1, 2, 3, 4, 5] as const;
 
   ngOnInit(): void {
     if (this.relatorio.items().length === 0 && !this.relatorio.loading()) {
       this.relatorio.load();
     }
-  }
-
-  protected pct(count: number): string {
-    const total = this.stats().total;
-    if (!total) return '';
-    return `${Math.round((count / total) * 100)}% da carteira`;
   }
 
   protected rowHealth(row: RelatorioClienteItem): number {
@@ -84,10 +70,7 @@ export class DashboardPageComponent implements OnInit {
   }
 
   /** Icones Lucide para KPIs e hero (evita strings nos templates). */
-  protected readonly iconUsers = LucideUsersRound;
   protected readonly iconAlertHigh = LucideAlertTriangle;
-  protected readonly iconAlertMed = LucideAlertCircle;
-  protected readonly iconHeart = LucideHeart;
   protected readonly iconInativos = LucideCircleOff;
   protected readonly iconSparkles = LucideSparkles;
   protected readonly iconActivity = LucideActivity;

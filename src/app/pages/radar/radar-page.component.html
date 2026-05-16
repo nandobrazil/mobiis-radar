@@ -1,30 +1,53 @@
 <div class="page-shell">
   <app-top-bar title="Clientes" [subtitle]="subtitle()" />
   <main class="page-shell-body space-y-4 p-4 md:p-6">
-  <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
-    @if (relatorio.error(); as msg) {
-      <div class="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-        {{ msg }}
-      </div>
+  @if (relatorio.error(); as msg) {
+    <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+      {{ msg }}
+      <button type="button" class="ml-3 underline" (click)="relatorio.load()">Tentar novamente</button>
+    </div>
+  }
+  <section class="grid grid-cols-2 gap-4 md:grid-cols-2">
+    @if (relatorio.loading() && !relatorio.error()) {
+      @for (i of kpiSkeletonSlots; track i) {
+        <app-kpi-card-skeleton />
+      }
+    } @else {
+      <app-kpi-card
+        label="Total de clientes"
+        [value]="stats().total"
+        [icon]="iconUsers"
+        tone="primary"
+        [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com análise IA'"
+      />
+      <app-kpi-card label="Risco alto" [value]="stats().alto" [icon]="iconAlertHigh" tone="danger" [hint]="pct(stats().alto)" />
+      <!-- <app-kpi-card label="Risco médio" [value]="stats().medio" [icon]="iconAlertMed" tone="warning" [hint]="pct(stats().medio)" /> -->
+      <!-- <app-kpi-card label="Risco baixo" [value]="stats().baixo" [icon]="iconHeart" tone="success" [hint]="pct(stats().baixo)" /> -->
     }
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-      <div class="relative flex-1">
-        <app-icon
-          [icon]="iconSearch"
-          size="16"
-          strokeWidth="2"
-          svgClass="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <input
-          [value]="q()"
-          (input)="q.set($any($event.target).value); page.set(1)"
-          placeholder="Buscar cliente..."
-          class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
-      <div class="flex flex-wrap items-center gap-2">
+  </section>
+
+  <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+    <div class="border-b border-border px-4 py-3">
+      <h2 class="text-sm font-semibold">Lista de clientes</h2>
+    </div>
+    <div class="border-b border-border bg-muted/15 px-4 py-3">
+      <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div class="relative min-w-0 flex-1 basis-[min(100%,16rem)]">
+          <app-icon
+            [icon]="iconSearch"
+            size="16"
+            strokeWidth="2"
+            svgClass="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <input
+            [value]="q()"
+            (input)="q.set($any($event.target).value); page.set(1)"
+            placeholder="Buscar cliente..."
+            class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
         <ng-select
-          class="filter-ng-select"
+          class="filter-ng-select w-full shrink-0 sm:w-[11.5rem]"
           [items]="riskFilterOptions"
           bindLabel="label"
           bindValue="value"
@@ -35,27 +58,27 @@
           (ngModelChange)="onRiskFilterChange($event)"
           aria-label="Filtrar por nível de risco"
         />
+        <div class="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
+          <button
+            type="button"
+            class="btn-outline w-full shrink-0 sm:w-auto"
+            [disabled]="relatorio.loading()"
+            (click)="relatorio.load()"
+          >
+            {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
+          </button>
+          <button
+            type="button"
+            class="btn-primary w-full shrink-0 sm:w-auto"
+            [disabled]="relatorio.loading() || sortedFiltered().length === 0"
+            (click)="exportarPlanilha()"
+          >
+            Exportar
+          </button>
+        </div>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <button type="button" class="btn-outline" [disabled]="relatorio.loading()" (click)="relatorio.load()">
-          {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
-        </button>
-        <button
-          type="button"
-          class="btn-primary"
-          [disabled]="relatorio.loading() || sortedFiltered().length === 0"
-          (click)="exportarPlanilha()"
-        >
-          Exportar
-        </button>
-      </div>
+      <p class="mt-2 text-[11px] text-muted-foreground">Dados dos últimos 90 dias.</p>
     </div>
-    <p class="mt-2 text-[11px] text-muted-foreground">
-      Dados dos últimos 90 dias.
-    </p>
-  </div>
-
-  <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
     @if (relatorio.loading() && !relatorio.error()) {
       <div class="flex flex-col">
         <app-table-skeleton [columns]="8" [rows]="10" />
@@ -324,5 +347,5 @@
       </div>
     }
   </div>
-</main>
+  </main>
 </div>

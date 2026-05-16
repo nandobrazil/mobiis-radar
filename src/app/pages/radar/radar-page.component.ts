@@ -15,10 +15,21 @@ import {
 } from '../../shared/relatorio-clientes.service';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
+import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
+import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { exportRelatorioClientesToXlsx } from '../../shared/export-relatorio-clientes-xlsx';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
-import { LucideArrowDown, LucideArrowUp, LucideArrowUpDown, LucideSearch } from '@lucide/angular';
+import {
+  LucideAlertCircle,
+  LucideAlertTriangle,
+  LucideArrowDown,
+  LucideArrowUp,
+  LucideArrowUpDown,
+  LucideHeart,
+  LucideSearch,
+  LucideUsersRound,
+} from '@lucide/angular';
 import { initials, iaRiskCaptionClass, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 const ALL = '__all__';
@@ -40,6 +51,8 @@ export type ClientesSortColumn =
     AppIconComponent,
     DataTableComponent,
     FormsModule,
+    KpiCardComponent,
+    KpiCardSkeletonComponent,
     NgSelectComponent,
     TableSkeletonComponent,
     RiskBadgeComponent,
@@ -92,6 +105,21 @@ export class RadarPageComponent implements OnInit {
   protected readonly subtitle = computed(
     () => `${this.filtered().length} de ${this.relatorio.items().length} clientes filtrados`,
   );
+
+  protected readonly stats = computed(() => this.relatorio.stats());
+
+  protected readonly kpiSkeletonSlots = [0, 1] as const;
+
+  protected readonly iconUsers = LucideUsersRound;
+  protected readonly iconAlertHigh = LucideAlertTriangle;
+  protected readonly iconAlertMed = LucideAlertCircle;
+  protected readonly iconHeart = LucideHeart;
+
+  protected pct(count: number): string {
+    const total = this.stats().total;
+    if (!total) return '';
+    return `${Math.round((count / total) * 100)}% da carteira`;
+  }
 
   protected readonly filtered = computed(() => {
     const q = this.q().trim().toLowerCase();

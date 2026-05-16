@@ -70,24 +70,12 @@
     </div>
   </section>
 
-  <section class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
+  <section class="grid grid-cols-1 gap-4 sm:max-w-sm">
     @if (relatorio.loading() && !relatorio.error()) {
       @for (i of kpiSkeletonSlots; track i) {
-        <div [class]="i === 4 ? 'col-span-2 md:col-span-1 xl:col-span-1' : ''">
-          <app-kpi-card-skeleton />
-        </div>
+        <app-kpi-card-skeleton />
       }
     } @else {
-      <app-kpi-card
-        label="Total de clientes"
-        [value]="stats().total"
-        [icon]="iconUsers"
-        tone="primary"
-        [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com análise IA'"
-      />
-      <app-kpi-card label="Risco alto" [value]="stats().alto" [icon]="iconAlertHigh" tone="danger" [hint]="pct(stats().alto)" />
-      <app-kpi-card label="Risco médio" [value]="stats().medio" [icon]="iconAlertMed" tone="warning" [hint]="pct(stats().medio)" />
-      <app-kpi-card label="Risco baixo" [value]="stats().baixo" [icon]="iconHeart" tone="success" [hint]="pct(stats().baixo)" />
       <app-kpi-card
         label="Sem ações 30d"
         [value]="stats().inativos30d"
@@ -160,8 +148,10 @@
     <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-semibold">Destaque da carteira</h3>
-          <p class="text-xs text-muted-foreground">Ordenado por score IA quando existir; senão por uso operacional</p>
+          <h3 class="text-sm font-semibold">Piores da carteira</h3>
+          <p class="text-xs text-muted-foreground">
+            Maior risco IA primeiro; sem análise IA, prioriza inatividade e baixa atividade
+          </p>
         </div>
         <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver todos os clientes →</a>
       </div>
@@ -179,11 +169,11 @@
             </div>
           }
         </div>
-      } @else if (relatorio.clientesDestaque().length === 0) {
+      } @else if (relatorio.clientesPioresCarteira().length === 0) {
         <div class="mt-6 py-8 text-center text-sm text-muted-foreground">Nenhum cliente no relatório.</div>
       } @else {
         <div class="mt-4 divide-y divide-border">
-          @for (row of relatorio.clientesDestaque(); track row.cliente.owner_id) {
+          @for (row of relatorio.clientesPioresCarteira(); track row.cliente.owner_id) {
             <a
               [routerLink]="['/cliente', row.cliente.owner_id]"
               class="flex items-center gap-3 rounded-md px-1 py-2.5 transition-colors hover:bg-muted/30"
