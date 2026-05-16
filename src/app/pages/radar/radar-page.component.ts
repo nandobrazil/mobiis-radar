@@ -15,10 +15,20 @@ import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
-import { LucideSearch } from '@lucide/angular';
+import { LucideArrowDown, LucideArrowUp, LucideArrowUpDown, LucideSearch } from '@lucide/angular';
 import { initials, iaRiskCaptionClass, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 const ALL = '__all__';
+
+export type ClientesSortColumn =
+  | 'cliente'
+  | 'dias_sem_uso'
+  | 'acoes_30d'
+  | 'acoes_90d'
+  | 'core'
+  | 'usuarios'
+  | 'score_ia'
+  | 'risco';
 
 @Component({
   selector: 'app-radar-page',
@@ -29,14 +39,35 @@ const ALL = '__all__';
 export class RadarPageComponent implements OnInit {
   protected readonly relatorio = inject(RelatorioClientesService);
   protected readonly iconSearch = LucideSearch;
+  protected readonly iconSortUp = LucideArrowUp;
+  protected readonly iconSortDown = LucideArrowDown;
+  protected readonly iconSortBoth = LucideArrowUpDown;
   protected readonly ALL = ALL;
   protected readonly q = signal('');
   protected readonly risk = signal(ALL);
   protected readonly initials = initials;
 
-  /** Paginação somente no front (sobre `filtered()`). */
+  /** Paginação somente no front (sobre `sortedFiltered()`). */
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
+
+  /**
+   * Lig/desl por coluna: `false` = cabeçalho sem ordenação (ex.: coluna só visual/composta).
+   * Ajuste aqui conforme a tabela.
+   */
+  protected readonly sortableColumns: Record<ClientesSortColumn, boolean> = {
+    cliente: true,
+    dias_sem_uso: true,
+    acoes_30d: true,
+    acoes_90d: true,
+    core: false,
+    usuarios: true,
+    score_ia: true,
+    risco: true,
+  };
+
+  /** Ordenação ativa; null = ordem original da API após filtros. */
+  protected readonly tableSort = signal<{ column: ClientesSortColumn; direction: 'asc' | 'desc' } | null>(null);
 
   protected readonly subtitle = computed(
     () => `${this.filtered().length} de ${this.relatorio.items().length} clientes filtrados`,
@@ -63,8 +94,18 @@ export class RadarPageComponent implements OnInit {
     });
   });
 
-  protected readonly pageSlice = computed(() => {
+  protected readonly sortedFiltered = computed(() => {
     const rows = this.filtered();
+    const s = this.tableSort();
+    if (!s) {
+      return rows;
+    }
+    const dir = s.direction;
+    return [...rows].sort((a, b) => this.compareClientesRow(a, b, s.column, dir));
+  });
+
+  protected readonly pageSlice = computed(() => {
+    const rows = this.sortedFiltered();
     const size = this.pageSize();
     const p = this.page();
     const start = (p - 1) * size;
@@ -85,6 +126,82 @@ export class RadarPageComponent implements OnInit {
         }
       });
     });
+  }
+
+  protected toggleSort(column: ClientesSortColumn): void {
+    if (!this.sortableColumns[column]) {
+      return;
+    }
+    const cur = this.tableSort();
+    if (cur == null || cur.column !== column) {
+      this.tableSort.set({ column, direction: 'asc' });
+    } else if (cur.direction === 'asc') {
+      this.tableSort.set({ column, direction: 'desc' });
+    } else {
+      this.tableSort.set(null);
+    }
+    this.page.set(1);
+  }
+
+  protected ariaSort(column: ClientesSortColumn): 'ascending' | 'descending' | 'none' {
+    const s = this.tableSort();
+    if (s == null || s.column !== column) {
+      return 'none';
+    }
+    return s.direction === 'asc' ? 'ascending' : 'descending';
+  }
+
+  /** Direção ativa para esta coluna, ou null se outra coluna está ordenando / sem ordenação. */
+  protected activeSortDirection(column: ClientesSortColumn): 'asc' | 'desc' | null {
+    const s = this.tableSort();
+    if (s?.column === column) {
+      return s.direction;
+    }
+    return null;
+  }
+
+  private riscoSortRank(row: RelatorioClienteItem): number {
+    if (!row.analise) {
+      return 0;
+    }
+    const n = normalizeNivelRisco(row.analise.nivel_risco);
+    if (n === 'ALTO') return 3;
+    if (n === 'MEDIO') return 2;
+    return 1;
+  }
+
+  private compareClientesRow(
+    a: RelatorioClienteItem,
+    b: RelatorioClienteItem,
+    column: ClientesSortColumn,
+    direction: 'asc' | 'desc',
+  ): number {
+    const mult = direction === 'asc' ? 1 : -1;
+    switch (column) {
+      case 'cliente':
+        return mult * a.cliente.nome_cliente.localeCompare(b.cliente.nome_cliente, 'pt-BR', { sensitivity: 'base' });
+      case 'dias_sem_uso':
+        return mult * (a.cliente.dias_sem_atividade - b.cliente.dias_sem_atividade);
+      case 'acoes_30d':
+        return mult * (a.cliente.acoes_30d - b.cliente.acoes_30d);
+      case 'acoes_90d':
+        return mult * (a.cliente.acoes_90d - b.cliente.acoes_90d);
+      case 'core':
+        return mult * (a.cliente.acoes_core_30d - b.cliente.acoes_core_30d);
+      case 'usuarios':
+        return mult * (a.cliente.usuarios_ativos - b.cliente.usuarios_ativos);
+      case 'score_ia': {
+        const va = a.analise?.score_ia;
+        const vb = b.analise?.score_ia;
+        const na = va != null && Number.isFinite(Number(va)) ? Number(va) : Number.POSITIVE_INFINITY;
+        const nb = vb != null && Number.isFinite(Number(vb)) ? Number(vb) : Number.POSITIVE_INFINITY;
+        return mult * (na - nb);
+      }
+      case 'risco':
+        return mult * (this.riscoSortRank(a) - this.riscoSortRank(b));
+      default:
+        return 0;
+    }
   }
 
   /** Cor da legenda "Risco IA" (nota bruta: maior = pior). */
