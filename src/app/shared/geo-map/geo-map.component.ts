@@ -9,8 +9,12 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import * as L from 'leaflet';
-import 'leaflet.markercluster';
+import {
+  L,
+  createMarkerClusterGroup,
+  initLeafletMarkerCluster,
+  isMarkerClusterAvailable,
+} from './leaflet-markercluster';
 
 import {
   GEO_MAP_DEFAULT_MARKER_COLOR,
@@ -82,7 +86,11 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
+    if (this.clusterMarkers()) {
+      await initLeafletMarkerCluster();
+    }
+
     const el = this.mapHost().nativeElement;
 
     this.map = L.map(el, {
@@ -184,7 +192,7 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private createClusterGroup(): L.MarkerClusterGroup {
-    return L.markerClusterGroup({
+    return createMarkerClusterGroup({
       /** Raio em px para agrupar pontos próximos na mesma tela. */
       maxClusterRadius: 56,
       /** Ao dar zoom máximo, abre em “leque” para ver cada ponto. */
@@ -245,7 +253,7 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const useCluster = this.clusterMarkers() && points.length > 1;
+    const useCluster = this.clusterMarkers() && points.length > 1 && isMarkerClusterAvailable();
 
     if (useCluster) {
       this.clusterGroup = this.createClusterGroup();
