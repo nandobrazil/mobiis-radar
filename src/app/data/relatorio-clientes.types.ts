@@ -106,3 +106,48 @@ export interface RelatorioClienteDetalle {
   por_origem: RelatorioClientePorOrigem[];
   tendencia_semanal: Record<string, unknown>[];
 }
+
+/** Métricas derivadas (GET `/api/relatorio/cliente/{owner_id}/parametros`). */
+export interface RelatorioClienteMetricasDerivadas {
+  taxa_diaria_30d?: number;
+  taxa_diaria_anterior?: number;
+  variacao_uso_pct?: number;
+  pct_core?: number;
+  pct_automatizado?: number;
+  score_saude_base?: number;
+  perfil_sugerido?: string;
+}
+
+export interface RelatorioClienteScoreBreakdownItem {
+  fator: string;
+  delta: number;
+  descricao: string;
+}
+
+/** Análise IA enriquecida no endpoint de parâmetros. */
+export interface RelatorioClienteAnaliseIaParametros {
+  nivel_risco?: string;
+  score_ia?: number;
+  ajuste_ia?: number;
+  perfil_uso?: string;
+  perfil_confirmado?: boolean;
+  acao_recomendada?: string;
+  resumo?: string;
+  motivos?: string[];
+  plano_acao?: string;
+}
+
+export interface RelatorioClienteAlertaParametro {
+  tipo: string;
+  parametro?: string;
+  mensagem: string;
+}
+
+/** Resposta GET `/api/relatorio/cliente/{owner_id}/parametros`. */
+export interface RelatorioClienteParametros {
+  metricas_brutas?: Record<string, number | string | null>;
+  metricas_derivadas?: RelatorioClienteMetricasDerivadas;
+  score_breakdown?: RelatorioClienteScoreBreakdownItem[];
+  analise_ia?: RelatorioClienteAnaliseIaParametros;
+  alertas?: RelatorioClienteAlertaParametro[];
+}

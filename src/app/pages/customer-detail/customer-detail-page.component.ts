@@ -11,7 +11,11 @@ import {
 } from '@lucide/angular';
 
 import type { MovideskClienteIndicadores } from '../../data/movidesk-cliente-indicadores.types';
-import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
+import type {
+  RelatorioClienteItem,
+  RelatorioClienteParametros,
+  RelatorioClienteScoreBreakdownItem,
+} from '../../data/relatorio-clientes.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
 import {
   contextoFromRelatorioRow,
@@ -68,6 +72,10 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly contextoSaving = signal(false);
   protected readonly contextoError = signal<string | null>(null);
   protected readonly contextoDraft = signal('');
+
+  protected readonly planoParametrosLoading = signal(false);
+  protected readonly planoParametrosError = signal<string | null>(null);
+  protected readonly planoParametros = signal<RelatorioClienteParametros | null>(null);
 
   /** Contexto na raiz do GET `/api/relatorio/cliente/{id}`. */
   protected readonly contextoPagina = computed(() => contextoFromRelatorioRow(this.report()));
@@ -126,11 +134,17 @@ export class CustomerDetailPageComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.relatorio.clearClienteDetalle();
     this.relatorio.clearRelatorioClienteResumo();
+    this.planoParametros.set(null);
+    this.planoParametrosError.set(null);
+    this.planoParametrosLoading.set(false);
   }
 
   constructor() {
     effect(() => {
       const oid = this.effectiveOwnerId();
+      this.planoParametros.set(null);
+      this.planoParametrosError.set(null);
+      this.planoParametrosLoading.set(false);
       if (oid) {
         this.relatorio.fetchRelatorioClienteResumo(oid);
         this.relatorio.fetchClienteDetalle(oid);
@@ -238,6 +252,94 @@ export class CustomerDetailPageComponent implements OnDestroy {
       return '—';
     }
     return `${Number(h).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`;
+  }
+
+  protected acaoRecomendadaInicial(row: RelatorioClienteItem): string {
+    return row.analise?.acao_recomendada?.trim() || 'Clique em «Gerar plano de ação» para montar recomendações com base nas métricas e na IA.';
+  }
+
+  protected gerarPlanoDeAcao(ownerId: string): void {
+    const oid = ownerId?.trim();
+    if (!oid || this.planoParametrosLoading()) {
+      return;
+    }
+    this.planoParametrosLoading.set(true);
+    this.planoParametrosError.set(null);
+
+    this.relatorio
+      .fetchClienteParametros(oid)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.planoParametrosLoading.set(false)),
+      )
+      .subscribe({
+        next: (data) => {
+          this.planoParametros.set(data ?? null);
+        },
+        error: () => {
+          this.planoParametrosError.set('Não foi possível gerar o plano de ação. Verifique o endpoint `/parametros`.');
+        },
+      });
+  }
+
+  protected planoAcaoPrincipal(p: RelatorioClienteParametros): string {
+    const ia = p.analise_ia;
+    const texto =
+      ia?.acao_recomendada?.trim() ||
+      ia?.plano_acao?.trim() ||
+      ia?.resumo?.trim() ||
+      '';
+    return texto || 'Plano gerado. Revise os alertas e os fatores do score abaixo para priorizar ações.';
+  }
+
+  protected planoBreakdownOrdenado(p: RelatorioClienteParametros): RelatorioClienteScoreBreakdownItem[] {
+    const itens = p.score_breakdown ?? [];
+    return [...itens].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  }
+
+  protected formatPerfilUso(perfil: string | undefined): string {
+    if (!perfil?.trim()) {
+      return '—';
+    }
+    const labels: Record<string, string> = {
+      EM_DECLINIO: 'Em declínio',
+      ESTAVEL: 'Estável',
+      EM_CRESCIMENTO: 'Em crescimento',
+      INATIVO: 'Inativo',
+      ADOCAO_INICIAL: 'Adoção inicial',
+    };
+    const key = perfil.trim().toUpperCase();
+    return labels[key] ?? perfil.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  protected formatDeltaScore(n: number | undefined): string {
+    if (n == null || Number.isNaN(Number(n))) {
+      return '—';
+    }
+    const v = Number(n);
+    const sign = v > 0 ? '+' : '';
+    return `${sign}${v}`;
+  }
+
+  protected breakdownDeltaClass(delta: number): string {
+    if (delta < 0) {
+      return 'text-destructive';
+    }
+    if (delta > 0) {
+      return 'text-success';
+    }
+    return 'text-muted-foreground';
+  }
+
+  protected alertaTipoClass(tipo: string): string {
+    const u = tipo.trim().toUpperCase();
+    if (u === 'CRITICO' || u === 'ALTO') {
+      return 'border-destructive/40 bg-destructive/10 text-destructive';
+    }
+    if (u === 'ATENCAO' || u === 'MEDIO') {
+      return 'border-warning/40 bg-warning/10 text-warning-foreground';
+    }
+    return 'border-border bg-muted/40 text-muted-foreground';
   }
 
   protected abrirModalContexto(): void {

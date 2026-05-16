@@ -298,8 +298,137 @@
                 <p class="text-[11px] text-muted-foreground">Ação recomendada</p>
               </div>
             </div>
-            <div class="mt-4 min-h-0 flex-1 overflow-y-auto rounded-lg border border-border/50 bg-background/40 p-3 text-sm leading-relaxed">{{ r.analise?.acao_recomendada ?? '—' }}</div>
-            <button type="button" class="btn-primary mt-4 w-full shrink-0">Gerar plano de ação</button>
+            <div class="mt-4 min-h-0 flex-1 overflow-y-auto space-y-4 rounded-lg border border-border/50 bg-background/40 p-3 text-sm leading-relaxed">
+              @if (planoParametrosLoading()) {
+                <div class="space-y-2">
+                  <div class="skeleton h-3 w-full rounded"></div>
+                  <div class="skeleton h-3 w-[96%] rounded"></div>
+                  <div class="skeleton h-3 w-[88%] rounded"></div>
+                  <div class="skeleton mt-4 h-16 w-full rounded-lg"></div>
+                </div>
+              } @else if (planoParametrosError(); as planoErr) {
+                <p class="text-destructive">{{ planoErr }}</p>
+              } @else if (planoParametros(); as plano) {
+                <p class="whitespace-pre-wrap font-medium text-foreground">{{ planoAcaoPrincipal(plano) }}</p>
+
+                @if (plano.analise_ia; as ia) {
+                  <div class="flex flex-wrap gap-2 border-t border-border/50 pt-3">
+                    @if (ia.nivel_risco) {
+                      <span class="rounded-md border border-border/60 bg-card px-2 py-0.5 text-[11px]">
+                        Risco <span class="font-semibold">{{ ia.nivel_risco }}</span>
+                      </span>
+                    }
+                    @if (ia.score_ia != null) {
+                      <span class="rounded-md border border-border/60 bg-card px-2 py-0.5 text-[11px] tabular-nums">
+                        Score IA <span class="font-semibold">{{ ia.score_ia }}</span>
+                      </span>
+                    }
+                    @if (ia.ajuste_ia != null) {
+                      <span class="rounded-md border border-border/60 bg-card px-2 py-0.5 text-[11px] tabular-nums">
+                        Ajuste IA <span class="font-semibold" [class]="breakdownDeltaClass(ia.ajuste_ia)">{{ formatDeltaScore(ia.ajuste_ia) }}</span>
+                      </span>
+                    }
+                    @if (ia.perfil_uso) {
+                      <span class="rounded-md border border-border/60 bg-card px-2 py-0.5 text-[11px]">
+                        Perfil <span class="font-semibold">{{ formatPerfilUso(ia.perfil_uso) }}</span>
+                      </span>
+                    }
+                  </div>
+                }
+
+                @if (plano.metricas_derivadas; as md) {
+                  <div class="grid grid-cols-2 gap-2 border-t border-border/50 pt-3 text-[11px]">
+                    @if (md.variacao_uso_pct != null) {
+                      <div class="rounded-md bg-muted/30 px-2 py-1.5">
+                        <span class="text-muted-foreground">Variação uso</span>
+                        <p class="font-semibold tabular-nums" [class]="breakdownDeltaClass(md.variacao_uso_pct)">{{ formatDeltaPct(md.variacao_uso_pct) }}</p>
+                      </div>
+                    }
+                    @if (md.score_saude_base != null) {
+                      <div class="rounded-md bg-muted/30 px-2 py-1.5">
+                        <span class="text-muted-foreground">Saúde base</span>
+                        <p class="font-semibold tabular-nums">{{ md.score_saude_base }}</p>
+                      </div>
+                    }
+                    @if (md.pct_core != null) {
+                      <div class="rounded-md bg-muted/30 px-2 py-1.5">
+                        <span class="text-muted-foreground">% core</span>
+                        <p class="font-semibold tabular-nums">{{ md.pct_core }}%</p>
+                      </div>
+                    }
+                    @if (md.pct_automatizado != null) {
+                      <div class="rounded-md bg-muted/30 px-2 py-1.5">
+                        <span class="text-muted-foreground">% automatizado</span>
+                        <p class="font-semibold tabular-nums">{{ md.pct_automatizado }}%</p>
+                      </div>
+                    }
+                    @if (md.perfil_sugerido) {
+                      <div class="col-span-2 rounded-md bg-muted/30 px-2 py-1.5">
+                        <span class="text-muted-foreground">Perfil sugerido</span>
+                        <p class="font-semibold">{{ formatPerfilUso(md.perfil_sugerido) }}</p>
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if ((plano.alertas?.length ?? 0) > 0) {
+                  <div class="border-t border-border/50 pt-3">
+                    <p class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Alertas</p>
+                    <ul class="space-y-2">
+                      @for (alerta of plano.alertas!; track $index) {
+                        <li class="rounded-md border px-2.5 py-2 text-xs leading-relaxed" [class]="alertaTipoClass(alerta.tipo)">
+                          {{ alerta.mensagem }}
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                @if ((plano.score_breakdown?.length ?? 0) > 0) {
+                  <div class="border-t border-border/50 pt-3">
+                    <p class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fatores do score</p>
+                    <ul class="space-y-2.5">
+                      @for (item of planoBreakdownOrdenado(plano); track item.fator) {
+                        <li>
+                          <div class="flex items-baseline justify-between gap-2">
+                            <span class="text-xs font-medium">{{ item.fator }}</span>
+                            <span class="shrink-0 text-xs font-semibold tabular-nums" [class]="breakdownDeltaClass(item.delta)">{{ formatDeltaScore(item.delta) }}</span>
+                          </div>
+                          <p class="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">{{ item.descricao }}</p>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                }
+
+                @if (plano.analise_ia?.motivos?.length) {
+                  <div class="border-t border-border/50 pt-3">
+                    <p class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Motivos (IA)</p>
+                    <ol class="list-inside list-decimal space-y-1 text-xs text-muted-foreground">
+                      @for (m of plano.analise_ia!.motivos!; track $index) {
+                        <li class="leading-relaxed">{{ m }}</li>
+                      }
+                    </ol>
+                  </div>
+                }
+              } @else {
+                <p class="whitespace-pre-wrap text-muted-foreground">{{ acaoRecomendadaInicial(r) }}</p>
+              }
+            </div>
+            <button
+              type="button"
+              class="btn-primary mt-4 w-full shrink-0 disabled:opacity-60"
+              [disabled]="planoParametrosLoading()"
+              (click)="gerarPlanoDeAcao(r.cliente.owner_id)"
+            >
+              @if (planoParametrosLoading()) {
+                Gerando plano…
+              } @else if (planoParametros()) {
+                Atualizar plano de ação
+              } @else {
+                Gerar plano de ação
+              }
+            </button>
           </div>
         </div>
       </aside>

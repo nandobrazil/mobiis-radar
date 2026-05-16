@@ -2,7 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
-import type { RelatorioClienteDetalle, RelatorioClienteItem } from '../data/relatorio-clientes.types';
+import type {
+  RelatorioClienteDetalle,
+  RelatorioClienteItem,
+  RelatorioClienteParametros,
+} from '../data/relatorio-clientes.types';
 import type { ClienteContextoDto } from './cliente-contexto.service';
 import { environment } from '../../environments/environment';
 
@@ -104,6 +108,11 @@ export function clienteDetalleUrl(ownerId: string): string {
 /** GET item do relatorio (mesmo formato de `/clientes`). Usado na pagina de detalhe sem listar todos. */
 export function relatorioClienteResumoUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}`;
+}
+
+/** GET parâmetros e plano de ação (IA + métricas derivadas). */
+export function relatorioClienteParametrosUrl(ownerId: string): string {
+  return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}/parametros`;
 }
 
 /** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo). */
@@ -338,5 +347,13 @@ export class RelatorioClientesService {
     this.clienteDetalle.set(null);
     this.clienteDetalleLoading.set(false);
     this.clienteDetalleError.set(null);
+  }
+
+  fetchClienteParametros(ownerId: string) {
+    const oid = ownerId?.trim();
+    if (!oid) {
+      throw new Error('owner_id obrigatório');
+    }
+    return this.http.get<RelatorioClienteParametros>(relatorioClienteParametrosUrl(oid));
   }
 }
