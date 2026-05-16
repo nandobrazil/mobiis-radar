@@ -101,7 +101,6 @@ export class AppComponent {
     { title: 'Dashboard', url: '/', icon: LucideLayoutDashboard },
     { title: 'Clientes', url: '/radar', icon: LucideRadar },
     { title: 'Comercial', url: '/comercial', icon: LucideBriefcase },
-    { title: 'Executivo', url: '/executivo', icon: LucideLineChart },
     { title: 'Insights IA', url: '/insights', icon: LucideSparkles },
     { title: 'Movidesk', url: '/movidesk', icon: LucideTicket },
   ];
