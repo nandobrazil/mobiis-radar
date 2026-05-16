@@ -144,7 +144,7 @@
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h3 class="text-sm font-semibold">Contexto do CS</h3>
-              <p class="text-xs text-muted-foreground">Notas do time para analise e IA</p>
+              <p class="text-xs text-muted-foreground">Notas do time para análise e IA</p>
             </div>
             <button
               type="button"
@@ -165,7 +165,7 @@
           } @else if (contextoPagina(); as ctx) {
             <p class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{{ ctx.contexto.trim() ? ctx.contexto : '—' }}</p>
             <p class="mt-3 text-[11px] text-muted-foreground">
-              Ultima atualizacao: {{ formatIso(ctx.atualizado_em) }}
+              Última atualização: {{ formatIso(ctx.atualizado_em) }}
               @if (ctx.autor) {
                 <span class="mx-1">·</span> Autor: {{ ctx.autor }}
               }
@@ -177,7 +177,7 @@
 
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
           <h3 class="text-sm font-semibold">Resumo</h3>
-          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{{ r.analise?.resumo ?? 'Resumo indisponivel.' }}</p>
+          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{{ r.analise?.resumo ?? 'Resumo indisponível.' }}</p>
         </div>
 
         <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
@@ -224,8 +224,8 @@
                       <th class="pb-2 pr-2 font-medium">Neg. 30d</th>
                       <th class="pb-2 pr-2 font-medium">Neg. 90d</th>
                       <th class="pb-2 pr-2 font-medium">Auto 30d</th>
-                      <th class="pb-2 pr-2 font-medium">Usuarios</th>
-                      <th class="pb-2 font-medium">Ultima acao</th>
+                      <th class="pb-2 pr-2 font-medium">Usuários</th>
+                      <th class="pb-2 font-medium">Última ação</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-border">
@@ -270,9 +270,9 @@
               </div>
 
               <div>
-                <!-- <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tendencia semanal</h4>
+                <!-- <h4 class="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tendência semanal</h4>
                 @if (d.tendencia_semanal.length === 0) {
-                  <p class="text-sm text-muted-foreground">Nenhum dado de serie semanal disponivel.</p>
+                  <p class="text-sm text-muted-foreground">Nenhum dado de série semanal disponível.</p>
                 } @else {
                   <pre class="overflow-x-auto rounded-lg border border-border bg-muted/30 p-3 text-xs leading-relaxed">{{ d.tendencia_semanal | json }}</pre>
                 } -->
@@ -296,7 +296,7 @@
               </div>
             </div>
             <div class="mt-4 min-h-0 flex-1 overflow-y-auto rounded-lg border border-border/50 bg-background/40 p-3 text-sm leading-relaxed">{{ r.analise?.acao_recomendada ?? '—' }}</div>
-            <button type="button" class="btn-primary mt-4 w-full shrink-0">Gerar plano de acao</button>
+            <button type="button" class="btn-primary mt-4 w-full shrink-0">Gerar plano de ação</button>
           </div>
         </div>
       </aside>
@@ -321,9 +321,9 @@
     </div>
   } @else {
     <div class="page-shell">
-    <app-top-bar title="Cliente nao encontrado" subtitle="Volte à lista de clientes para selecionar outro cliente" />
+    <app-top-bar title="Cliente não encontrado" subtitle="Volte à lista de clientes para selecionar outro cliente" />
     <main class="page-shell-body grid place-items-center p-10 text-sm text-muted-foreground">
-      Cliente nao encontrado. <a routerLink="/radar" class="ml-2 text-primary">Voltar aos clientes</a>
+      Cliente não encontrado. <a routerLink="/radar" class="ml-2 text-primary">Voltar aos clientes</a>
     </main>
     </div>
   }
@@ -353,11 +353,11 @@
           rows="8"
           [value]="contextoDraft()"
           (input)="contextoDraft.set(($any($event.target).value))"
-          placeholder="Digite observacoes, historico ou proximos passos..."
+          placeholder="Digite observações, histórico ou próximos passos..."
         ></textarea>
         @if (contextoCarregado(); as ctx) {
           <p class="mt-3 text-[11px] text-muted-foreground">
-            Ultima atualizacao: {{ formatIso(ctx.atualizado_em) }}
+            Última atualização: {{ formatIso(ctx.atualizado_em) }}
             @if (ctx.autor) {
               <span class="mx-1">·</span> Autor: {{ ctx.autor }}
             }

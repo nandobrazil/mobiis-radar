@@ -27,8 +27,8 @@ export class InsightsPageComponent {
   protected readonly insights = [
     {
       icon: LucideTriangleAlert,
-      title: 'Risco crescente no segmento Logistica 3PL',
-      body: 'Detectamos 4 clientes com queda media de 22% na utilizacao da Torre de Controle nos ultimos 14 dias.',
+      title: 'Risco crescente no segmento Logística 3PL',
+      body: 'Detectamos 4 clientes com queda média de 22% na utilização da Torre de Controle nos últimos 14 dias.',
       cta: 'Ver clientes afetados',
       border: 'border-destructive/30',
       tint: 'from-destructive/15',
@@ -45,7 +45,7 @@ export class InsightsPageComponent {
     },
     {
       icon: LucideCircleDashed,
-      title: 'Padrao de churn identificado',
+      title: 'Padrão de churn identificado',
       body: 'Clientes com score abaixo de 50 e sem uso por 18+ dias apresentam 78% de probabilidade de cancelamento em 60 dias.',
       cta: 'Aplicar playbook CS',
       border: 'border-info/30',
@@ -54,8 +54,8 @@ export class InsightsPageComponent {
     },
     {
       icon: LucideRadar,
-      title: 'Expansao recomendada',
-      body: '8 clientes saudaveis com 3+ produtos ativos demonstram aderencia para upgrade de plano enterprise.',
+      title: 'Expansão recomendada',
+      body: '8 clientes saudáveis com 3+ produtos ativos demonstram aderência para upgrade de plano enterprise.',
       cta: 'Ver oportunidades',
       border: 'border-success/30',
       tint: 'from-success/15',

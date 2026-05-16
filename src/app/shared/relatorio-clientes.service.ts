@@ -183,7 +183,7 @@ export class RelatorioClientesService {
     const s = this.stats();
     return [
       { label: 'Alto', value: s.alto },
-      { label: 'Medio', value: s.medio },
+      { label: 'Médio', value: s.medio },
       { label: 'Baixo', value: s.baixo },
       { label: 'Sem IA', value: s.semAnalise },
     ];
@@ -226,7 +226,7 @@ export class RelatorioClientesService {
           this.error.set(null);
         },
         error: () => {
-          this.error.set('Falha ao carregar clientes do relatorio. Verifique conexao ou CORS do servidor.');
+          this.error.set('Falha ao carregar clientes do relatório. Verifique conexão ou CORS do servidor.');
           this.items.set([]);
         },
       });
@@ -269,7 +269,7 @@ export class RelatorioClientesService {
           }
           this.relatorioClienteResumo.set(null);
           this.relatorioClienteResumoError.set(
-            'Nao foi possivel carregar os dados deste cliente. Verifique o endpoint `/api/relatorio/cliente/{id}` ou a rede.',
+            'Não foi possível carregar os dados deste cliente. Verifique o endpoint `/api/relatorio/cliente/{id}` ou a rede.',
           );
         },
       });
@@ -312,7 +312,7 @@ export class RelatorioClientesService {
             return;
           }
           this.clienteDetalle.set(null);
-          this.clienteDetalleError.set('Nao foi possivel carregar o detalhe operacional (CORS ou rede).');
+          this.clienteDetalleError.set('Não foi possível carregar o detalhe operacional (CORS ou rede).');
         },
       });
   }

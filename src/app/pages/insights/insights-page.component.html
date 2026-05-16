@@ -1,5 +1,5 @@
 <div class="page-shell">
-  <app-top-bar title="Mobiis AI Insights" subtitle="Recomendacoes geradas por inteligencia artificial" />
+  <app-top-bar title="Mobiis AI Insights" subtitle="Recomendações geradas por inteligência artificial" />
   <main class="page-shell-body space-y-6 p-4 md:p-6">
   <section class="relative overflow-hidden rounded-2xl border border-primary/30 bg-card p-6 shadow-elegant">
     <div class="absolute inset-0 bg-grid opacity-30"></div>
@@ -10,12 +10,12 @@
       </div>
       <div>
         <span class="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-          Analise continua
+          Análise contínua
         </span>
         <h2 class="mt-2 text-2xl font-semibold tracking-tight">
-          A IA processou <span class="text-gradient">{{ customers.length }} clientes</span> e gerou {{ insights.length }} insights estrategicos
+          A IA processou <span class="text-gradient">{{ customers.length }} clientes</span> e gerou {{ insights.length }} insights estratégicos
         </h2>
-        <p class="text-sm text-muted-foreground">Ultima atualizacao ha 4 minutos</p>
+        <p class="text-sm text-muted-foreground">Última atualização há 4 minutos</p>
       </div>
     </div>
   </section>
@@ -42,7 +42,7 @@
 
   <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
     <h3 class="text-sm font-semibold">Ações priorizadas pela IA</h3>
-    <p class="text-xs text-muted-foreground">Clientes que requerem atuacao imediata</p>
+    <p class="text-xs text-muted-foreground">Clientes que requerem atuação imediata</p>
     <div class="mt-4 divide-y divide-border">
       @for (customer of featured; track customer.id) {
         <a [routerLink]="['/cliente', customer.id]" class="-mx-2 flex items-center gap-3 rounded-md px-2 py-3 hover:bg-muted/30">

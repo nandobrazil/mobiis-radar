@@ -18,8 +18,8 @@ export const routes: Routes = [
   { path: 'movidesk', component: MovideskPageComponent, title: 'Movidesk - Mobiis Radar' },
   { path: 'tickets', redirectTo: 'movidesk', pathMatch: 'full' },
   { path: 'insights', component: InsightsPageComponent, title: 'Insights IA - Mobiis Radar' },
-  { path: 'integracoes', component: IntegracoesPageComponent, title: 'Integracoes - Mobiis Radar' },
-  { path: 'configuracoes', component: ConfiguracoesPageComponent, title: 'Configuracoes - Mobiis Radar' },
+  { path: 'integracoes', component: IntegracoesPageComponent, title: 'Integrações - Mobiis Radar' },
+  { path: 'configuracoes', component: ConfiguracoesPageComponent, title: 'Configurações - Mobiis Radar' },
   { path: 'cliente/:id', component: CustomerDetailPageComponent, title: 'Cliente - Mobiis Radar' },
   { path: '**', redirectTo: '' },
 ];

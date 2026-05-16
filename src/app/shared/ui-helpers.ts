@@ -25,7 +25,7 @@ export function initials(name: string) {
 
 export function riskLabel(risk: RiskLevel) {
   const labels: Record<RiskLevel, string> = {
-    saudavel: 'Saudavel',
+    saudavel: 'Saudável',
     atencao: 'Atenção',
     risco: 'Risco alto',
   };

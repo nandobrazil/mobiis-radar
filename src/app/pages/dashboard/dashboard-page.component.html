@@ -1,5 +1,5 @@
 <div class="page-shell">
-  <app-top-bar title="Dashboard Estrategico" [subtitle]="subtitle()" />
+  <app-top-bar title="Dashboard Estratégico" [subtitle]="subtitle()" />
   <main class="page-shell-body space-y-6 p-4 md:p-6">
   @if (relatorio.error(); as msg) {
     <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -49,7 +49,7 @@
               <app-icon [icon]="iconActivity" size="20" strokeWidth="2" svgClass="size-5" />
             </div>
             <div class="leading-tight">
-              <p class="text-xs text-muted-foreground">Score IA medio</p>
+              <p class="text-xs text-muted-foreground">Score IA médio</p>
               <p class="text-lg font-semibold tabular-nums">{{ stats().scoreIaMedio }}</p>
             </div>
           </div>
@@ -58,7 +58,7 @@
               <app-icon [icon]="iconAlertHigh" size="20" strokeWidth="2" svgClass="size-5" />
             </div>
             <div class="leading-tight">
-              <p class="text-xs text-muted-foreground">Dias sem uso (media)</p>
+              <p class="text-xs text-muted-foreground">Dias sem uso (média)</p>
               <p class="text-lg font-semibold tabular-nums">{{ stats().diasInativosMedio }}</p>
             </div>
           </div>
@@ -83,10 +83,10 @@
         [value]="stats().total"
         [icon]="iconUsers"
         tone="primary"
-        [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com analise IA'"
+        [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com análise IA'"
       />
       <app-kpi-card label="Risco alto" [value]="stats().alto" [icon]="iconAlertHigh" tone="danger" [hint]="pct(stats().alto)" />
-      <app-kpi-card label="Risco medio" [value]="stats().medio" [icon]="iconAlertMed" tone="warning" [hint]="pct(stats().medio)" />
+      <app-kpi-card label="Risco médio" [value]="stats().medio" [icon]="iconAlertMed" tone="warning" [hint]="pct(stats().medio)" />
       <app-kpi-card label="Risco baixo" [value]="stats().baixo" [icon]="iconHeart" tone="success" [hint]="pct(stats().baixo)" />
       <app-kpi-card
         label="Sem ações 30d"
@@ -102,12 +102,12 @@
     <div class="rounded-2xl border border-border bg-card p-5 shadow-card lg:col-span-2">
       <div class="mb-4 flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-semibold">Distribuicao por nivel de risco</h3>
-          <p class="text-xs text-muted-foreground">Todos os clientes do relatorio (risco IA + sem IA)</p>
+          <h3 class="text-sm font-semibold">Distribuição por nível de risco</h3>
+          <p class="text-xs text-muted-foreground">Todos os clientes do relatório (risco IA + sem IA)</p>
         </div>
         <div class="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-destructive"></span>Alto</span>
-          <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-warning"></span>Medio</span>
+          <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-warning"></span>Médio</span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-success"></span>Baixo</span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-muted-foreground/60"></span>Sem IA</span>
         </div>
@@ -117,7 +117,7 @@
           <app-bar-chart-panel-skeleton />
         </div>
       } @else if (relatorio.items().length === 0 && !relatorio.error()) {
-        <div class="grid h-[280px] place-items-center text-sm text-muted-foreground">Nenhum dado disponivel.</div>
+        <div class="grid h-[280px] place-items-center text-sm text-muted-foreground">Nenhum dado disponível.</div>
       } @else {
         <div class="h-[280px]">
           <app-bar-chart [data]="relatorio.riskChartData()" labelKey="label" valueKey="value" />
@@ -128,7 +128,7 @@
     <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div class="mb-3">
         <h3 class="text-sm font-semibold">Mapa de clientes</h3>
-        <p class="text-xs text-muted-foreground">Distribuicao geografica (demo)</p>
+        <p class="text-xs text-muted-foreground">Distribuição geográfica (demo)</p>
       </div>
       <app-geo-map [height]="300" />
     </div>
@@ -136,8 +136,8 @@
 
   <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
     <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
-      <h3 class="text-sm font-semibold">Segmentos mais saudaveis</h3>
-      <p class="text-xs text-muted-foreground">Referencias fixas por vertical (dados demo, nao vem do relatorio)</p>
+      <h3 class="text-sm font-semibold">Segmentos mais saudáveis</h3>
+      <p class="text-xs text-muted-foreground">Referências fixas por vertical (dados demo, não vêm do relatório)</p>
       <div class="mt-4 space-y-3">
         @for (segment of segmentRanking; track segment.segment; let i = $index) {
           <div class="flex items-center gap-3">
@@ -161,7 +161,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-sm font-semibold">Destaque da carteira</h3>
-          <p class="text-xs text-muted-foreground">Ordenado por score IA quando existir; senao por uso operacional</p>
+          <p class="text-xs text-muted-foreground">Ordenado por score IA quando existir; senão por uso operacional</p>
         </div>
         <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver todos os clientes →</a>
       </div>
@@ -180,7 +180,7 @@
           }
         </div>
       } @else if (relatorio.clientesDestaque().length === 0) {
-        <div class="mt-6 py-8 text-center text-sm text-muted-foreground">Nenhum cliente no relatorio.</div>
+        <div class="mt-6 py-8 text-center text-sm text-muted-foreground">Nenhum cliente no relatório.</div>
       } @else {
         <div class="mt-4 divide-y divide-border">
           @for (row of relatorio.clientesDestaque(); track row.cliente.owner_id) {
@@ -194,7 +194,7 @@
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-medium">{{ row.cliente.nome_cliente }}</p>
                 <p class="text-xs text-muted-foreground">
-                  {{ row.cliente.dias_sem_atividade }}d sem uso · {{ row.cliente.acoes_30d }} acoes/30d
+                  {{ row.cliente.dias_sem_atividade }}d sem uso · {{ row.cliente.acoes_30d }} ações/30d
                 </p>
               </div>
               <app-score-bar [score]="rowHealth(row)" />

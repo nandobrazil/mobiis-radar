@@ -60,7 +60,7 @@ export class RadarPageComponent implements OnInit {
   protected readonly riskFilterOptions: { label: string; value: string }[] = [
     { label: 'Todos - Risco', value: ALL },
     { label: 'Alto', value: 'ALTO' },
-    { label: 'Medio', value: 'MEDIO' },
+    { label: 'Médio', value: 'MEDIO' },
     { label: 'Baixo', value: 'BAIXO' },
   ];
   protected readonly q = signal('');

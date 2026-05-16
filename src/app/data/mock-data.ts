@@ -18,8 +18,8 @@ export interface Customer {
   mrr: number;
 }
 
-const SEGMENTS = ['Varejo', 'Industria', 'Logistica 3PL', 'E-commerce', 'Distribuicao', 'FMCG', 'Farma'];
-const PRODUCTS = ['Roteirizacao', 'Torre de Controle', 'Planner', 'ERP Connect', 'Mobile Driver', 'Analytics+'];
+const SEGMENTS = ['Varejo', 'Indústria', 'Logística 3PL', 'E-commerce', 'Distribuição', 'FMCG', 'Farma'];
+const PRODUCTS = ['Roteirização', 'Torre de Controle', 'Planner', 'ERP Connect', 'Mobile Driver', 'Analytics+'];
 const REGIONS = ['SP', 'RJ', 'MG', 'PR', 'RS', 'BA', 'PE', 'DF', 'SC', 'GO'];
 const SELLERS = ['Ana Lima', 'Bruno Sa', 'Carla Reis', 'Diego Costa', 'Eduarda M.', 'Felipe R.'];
 
@@ -37,7 +37,7 @@ const NAMES = [
   'TransLog Brasil', 'MoveFast Cargo', 'RotaPlus', 'EntregaJa', 'VialNorte',
   'CargoSmart', 'PrimeRoute', 'EcoDelivery', 'GrandeBR', 'AtlasCargo',
   'VeloxLog', 'RioFreight', 'MercoSul Trans', 'Agil Express', 'SudesteLog',
-  'Norte Distribuicao', 'MaxCargo', 'PortoFretes', 'BR Movimenta', 'Cidade Express',
+  'Norte Distribuição', 'MaxCargo', 'PortoFretes', 'BR Movimenta', 'Cidade Express',
   'Centroeste Log', 'Hyper Distri', 'Solar Cargo', 'Plena Rotas', 'OneFleet',
   'ZeroAtraso', 'Ondalogistica', 'Camino BR', 'PronTrans', 'Nucleo Cargo',
 ];
@@ -108,22 +108,22 @@ export const productAdoption = PRODUCTS.map((product, i) => ({
 }));
 
 export const funil = [
-  { stage: 'Prospeccao', value: 120 },
-  { stage: 'Qualificacao', value: 84 },
+  { stage: 'Prospecção', value: 120 },
+  { stage: 'Qualificação', value: 84 },
   { stage: 'Proposta', value: 52 },
-  { stage: 'Negociacao', value: 28 },
+  { stage: 'Negociação', value: 28 },
   { stage: 'Fechamento', value: 14 },
 ];
 
 export const integrations = [
   { name: 'PostgreSQL', type: 'Database', status: 'conectado', last: 'agora' },
-  { name: 'SQL Server', type: 'Database', status: 'sincronizando', last: '1m atras' },
-  { name: 'API Roteirizacao', type: 'REST API', status: 'conectado', last: '2m atras' },
-  { name: 'ERP TOTVS', type: 'ERP', status: 'atualizado', last: '12m atras' },
-  { name: 'ERP SAP', type: 'ERP', status: 'erro', last: '3h atras' },
-  { name: 'CSV Diario', type: 'Arquivo', status: 'atualizado', last: '1h atras' },
+  { name: 'SQL Server', type: 'Database', status: 'sincronizando', last: 'há 1 min' },
+  { name: 'API Roteirização', type: 'REST API', status: 'conectado', last: 'há 2 min' },
+  { name: 'ERP TOTVS', type: 'ERP', status: 'atualizado', last: 'há 12 min' },
+  { name: 'ERP SAP', type: 'ERP', status: 'erro', last: 'há 3 h' },
+  { name: 'CSV Diário', type: 'Arquivo', status: 'atualizado', last: 'há 1 h' },
   { name: 'Webhook Eventos', type: 'Webhook', status: 'conectado', last: 'agora' },
-  { name: 'API Torre de Controle', type: 'REST API', status: 'conectado', last: '5m atras' },
+  { name: 'API Torre de Controle', type: 'REST API', status: 'conectado', last: 'há 5 min' },
 ];
 
 export function kpis() {

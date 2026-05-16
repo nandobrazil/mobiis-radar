@@ -50,12 +50,12 @@ export class DashboardPageComponent implements OnInit {
 
   protected readonly subtitle = computed(() => {
     if (this.relatorio.loading() && this.relatorio.items().length === 0) {
-      return 'Carregando relatorio de clientes...';
+      return 'Carregando relatório de clientes...';
     }
     const n = this.stats().total;
     const t = this.relatorio.lastLoadedAt();
     const when = t ? ` · atualizado ${new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '';
-    return `${n} clientes no relatorio${when}`;
+    return `${n} clientes no relatório${when}`;
   });
 
   /** Índices para skeletons de layout (hero / KPI / lista). */

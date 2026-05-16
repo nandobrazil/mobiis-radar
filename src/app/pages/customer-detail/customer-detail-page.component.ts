@@ -73,8 +73,8 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly kpisSkeletonLabels = [0, 1, 2, 3, 4, 5, 6];
   protected readonly linhasMotivosSkeleton = [0, 1, 2, 3];
   protected readonly incidents = [
-    { d: '12/05', t: 'Atraso na sincronizacao ERP', dot: 'bg-warning' },
-    { d: '03/05', t: 'Queda de 12% nas operacoes de roteirizacao', dot: 'bg-destructive' },
+    { d: '12/05', t: 'Atraso na sincronização com o ERP', dot: 'bg-warning' },
+    { d: '03/05', t: 'Queda de 12% nas operações de roteirização', dot: 'bg-destructive' },
     { d: '21/04', t: 'Onboarding do produto Planner concluido', dot: 'bg-success' },
     { d: '08/04', t: 'Webhook de eventos reconfigurado', dot: 'bg-info' },
   ];
@@ -176,7 +176,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
             return;
           }
           this.contextoPagina.set(null);
-          this.contextoPaginaError.set('Nao foi possivel carregar o contexto.');
+          this.contextoPaginaError.set('Não foi possível carregar o contexto.');
         },
       });
   }
@@ -265,7 +265,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
           }
         },
         error: () => {
-          this.contextoError.set('Nao foi possivel carregar o contexto.');
+          this.contextoError.set('Não foi possível carregar o contexto.');
         },
       });
   }
@@ -303,7 +303,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
           this.carregarContextoPagina(ownerId);
         },
         error: () => {
-          this.contextoError.set('Nao foi possivel salvar o contexto.');
+          this.contextoError.set('Não foi possível salvar o contexto.');
         },
       });
   }

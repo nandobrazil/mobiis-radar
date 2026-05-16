@@ -1,5 +1,5 @@
 <div class="page-shell">
-  <app-top-bar title="Integracoes" subtitle="Fontes de dados conectadas a plataforma" />
+  <app-top-bar title="Integrações" subtitle="Fontes de dados conectadas à plataforma" />
   <main class="page-shell-body space-y-4 p-4 md:p-6">
   <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
     <div class="stat"><p>Conectadas</p><strong class="text-success">{{ connected }}</strong></div>
@@ -32,7 +32,7 @@
           </span>
         </div>
         <div class="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
-          <span class="text-xs text-muted-foreground">Ultima sync: {{ item.last }}</span>
+          <span class="text-xs text-muted-foreground">Última sync: {{ item.last }}</span>
           <button class="h-7 rounded px-2 text-xs transition hover:bg-muted">Configurar</button>
         </div>
       </div>
@@ -40,7 +40,7 @@
 
     <button class="grid place-items-center rounded-2xl border-2 border-dashed border-border bg-card/30 p-5 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary">
       <app-icon [icon]="iconPlus" size="32" strokeWidth="1.75" svgClass="mb-2 size-8 text-muted-foreground" />
-      Adicionar nova integracao
+      Adicionar nova integração
     </button>
   </section>
 </main>

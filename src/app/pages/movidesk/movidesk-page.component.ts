@@ -158,7 +158,7 @@ export class MovideskPageComponent implements OnInit {
       .subscribe({
         next: ({ chamados, resumo: resumoWrap }) => {
           if (chamados.error) {
-            this.error.set('Falha ao carregar chamados. Verifique rede ou CORS.');
+            this.error.set('Falha ao carregar chamados. Verifique a rede ou CORS.');
             this.items.set([]);
           } else {
             this.error.set(null);

@@ -33,7 +33,7 @@
           appendTo="body"
           [ngModel]="risk()"
           (ngModelChange)="onRiskFilterChange($event)"
-          aria-label="Filtrar por nivel de risco"
+          aria-label="Filtrar por nível de risco"
         />
       </div>
       <div class="flex flex-wrap gap-2">
@@ -192,7 +192,7 @@
                     (click)="toggleSort('usuarios')"
                     [attr.aria-sort]="ariaSort('usuarios')"
                   >
-                    <span>Usuarios</span>
+                    <span>Usuários</span>
                     @if (activeSortDirection('usuarios'); as dir) {
                       @if (dir === 'asc') {
                         <app-icon [icon]="iconSortUp" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0 text-primary" />
@@ -204,7 +204,7 @@
                     }
                   </button>
                 } @else {
-                  Usuarios
+                  Usuários
                 }
               </th>
               <th
@@ -217,7 +217,7 @@
                     class="inline-flex max-w-full items-center gap-1 rounded-md py-0.5 pl-0 pr-1 text-left font-medium text-foreground hover:bg-muted/50"
                     (click)="toggleSort('score_ia')"
                     [attr.aria-sort]="ariaSort('score_ia')"
-                    title="Saude 0-100: quanto maior, melhor. A linha 'Risco IA' e a nota bruta (maior = mais risco)."
+                    title="Saúde 0-100: quanto maior, melhor. A linha 'Risco IA' é a nota bruta (maior = mais risco)."
                   >
                     <span>Score IA</span>
                     @if (activeSortDirection('score_ia'); as dir) {
@@ -231,7 +231,7 @@
                     }
                   </button>
                 } @else {
-                  <span title="Saude 0-100: quanto maior, melhor. A linha 'Risco IA' e a nota bruta (maior = mais risco).">Score IA</span>
+                  <span title="Saúde 0-100: quanto maior, melhor. A linha 'Risco IA' é a nota bruta (maior = mais risco).">Score IA</span>
                 }
               </th>
               <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
@@ -306,7 +306,7 @@
                         class="inline-flex rounded-md border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
                         >Sem IA</span>
                       @if (row.erro) {
-                        <span class="truncate text-[10px] text-destructive/90" title="Erro na analise">Erro na analise</span>
+                        <span class="truncate text-[10px] text-destructive/90" title="Erro na análise">Erro na análise</span>
                       }
                     </span>
                   }

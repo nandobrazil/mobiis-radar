@@ -21,9 +21,9 @@ export class ComercialPageComponent {
   private readonly semUso = customers.filter((customer) => Date.now() - new Date(customer.lastUse).getTime() > 15 * 86400000).slice(0, 4);
 
   protected readonly cards = [
-    { icon: LucideTarget, title: 'Perfil semelhante', text: 'text-primary', tint: 'from-primary/15', description: 'Clientes com padrao operacional parecido', list: this.semelhantes },
-    { icon: LucideTrendingUp, title: 'Prontos para expansao', text: 'text-success', tint: 'from-success/15', description: 'Score alto e produtos complementares', list: this.expansao },
-    { icon: LucideTrendingDown, title: 'Baixa adocao', text: 'text-warning', tint: 'from-warning/15', description: 'Risco de nao atingir valor', list: this.baixaAdocao },
-    { icon: LucideCalendarX, title: 'Sem uso ha 15+ dias', text: 'text-destructive', tint: 'from-destructive/15', description: 'Necessitam reengajamento imediato', list: this.semUso },
+    { icon: LucideTarget, title: 'Perfil semelhante', text: 'text-primary', tint: 'from-primary/15', description: 'Clientes com padrão operacional parecido', list: this.semelhantes },
+    { icon: LucideTrendingUp, title: 'Prontos para expansão', text: 'text-success', tint: 'from-success/15', description: 'Score alto e produtos complementares', list: this.expansao },
+    { icon: LucideTrendingDown, title: 'Baixa adoção', text: 'text-warning', tint: 'from-warning/15', description: 'Risco de não atingir valor', list: this.baixaAdocao },
+    { icon: LucideCalendarX, title: 'Sem uso há 15+ dias', text: 'text-destructive', tint: 'from-destructive/15', description: 'Necessitam reengajamento imediato', list: this.semUso },
   ];
 }
