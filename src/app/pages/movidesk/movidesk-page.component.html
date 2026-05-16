@@ -1,0 +1,194 @@
+<div class="page-shell">
+  <app-top-bar title="Movidesk" [subtitle]="subtitle()" />
+  <main class="page-shell-body space-y-4 p-4 md:p-6">
+    @if (error(); as msg) {
+      <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        {{ msg }}
+        <button type="button" class="ml-3 underline" (click)="load()">Tentar novamente</button>
+      </div>
+    }
+
+    @if (resumoError()) {
+      <div
+        class="rounded-lg border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-warning-foreground"
+        role="status"
+      >
+        Não foi possível carregar os indicadores agregados. A tabela de chamados pode
+        aparecer normalmente abaixo.
+        <button type="button" class="ml-3 underline" (click)="load()">Tentar novamente</button>
+      </div>
+    }
+
+    <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <div class="relative flex-1">
+          <svg lucideSearch class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth="2" />
+          <input
+            [value]="q()"
+            (input)="q.set($any($event.target).value); page.set(1)"
+            placeholder="Buscar por ID, assunto, status, tags, cliente..."
+            class="h-10 w-full rounded-lg border border-border bg-background pl-9 text-sm outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <button type="button" class="btn-outline shrink-0" [disabled]="loading()" (click)="load()">
+          {{ loading() ? 'Atualizando...' : 'Atualizar' }}
+        </button>
+      </div>
+      <p class="mt-2 text-[11px] text-muted-foreground">
+        Fontes: <code class="rounded bg-muted px-1">GET /api/movidesk/tickets</code> e
+        <code class="rounded bg-muted px-1">GET /api/movidesk/resumo</code>
+        — base URL em <code class="rounded bg-muted px-1">environment.apiBaseUrl</code>
+      </p>
+    </div>
+
+    @if (resumo(); as r) {
+      <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <app-kpi-card
+          label="Total no período"
+          [value]="r.total"
+          [icon]="iconTotal"
+          tone="primary"
+          [hint]="'Últimos ' + r.periodo_dias + ' dias'"
+        />
+        <app-kpi-card label="Abertos" [value]="r.abertos" [icon]="iconAbertos" tone="warning" />
+        <app-kpi-card label="Em andamento" [value]="r.em_andamento" [icon]="iconAndamento" tone="primary" />
+        <app-kpi-card label="Encerrados" [value]="r.encerrados" [icon]="iconEncerrados" tone="success" />
+        <app-kpi-card
+          class="col-span-2 md:col-span-1 xl:col-span-1"
+          label="Tempo médio resolução"
+          [value]="formatHoras(r.tempo_medio_resolucao_horas)"
+          [icon]="iconTempo"
+          tone="default"
+          hint="Horas úteis (API)"
+        />
+      </section>
+
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <div class="mb-3">
+            <h3 class="text-sm font-semibold">Por status</h3>
+            <p class="text-xs text-muted-foreground">Valores sem classificação entram em Outros</p>
+          </div>
+          @if (chartStatus().length === 0) {
+            <div class="grid h-[200px] place-items-center text-sm text-muted-foreground">Sem dados.</div>
+          } @else {
+            <div class="h-[220px]">
+              <app-bar-chart [data]="chartStatus()" labelKey="label" valueKey="value" />
+            </div>
+          }
+        </div>
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <div class="mb-3">
+            <h3 class="text-sm font-semibold">Por categoria</h3>
+            <p class="text-xs text-muted-foreground">Chave null agrupada em Outros</p>
+          </div>
+          @if (chartCategoria().length === 0) {
+            <div class="grid h-[200px] place-items-center text-sm text-muted-foreground">Sem dados.</div>
+          } @else {
+            <div class="h-[220px]">
+              <app-bar-chart [data]="chartCategoria()" labelKey="label" valueKey="value" />
+            </div>
+          }
+        </div>
+        <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <div class="mb-3">
+            <h3 class="text-sm font-semibold">Por urgência</h3>
+            <p class="text-xs text-muted-foreground">Chave null agrupada em Outros</p>
+          </div>
+          @if (chartUrgencia().length === 0) {
+            <div class="grid h-[200px] place-items-center text-sm text-muted-foreground">Sem dados.</div>
+          } @else {
+            <div class="h-[220px]">
+              <app-bar-chart [data]="chartUrgencia()" labelKey="label" valueKey="value" />
+            </div>
+          }
+        </div>
+      </section>
+    } @else if (loading() && !resumoError()) {
+      <div class="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground shadow-card">
+        Carregando indicadores Movidesk...
+      </div>
+    }
+
+    <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+      <div class="border-b border-border px-4 py-3">
+        <h2 class="text-sm font-semibold">Chamados Movidesk</h2>
+        <p class="text-xs text-muted-foreground">Lista via GET /api/movidesk/tickets</p>
+      </div>
+      @if (loading() && items().length === 0 && !error()) {
+        <div class="p-12 text-center text-sm text-muted-foreground">Carregando chamados...</div>
+      } @else if (!loading() && filtered().length === 0 && !error()) {
+        <div class="p-12 text-center text-sm text-muted-foreground">Nenhum chamado encontrado.</div>
+      } @else {
+        <div class="flex flex-col">
+          <app-data-table [tableClass]="'min-w-[1040px]'">
+            <tr data-table-head-row>
+              <th class="px-4 py-3 text-left font-medium">ID</th>
+              <th class="px-4 py-3 text-left font-medium">Assunto</th>
+              <th class="px-4 py-3 text-left font-medium">Tags</th>
+              <th class="px-4 py-3 text-left font-medium">Status</th>
+              <th class="px-4 py-3 text-left font-medium">Urgência</th>
+              <th class="px-4 py-3 text-left font-medium">Categoria</th>
+              <th class="px-4 py-3 text-left font-medium">Equipe</th>
+              <th class="px-4 py-3 text-left font-medium">Clientes</th>
+              <th class="px-4 py-3 text-left font-medium">Criado</th>
+              <th class="px-4 py-3 text-left font-medium">Atualizado</th>
+            </tr>
+            @for (row of pageSlice(); track row.id) {
+              <tr class="transition-colors hover:bg-muted/20">
+                <td class="px-4 py-3 align-top font-mono text-xs tabular-nums text-muted-foreground">{{ row.id }}</td>
+                <td class="max-w-[min(420px,40vw)] px-4 py-3 align-top">
+                  <span class="line-clamp-2 font-medium leading-snug" [title]="row.subject">{{ row.subject }}</span>
+                </td>
+                <td class="max-w-[200px] px-4 py-3 align-top">
+                  @if (row.tags.length === 0) {
+                    <span class="text-xs text-muted-foreground">—</span>
+                  } @else {
+                    <div class="flex max-w-[200px] flex-wrap gap-1">
+                      @for (tag of row.tags; track tag) {
+                        <span
+                          class="inline-block max-w-full truncate rounded-md border border-border/80 bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                          [title]="tag"
+                          >{{ tag }}</span>
+                      }
+                    </div>
+                  }
+                </td>
+                <td class="px-4 py-3 align-top">
+                  <span
+                    class="inline-flex rounded-md border px-2 py-0.5 text-[11px] font-medium"
+                    [class]="statusTone(row.status)"
+                  >
+                    {{ row.status }}
+                  </span>
+                  <div class="mt-0.5 text-[10px] text-muted-foreground">{{ row.baseStatus }}</div>
+                </td>
+                <td class="px-4 py-3 align-top text-xs">{{ row.urgency }}</td>
+                <td class="px-4 py-3 align-top text-xs">{{ row.category ?? '—' }}</td>
+                <td class="max-w-[200px] px-4 py-3 align-top text-xs leading-relaxed text-muted-foreground">
+                  <span class="line-clamp-2" [title]="row.ownerTeam">{{ row.ownerTeam }}</span>
+                </td>
+                <td class="max-w-[220px] px-4 py-3 align-top text-xs text-muted-foreground">
+                  <span class="line-clamp-2" [title]="clientsLabel(row)">{{ clientsLabel(row) }}</span>
+                </td>
+                <td class="whitespace-nowrap px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                  {{ formatDt(row.createdDate) }}
+                </td>
+                <td class="whitespace-nowrap px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                  {{ formatDt(row.lastUpdate) }}
+                </td>
+              </tr>
+            }
+          </app-data-table>
+          <app-table-pagination-bar
+            [totalCount]="filtered().length"
+            [page]="page()"
+            [pageSize]="pageSize()"
+            (pageChange)="page.set($event)"
+            (pageSizeChange)="pageSize.set($event)"
+          />
+        </div>
+      }
+    </div>
+  </main>
+</div>

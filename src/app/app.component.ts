@@ -102,7 +102,7 @@ export class AppComponent {
     { title: 'Comercial', url: '/comercial', icon: LucideBriefcase },
     { title: 'Executivo', url: '/executivo', icon: LucideLineChart },
     { title: 'Insights IA', url: '/insights', icon: LucideSparkles },
-    { title: 'Tickets', url: '/tickets', icon: LucideTicket },
+    { title: 'Movidesk', url: '/movidesk', icon: LucideTicket },
   ];
   readonly config = [
   ];
