@@ -9,7 +9,7 @@
     }
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
       <div class="relative flex-1">
-        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
+        <svg lucideSearch class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" strokeWidth="2" />
         <input
           [value]="q()"
           (input)="q.set($any($event.target).value); page.set(1)"

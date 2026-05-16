@@ -1,4 +1,5 @@
 import { Component, inject, input } from '@angular/core';
+import { LucideBell, LucideMenu, LucideMoon, LucideSearch, LucideSun } from '@lucide/angular';
 
 import { MenuService } from '../menu.service';
 import { ThemeService } from '../theme.service';
@@ -6,6 +7,7 @@ import { ThemeService } from '../theme.service';
 @Component({
   selector: 'app-top-bar',
   standalone: true,
+  imports: [LucideBell, LucideMenu, LucideMoon, LucideSearch, LucideSun],
   templateUrl: './top-bar.component.html',
   styleUrl: './top-bar.component.css',
 })

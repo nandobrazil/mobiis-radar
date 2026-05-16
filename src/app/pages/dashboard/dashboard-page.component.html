@@ -14,7 +14,8 @@
     <div class="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <span class="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-          ✦ Relatorio de clientes — dados em tempo real
+          <svg lucideSparkles class="size-3.5 shrink-0" strokeWidth="2" />
+          Relatorio de clientes — dados em tempo real
         </span>
         @if (top20.loading() && top20.items().length === 0) {
           <h2 class="mt-3 text-2xl font-semibold tracking-tight md:text-3xl">Carregando carteira...</h2>
@@ -30,14 +31,18 @@
       </div>
       <div class="flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
-          <div class="grid h-10 w-10 place-items-center rounded-lg bg-warning/15 text-warning">⌁</div>
+          <div class="grid h-10 w-10 place-items-center rounded-lg bg-warning/15 text-warning">
+            <svg lucideActivity class="size-5" strokeWidth="2" />
+          </div>
           <div class="leading-tight">
             <p class="text-xs text-muted-foreground">Score IA medio</p>
             <p class="text-lg font-semibold tabular-nums">{{ stats().scoreIaMedio }}</p>
           </div>
         </div>
         <div class="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
-          <div class="grid h-10 w-10 place-items-center rounded-lg bg-destructive/15 text-destructive">!</div>
+          <div class="grid h-10 w-10 place-items-center rounded-lg bg-destructive/15 text-destructive">
+            <svg lucideAlertTriangle class="size-5" strokeWidth="2" />
+          </div>
           <div class="leading-tight">
             <p class="text-xs text-muted-foreground">Dias sem uso (media)</p>
             <p class="text-lg font-semibold tabular-nums">{{ stats().diasInativosMedio }}</p>
@@ -54,17 +59,17 @@
     <app-kpi-card
       label="Total de clientes"
       [value]="stats().total"
-      icon="◉"
+      [icon]="iconUsers"
       tone="primary"
       [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com analise IA'"
     />
-    <app-kpi-card label="Risco alto" [value]="stats().alto" icon="!" tone="danger" [hint]="pct(stats().alto)" />
-    <app-kpi-card label="Risco medio" [value]="stats().medio" icon="⌁" tone="warning" [hint]="pct(stats().medio)" />
-    <app-kpi-card label="Risco baixo" [value]="stats().baixo" icon="♡" tone="success" [hint]="pct(stats().baixo)" />
+    <app-kpi-card label="Risco alto" [value]="stats().alto" [icon]="iconAlertHigh" tone="danger" [hint]="pct(stats().alto)" />
+    <app-kpi-card label="Risco medio" [value]="stats().medio" [icon]="iconAlertMed" tone="warning" [hint]="pct(stats().medio)" />
+    <app-kpi-card label="Risco baixo" [value]="stats().baixo" [icon]="iconHeart" tone="success" [hint]="pct(stats().baixo)" />
     <app-kpi-card
       label="Sem acoes 30d"
       [value]="stats().inativos30d"
-      icon="○"
+      [icon]="iconInativos"
       tone="danger"
       [hint]="stats().total ? stats().inativos30d + ' de ' + stats().total : ''"
     />

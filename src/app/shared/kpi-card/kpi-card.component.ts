@@ -1,8 +1,11 @@
 import { Component, input } from '@angular/core';
+import type { LucideIconInput } from '@lucide/angular';
+import { LucideDynamicIcon, LucideTrendingDown, LucideTrendingUp } from '@lucide/angular';
 
 @Component({
   selector: 'app-kpi-card',
   standalone: true,
+  imports: [LucideDynamicIcon, LucideTrendingDown, LucideTrendingUp],
   templateUrl: './kpi-card.component.html',
   styleUrl: './kpi-card.component.css',
 })
@@ -10,7 +13,7 @@ export class KpiCardComponent {
   readonly label = input.required<string>();
   readonly value = input.required<string | number>();
   readonly delta = input<number>();
-  readonly icon = input.required<string>();
+  readonly icon = input.required<LucideIconInput>();
   readonly tone = input<'default' | 'success' | 'warning' | 'danger' | 'primary'>('default');
   readonly hint = input<string>();
 

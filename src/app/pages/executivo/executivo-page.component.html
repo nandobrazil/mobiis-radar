@@ -2,10 +2,10 @@
   <app-top-bar title="Visao Executiva" subtitle="Indicadores estrategicos da carteira" />
   <main class="page-shell-body space-y-6 p-4 md:p-6">
   <section class="grid grid-cols-2 gap-4 md:grid-cols-4">
-    <app-kpi-card label="Churn Risk Global" [value]="churn + '%'" [delta]="-3" icon="↻" tone="danger" />
-    <app-kpi-card label="Crescimento utilizacao" value="+18%" [delta]="6" icon="↗" tone="success" hint="Trimestre vs anterior" />
-    <app-kpi-card label="Retencao liquida" value="112%" [delta]="4" icon="♕" tone="primary" />
-    <app-kpi-card label="MRR estimado" [value]="'R$ ' + (k.mrr / 1000).toFixed(0) + 'k'" [delta]="9" icon="$" tone="success" />
+    <app-kpi-card label="Churn Risk Global" [value]="churn + '%'" [delta]="-3" [icon]="iconChurn" tone="danger" />
+    <app-kpi-card label="Crescimento utilizacao" value="+18%" [delta]="6" [icon]="iconGrowth" tone="success" hint="Trimestre vs anterior" />
+    <app-kpi-card label="Retencao liquida" value="112%" [delta]="4" [icon]="iconRetention" tone="primary" />
+    <app-kpi-card label="MRR estimado" [value]="'R$ ' + (k.mrr / 1000).toFixed(0) + 'k'" [delta]="9" [icon]="iconMrr" tone="success" />
   </section>
 
   <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">

@@ -1,6 +1,14 @@
 import { Component, OnDestroy, OnInit, computed, effect, inject, input } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import {
+  LucideCircleDashed,
+  LucideDynamicIcon,
+  LucideLayers,
+  LucideSettings,
+  LucideSparkles,
+  LucideTriangleAlert,
+} from '@lucide/angular';
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
@@ -14,7 +22,16 @@ import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-hel
 @Component({
   selector: 'app-customer-detail-page',
   standalone: true,
-  imports: [JsonPipe, LineChartComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TopBarComponent],
+  imports: [
+    JsonPipe,
+    LineChartComponent,
+    LucideDynamicIcon,
+    LucideSparkles,
+    RiskBadgeComponent,
+    RouterLink,
+    ScoreBarComponent,
+    TopBarComponent,
+  ],
   templateUrl: './customer-detail-page.component.html',
 })
 export class CustomerDetailPageComponent implements OnInit, OnDestroy {
@@ -141,11 +158,11 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
   protected aiSections(c: { score: number; potential: string }) {
     const firstUnused = this.unused()[0] ?? 'Analytics+';
     return [
-      { icon: '!', title: 'Risco de churn', tone: 'bg-destructive/10 text-destructive border-destructive/30', body: `Probabilidade estimada de <strong>${Math.max(5, 100 - c.score)}%</strong> nos proximos 60 dias.` },
-      { icon: '◌', title: 'Recomendacao para CS', tone: 'bg-info/10 text-info border-info/30', body: 'Agendar QBR com sponsor + revisar SLA da Torre de Controle.' },
-      { icon: '✦', title: 'Recomendacao comercial', tone: 'bg-primary/10 text-primary border-primary/30', body: `Apresentar pacote ${firstUnused} com piloto de 30 dias.` },
-      { icon: '⚙', title: 'Acoes preventivas', tone: 'bg-warning/10 text-warning border-warning/30', body: 'Reativar webhook de eventos e reforcar treinamento do Planner.' },
-      { icon: '↯', title: 'Produtos aderentes', tone: 'bg-primary/10 text-primary border-primary/30', body: this.unused().slice(0, 3).join(' - ') },
+      { icon: LucideTriangleAlert, title: 'Risco de churn', tone: 'bg-destructive/10 text-destructive border-destructive/30', body: `Probabilidade estimada de <strong>${Math.max(5, 100 - c.score)}%</strong> nos proximos 60 dias.` },
+      { icon: LucideCircleDashed, title: 'Recomendacao para CS', tone: 'bg-info/10 text-info border-info/30', body: 'Agendar QBR com sponsor + revisar SLA da Torre de Controle.' },
+      { icon: LucideSparkles, title: 'Recomendacao comercial', tone: 'bg-primary/10 text-primary border-primary/30', body: `Apresentar pacote ${firstUnused} com piloto de 30 dias.` },
+      { icon: LucideSettings, title: 'Acoes preventivas', tone: 'bg-warning/10 text-warning border-warning/30', body: 'Reativar webhook de eventos e reforcar treinamento do Planner.' },
+      { icon: LucideLayers, title: 'Produtos aderentes', tone: 'bg-primary/10 text-primary border-primary/30', body: this.unused().slice(0, 3).join(' - ') },
     ];
   }
 }

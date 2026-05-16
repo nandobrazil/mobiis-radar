@@ -1,5 +1,14 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import {
+  LucideActivity,
+  LucideAlertCircle,
+  LucideAlertTriangle,
+  LucideCircleOff,
+  LucideHeart,
+  LucideSparkles,
+  LucideUsersRound,
+} from '@lucide/angular';
 
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { segmentRanking } from '../../data/mock-data';
@@ -19,6 +28,9 @@ import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
     BarChartComponent,
     GeoMapComponent,
     KpiCardComponent,
+    LucideActivity,
+    LucideAlertTriangle,
+    LucideSparkles,
     RiskBadgeComponent,
     RouterLink,
     ScoreBarComponent,
@@ -63,4 +75,13 @@ export class DashboardPageComponent implements OnInit {
   protected riskLevel(nivel: string) {
     return nivelRiscoToRiskLevel(nivel);
   }
+
+  /** Icones Lucide para KPIs e hero (evita strings nos templates). */
+  protected readonly iconUsers = LucideUsersRound;
+  protected readonly iconAlertHigh = LucideAlertTriangle;
+  protected readonly iconAlertMed = LucideAlertCircle;
+  protected readonly iconHeart = LucideHeart;
+  protected readonly iconInativos = LucideCircleOff;
+  protected readonly iconSparkles = LucideSparkles;
+  protected readonly iconActivity = LucideActivity;
 }

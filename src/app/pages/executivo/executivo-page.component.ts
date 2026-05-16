@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { LucideCrown, LucideDollarSign, LucideRefreshCw, LucideTrendingUp } from '@lucide/angular';
 
 import { kpis, portfolioHealth, productAdoption, segmentRanking } from '../../data/mock-data';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
@@ -19,6 +20,10 @@ export class ExecutivoPageComponent {
   protected readonly productAdoption = productAdoption;
   protected readonly portfolioHealth = portfolioHealth;
   protected readonly distribuicao = segmentRanking.map((segment) => ({ name: segment.segment, value: segment.clientes }));
+  protected readonly iconChurn = LucideRefreshCw;
+  protected readonly iconGrowth = LucideTrendingUp;
+  protected readonly iconRetention = LucideCrown;
+  protected readonly iconMrr = LucideDollarSign;
   protected readonly series = [
     { key: 'saude', color: 'oklch(0.72 0.18 155)' },
     { key: 'atencao', color: 'oklch(0.82 0.16 90)' },

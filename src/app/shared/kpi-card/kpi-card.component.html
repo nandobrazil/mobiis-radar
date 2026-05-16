@@ -9,7 +9,7 @@
       }
     </div>
     <div class="grid h-10 w-10 place-items-center rounded-xl border border-border/60 bg-background/60" [class]="toneClass()">
-      <span class="text-lg">{{ icon() }}</span>
+      <svg [lucideIcon]="icon()" [size]="22" class="shrink-0" strokeWidth="2" />
     </div>
   </div>
   @if (delta() !== undefined) {
@@ -18,7 +18,12 @@
         class="inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-medium"
         [class]="positive() ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'"
       >
-        {{ positive() ? '↗' : '↘' }} {{ absDelta() }}%
+        @if (positive()) {
+          <svg lucideTrendingUp class="size-3.5 shrink-0" strokeWidth="2.5" />
+        } @else {
+          <svg lucideTrendingDown class="size-3.5 shrink-0" strokeWidth="2.5" />
+        }
+        {{ absDelta() }}%
       </span>
       <span class="text-muted-foreground">vs periodo anterior</span>
     </div>

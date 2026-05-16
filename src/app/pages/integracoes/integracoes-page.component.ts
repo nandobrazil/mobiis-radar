@@ -1,4 +1,17 @@
 import { Component } from '@angular/core';
+import type { LucideIconInput } from '@lucide/angular';
+import {
+  LucideBuilding2,
+  LucideCheck,
+  LucideDatabase,
+  LucideDynamicIcon,
+  LucideFileStack,
+  LucideLoader2,
+  LucidePlug,
+  LucidePlusCircle,
+  LucideTriangleAlert,
+  LucideWebhook,
+} from '@lucide/angular';
 
 import { integrations } from '../../data/mock-data';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
@@ -6,7 +19,7 @@ import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 @Component({
   selector: 'app-integracoes-page',
   standalone: true,
-  imports: [TopBarComponent],
+  imports: [LucideDynamicIcon, LucidePlusCircle, TopBarComponent],
   templateUrl: './integracoes-page.component.html',
 })
 export class IntegracoesPageComponent {
@@ -15,8 +28,12 @@ export class IntegracoesPageComponent {
   protected readonly syncing = integrations.filter((item) => item.status === 'sincronizando').length;
   protected readonly errors = integrations.filter((item) => item.status === 'erro').length;
 
-  protected icon(type: string) {
-    return type === 'Database' ? '▤' : type === 'ERP' ? '▧' : type === 'Arquivo' ? '▦' : type === 'Webhook' ? '⎇' : '⌁';
+  protected typeIcon(type: string): LucideIconInput {
+    if (type === 'Database') return LucideDatabase;
+    if (type === 'ERP') return LucideBuilding2;
+    if (type === 'Arquivo') return LucideFileStack;
+    if (type === 'Webhook') return LucideWebhook;
+    return LucidePlug;
   }
 
   protected statusClass(status: string) {
@@ -27,8 +44,8 @@ export class IntegracoesPageComponent {
         : 'text-success bg-success/15 border-success/30';
   }
 
-  protected statusIcon(status: string) {
-    return status === 'erro' ? '!' : status === 'sincronizando' ? '↻' : '✓';
+  protected statusIcon(status: string): LucideIconInput {
+    return status === 'erro' ? LucideTriangleAlert : status === 'sincronizando' ? LucideLoader2 : LucideCheck;
   }
 
   protected statusLabel(status: string) {

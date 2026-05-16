@@ -13,6 +13,7 @@ import {
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { LucideSearch } from '@lucide/angular';
 import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 const ALL = '__all__';
@@ -20,7 +21,7 @@ const ALL = '__all__';
 @Component({
   selector: 'app-radar-page',
   standalone: true,
-  imports: [DataTableComponent, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
+  imports: [DataTableComponent, LucideSearch, RiskBadgeComponent, RouterLink, ScoreBarComponent, TablePaginationBarComponent, TopBarComponent],
   templateUrl: './radar-page.component.html',
 })
 export class RadarPageComponent implements OnInit {

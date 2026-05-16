@@ -162,7 +162,9 @@
           <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/15 to-transparent"></div>
           <div class="relative">
             <div class="flex items-center gap-2">
-              <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">✦</div>
+              <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">
+                <svg lucideSparkles class="size-4" strokeWidth="2" />
+              </div>
               <div>
                 <h3 class="text-sm font-semibold">Mobiis AI</h3>
                 <p class="text-[11px] text-muted-foreground">Acao recomendada</p>
@@ -296,7 +298,9 @@
             <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-primary/15 to-transparent"></div>
             <div class="relative">
               <div class="flex items-center gap-2">
-                <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">✦</div>
+                <div class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">
+                <svg lucideSparkles class="size-4" strokeWidth="2" />
+              </div>
                 <div>
                   <h3 class="text-sm font-semibold">Mobiis AI Insights</h3>
                   <p class="text-[11px] text-muted-foreground">Analise gerada automaticamente</p>
@@ -308,7 +312,9 @@
               @for (section of aiSections(c); track section.title) {
                 <div class="mt-3 rounded-lg border border-border/50 bg-background/40 p-3">
                   <div class="flex items-center gap-2">
-                    <span class="grid h-6 w-6 place-items-center rounded-md border" [class]="section.tone">{{ section.icon }}</span>
+                    <span class="grid h-6 w-6 place-items-center rounded-md border" [class]="section.tone">
+                      <svg [lucideIcon]="section.icon" [size]="14" strokeWidth="2" class="shrink-0" />
+                    </span>
                     <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground">{{ section.title }}</p>
                   </div>
                   <p class="mt-2 text-sm leading-relaxed" [innerHTML]="section.body"></p>

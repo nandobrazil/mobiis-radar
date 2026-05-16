@@ -28,13 +28,23 @@
       <div class="mt-5 grid grid-cols-2 gap-2">
         <div class="rounded-lg border border-border bg-background/40 p-3">
           <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Conversao</p>
-          <p class="mt-1 text-lg font-semibold">11.6%</p>
-          <p class="text-[11px] text-success">▲ vs mes anterior</p>
+          <p class="mt-1 flex items-center gap-0.5 text-lg font-semibold">
+            <span>11.6%</span>
+          </p>
+          <p class="inline-flex items-center gap-0.5 text-[11px] text-success">
+            <svg lucideTrendingUp class="size-3 shrink-0" strokeWidth="2.5" />
+            vs mes anterior
+          </p>
         </div>
         <div class="rounded-lg border border-border bg-background/40 p-3">
           <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Ticket medio</p>
-          <p class="mt-1 text-lg font-semibold">R$ 28k</p>
-          <p class="text-[11px] text-success">▲ vs mes anterior</p>
+          <p class="mt-1 flex items-center gap-0.5 text-lg font-semibold">
+            <span>R$ 28k</span>
+          </p>
+          <p class="inline-flex items-center gap-0.5 text-[11px] text-success">
+            <svg lucideTrendingUp class="size-3 shrink-0" strokeWidth="2.5" />
+            vs mes anterior
+          </p>
         </div>
       </div>
     </div>
@@ -46,7 +56,9 @@
         <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b to-transparent" [class]="card.tint"></div>
         <div class="relative">
           <div class="flex items-center gap-2">
-            <span class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-background/60" [class]="card.text">{{ card.icon }}</span>
+            <span class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-background/60" [class]="card.text">
+              <svg [lucideIcon]="card.icon" [size]="18" strokeWidth="2" class="shrink-0" />
+            </span>
             <div>
               <h3 class="text-sm font-semibold">{{ card.title }}</h3>
               <p class="text-[11px] text-muted-foreground">{{ card.description }}</p>

@@ -6,11 +6,12 @@ import { DataTableComponent } from '../../shared/data-table/data-table.component
 import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
+import { LucideSearch } from '@lucide/angular';
 
 @Component({
   selector: 'app-tickets-page',
   standalone: true,
-  imports: [DataTableComponent, TablePaginationBarComponent, TopBarComponent],
+  imports: [DataTableComponent, LucideSearch, TablePaginationBarComponent, TopBarComponent],
   templateUrl: './tickets-page.component.html',
 })
 export class TicketsPageComponent implements OnInit {
