@@ -22,7 +22,7 @@
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Saúde</th>
           </tr>
           @for (seg of pageSlice(); track seg.name) {
-            <tr class="group transition-colors hover:bg-muted/20">
+            <tr class="group cursor-pointer transition-colors hover:bg-muted/20" (click)="onSegmentClick(seg.name)">
               <td class="px-4 py-3">
                 <span class="font-medium text-foreground">{{ seg.name }}</span>
               </td>

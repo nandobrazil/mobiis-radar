@@ -48,19 +48,35 @@ export class RadarPageComponent implements OnInit {
     { label: 'Médio', value: 'MEDIO' },
     { label: 'Baixo', value: 'BAIXO' },
   ];
+  protected readonly cnae = signal(ALL);
+  protected readonly cnaeOptions = computed(() => {
+    const items = this.relatorio.items();
+    const set = new Set<string>();
+    items.forEach(r => {
+      const desc = r.owner?.cnae_fiscal_descricao;
+      if (desc) set.add(desc);
+    });
+    const opts = Array.from(set).sort().map(v => ({ label: v, value: v }));
+    return [{ label: 'Todos - Segmentos', value: ALL }, ...opts];
+  });
 
   protected readonly filtered = computed(() => {
     const q = this.q().trim().toLowerCase();
     const r = this.risk();
+    const c = this.cnae();
     return this.relatorio.items().filter((row) => {
       if (!row?.cliente) return false;
       const name = (row.owner?.nome || row.cliente.nome_cliente || '').toLowerCase();
       const id = (row.owner?.id || row.cliente.owner_id || '').toLowerCase();
       const matchQ = !q || name.includes(q) || id.includes(q);
-      if (r === ALL) return matchQ;
-      if (!row.analise) return false;
-      const nr = normalizeNivelRisco(row.analise.nivel_risco);
-      return matchQ && nr === r;
+      
+      const riskVal = row.analise ? normalizeNivelRisco(row.analise.nivel_risco) : null;
+      const matchRisk = r === ALL || riskVal === r;
+      
+      const cnaeVal = row.owner?.cnae_fiscal_descricao;
+      const matchCnae = c === ALL || cnaeVal === c;
+      
+      return matchQ && matchRisk && matchCnae;
     });
   });
 
@@ -100,5 +116,14 @@ export class RadarPageComponent implements OnInit {
 
   protected onRiskFilterChange(value: string): void {
     this.risk.set(value);
+  }
+
+  protected onCnaeFilterChange(value: string): void {
+    this.cnae.set(value);
+  }
+
+  protected selectSegment(segment: string) {
+    this.cnae.set(segment);
+    this.activeTab.set('list');
   }
 }

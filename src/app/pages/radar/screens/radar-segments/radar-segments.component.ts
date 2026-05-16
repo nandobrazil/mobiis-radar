@@ -1,4 +1,4 @@
-import { Component, computed, input, signal, effect, untracked } from '@angular/core';
+import { Component, computed, input, signal, effect, untracked, output } from '@angular/core';
 import type { RelatorioClienteItem } from '../../../../data/relatorio-clientes.types';
 import { DataTableComponent } from '../../../../shared/data-table/data-table.component';
 import { TableSkeletonComponent } from '../../../../shared/table-skeleton/table-skeleton.component';
@@ -34,6 +34,11 @@ interface SegmentGroup {
 export class RadarSegmentsComponent {
   data = input.required<RelatorioClienteItem[]>();
   loading = input<boolean>(false);
+  segmentClick = output<string>();
+
+  protected onSegmentClick(segment: string) {
+    this.segmentClick.emit(segment);
+  }
 
   protected readonly iconSortUp = LucideArrowUp;
   protected readonly iconSortDown = LucideArrowDown;

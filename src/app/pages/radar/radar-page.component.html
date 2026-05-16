@@ -54,6 +54,19 @@
         (ngModelChange)="onRiskFilterChange($event)"
         aria-label="Filtrar por nível de risco"
       />
+      <ng-select
+        class="filter-ng-select w-full shrink-0 sm:w-[15rem]"
+        [items]="cnaeOptions()"
+        bindLabel="label"
+        bindValue="value"
+        [clearable]="false"
+        [searchable]="true"
+        appendTo="body"
+        [ngModel]="cnae()"
+        (ngModelChange)="onCnaeFilterChange($event)"
+        aria-label="Filtrar por segmento"
+        placeholder="Segmento..."
+      />
       <div class="flex w-full flex-wrap gap-2 sm:ml-auto sm:w-auto">
         <button
           type="button"
@@ -106,7 +119,7 @@
           <app-radar-list [data]="filtered()" [loading]="relatorio.loading()" />
         }
         @case ('segments') {
-          <app-radar-segments [data]="filtered()" [loading]="relatorio.loading()" />
+          <app-radar-segments [data]="filtered()" [loading]="relatorio.loading()" (segmentClick)="selectSegment($event)" />
         }
         @case ('map') {
           <app-radar-map [data]="filtered()" />
