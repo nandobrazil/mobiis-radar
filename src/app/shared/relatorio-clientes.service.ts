@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
-import type { RelatorioClienteDetalle, RelatorioTop20Item } from '../data/top20.types';
+import type { RelatorioClienteDetalle, RelatorioClienteItem } from '../data/relatorio-clientes.types';
 import { environment } from '../../environments/environment';
 
 export type NivelRiscoNorm = 'ALTO' | 'MEDIO' | 'BAIXO';
@@ -26,9 +26,6 @@ export interface RelatorioClientesStats {
   usuariosAtivosTotal: number;
 }
 
-/** @deprecated Use `RelatorioClientesStats`. */
-export type Top20Stats = RelatorioClientesStats;
-
 export function normalizeNivelRisco(nivel: string | null | undefined): NivelRiscoNorm {
   if (nivel == null || nivel === '') {
     return 'BAIXO';
@@ -44,7 +41,7 @@ export function normalizeNivelRisco(nivel: string | null | undefined): NivelRisc
 }
 
 /** True quando `analise.score_ia` e um numero utilizavel (mesma regra que medias no `stats`). */
-export function hasRelatorioScoreIa(row: RelatorioTop20Item): boolean {
+export function hasRelatorioScoreIa(row: RelatorioClienteItem): boolean {
   const v = row.analise?.score_ia;
   if (v == null) {
     return false;
@@ -54,7 +51,7 @@ export function hasRelatorioScoreIa(row: RelatorioTop20Item): boolean {
 }
 
 /** Saude 0-100: usa score IA quando existe; senao heuristica operacional (dias sem uso, acoes 30d). */
-export function healthScoreFromRelatorioRow(row: RelatorioTop20Item): number {
+export function healthScoreFromRelatorioRow(row: RelatorioClienteItem): number {
   const scoreIa = row.analise?.score_ia;
   return scoreIa ?? 0;
 }
@@ -64,14 +61,9 @@ function apiRelatorioBase(): string {
   return `${root}/api/relatorio`;
 }
 
-/** GET lista de clientes do relatorio (`/api/relatorio/clientes`, sem limite fixo). */
+/** GET lista de clientes do relatorio (`/api/relatorio/clientes`). */
 export function relatorioClientesUrl(): string {
   return `${apiRelatorioBase()}/clientes`;
-}
-
-/** @deprecated Use `relatorioClientesUrl`. */
-export function relatorioTop20Url(): string {
-  return relatorioClientesUrl();
 }
 
 export function clienteDetalleUrl(ownerId: string): string {
@@ -83,7 +75,7 @@ export function relatorioClienteResumoUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}`;
 }
 
-/** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo/hackathon). */
+/** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo). */
 export const RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID = '05B79AE8-F3BA-4830-AF86-405BE38F1B67';
 
 function normId(id: string): string {
@@ -91,10 +83,10 @@ function normId(id: string): string {
 }
 
 @Injectable({ providedIn: 'root' })
-export class RadarTop20Service {
+export class RelatorioClientesService {
   private readonly http = inject(HttpClient);
 
-  readonly items = signal<RelatorioTop20Item[]>([]);
+  readonly items = signal<RelatorioClienteItem[]>([]);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly lastLoadedAt = signal<number | null>(null);
@@ -103,7 +95,7 @@ export class RadarTop20Service {
   readonly clienteDetalleLoading = signal(false);
   readonly clienteDetalleError = signal<string | null>(null);
 
-  readonly relatorioClienteResumo = signal<RelatorioTop20Item | null>(null);
+  readonly relatorioClienteResumo = signal<RelatorioClienteItem | null>(null);
   readonly relatorioClienteResumoLoading = signal(false);
   readonly relatorioClienteResumoError = signal<string | null>(null);
 
@@ -197,8 +189,11 @@ export class RadarTop20Service {
     ];
   });
 
-  /** Ate 6 clientes: prioriza score IA; se ninguem tiver IA, ordena por risco operacional (dias sem uso, acoes 30d). */
-  readonly topRisco = computed(() => {
+  /**
+   * Amostra para destaque no dashboard (ate 6): prioriza score IA;
+   * se ninguem tiver IA, ordena por indicadores operacionais.
+   */
+  readonly clientesDestaque = computed(() => {
     const rows = this.items().filter((row) => row?.cliente != null);
     const comIa = rows.filter((row) => row.analise != null);
     if (comIa.length > 0) {
@@ -222,7 +217,7 @@ export class RadarTop20Service {
     this.loading.set(true);
     this.error.set(null);
     this.http
-      .get<RelatorioTop20Item[]>(relatorioClientesUrl())
+      .get<RelatorioClienteItem[]>(relatorioClientesUrl())
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (items) => {
@@ -231,13 +226,13 @@ export class RadarTop20Service {
           this.error.set(null);
         },
         error: () => {
-          this.error.set('Falha ao carregar dados do radar. Verifique conexao ou CORS do servidor.');
+          this.error.set('Falha ao carregar clientes do relatorio. Verifique conexao ou CORS do servidor.');
           this.items.set([]);
         },
       });
   }
 
-  itemByOwnerId(ownerId: string): RelatorioTop20Item | undefined {
+  itemByOwnerId(ownerId: string): RelatorioClienteItem | undefined {
     const n = normId(ownerId);
     return this.items().find((row) => row.cliente && normId(row.cliente.owner_id) === n);
   }
@@ -252,7 +247,7 @@ export class RadarTop20Service {
     this.relatorioClienteResumoLoading.set(true);
     this.relatorioClienteResumoError.set(null);
     this.http
-      .get<RelatorioTop20Item>(relatorioClienteResumoUrl(oid))
+      .get<RelatorioClienteItem>(relatorioClienteResumoUrl(oid))
       .pipe(
         finalize(() => {
           if (seq === this.resumoFetchSeq) {

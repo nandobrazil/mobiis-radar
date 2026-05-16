@@ -1,8 +1,8 @@
 <div class="page-shell">
-  <app-top-bar title="Radar de Clientes" [subtitle]="subtitle()" />
+  <app-top-bar title="Clientes" [subtitle]="subtitle()" />
   <main class="page-shell-body space-y-4 p-4 md:p-6">
   <div class="rounded-2xl border border-border bg-card p-4 shadow-card">
-    @if (top20.error(); as msg) {
+    @if (relatorio.error(); as msg) {
       <div class="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
         {{ msg }}
       </div>
@@ -31,10 +31,9 @@
         </select>
       </div>
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="btn-outline" [disabled]="top20.loading()" (click)="top20.load()">
-          {{ top20.loading() ? 'Atualizando...' : 'Atualizar' }}
+        <button type="button" class="btn-outline" [disabled]="relatorio.loading()" (click)="relatorio.load()">
+          {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
         </button>
-        <button class="btn-outline" type="button" disabled>Filtro avancado</button>
         <button class="btn-primary" type="button">Exportar</button>
       </div>
     </div>
@@ -44,14 +43,14 @@
   </div>
 
   <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-    @if (top20.loading() && filtered().length === 0 && !top20.error()) {
+    @if (relatorio.loading() && filtered().length === 0 && !relatorio.error()) {
       <div class="flex flex-col">
         <app-table-skeleton [columns]="8" [rows]="10" />
         <div class="border-t border-border bg-muted/10 px-4 py-3">
           <div class="skeleton mx-auto h-4 w-48 max-w-full rounded-md"></div>
         </div>
       </div>
-    } @else if (!top20.loading() && filtered().length === 0 && !top20.error()) {
+    } @else if (!relatorio.loading() && filtered().length === 0 && !relatorio.error()) {
       <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado.</div>
     } @else {
       <div class="flex flex-col">

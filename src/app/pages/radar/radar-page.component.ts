@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { RelatorioTop20Item } from '../../data/top20.types';
+import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
 import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
@@ -9,8 +9,8 @@ import {
   hasRelatorioScoreIa,
   healthScoreFromRelatorioRow,
   normalizeNivelRisco,
-  RadarTop20Service,
-} from '../../shared/radar-top20.service';
+  RelatorioClientesService,
+} from '../../shared/relatorio-clientes.service';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
@@ -27,7 +27,7 @@ const ALL = '__all__';
   templateUrl: './radar-page.component.html',
 })
 export class RadarPageComponent implements OnInit {
-  protected readonly top20 = inject(RadarTop20Service);
+  protected readonly relatorio = inject(RelatorioClientesService);
   protected readonly iconSearch = LucideSearch;
   protected readonly ALL = ALL;
   protected readonly q = signal('');
@@ -39,13 +39,13 @@ export class RadarPageComponent implements OnInit {
   protected readonly pageSize = signal(10);
 
   protected readonly subtitle = computed(
-    () => `${this.filtered().length} de ${this.top20.items().length} clientes filtrados`,
+    () => `${this.filtered().length} de ${this.relatorio.items().length} clientes filtrados`,
   );
 
   protected readonly filtered = computed(() => {
     const q = this.q().trim().toLowerCase();
     const r = this.risk();
-    return this.top20.items().filter((row) => {
+    return this.relatorio.items().filter((row) => {
       if (!row?.cliente) {
         return false;
       }
@@ -88,26 +88,26 @@ export class RadarPageComponent implements OnInit {
   }
 
   /** Cor da legenda "Risco IA" (nota bruta: maior = pior). */
-  protected iaRiskLineClass(row: RelatorioTop20Item): string {
+  protected iaRiskLineClass(row: RelatorioClienteItem): string {
     const n = Number(row.analise?.score_ia);
     return iaRiskCaptionClass(Number.isFinite(n) ? n : 0);
   }
 
   ngOnInit(): void {
-    this.top20.load();
+    this.relatorio.load();
   }
 
-  protected riskLevel(row: RelatorioTop20Item) {
+  protected riskLevel(row: RelatorioClienteItem) {
     return nivelRiscoToRiskLevel(row.analise?.nivel_risco);
   }
 
   /** Saude 0-100: IA quando existe; senao heuristica operacional (ver `healthScoreFromRelatorioRow`). */
-  protected healthScore(row: RelatorioTop20Item): number {
+  protected healthScore(row: RelatorioClienteItem): number {
     return healthScoreFromRelatorioRow(row);
   }
 
   /** Barra na coluna "Saude IA": so quando a API enviou `score_ia` numerico. */
-  protected hasScoreIa(row: RelatorioTop20Item): boolean {
+  protected hasScoreIa(row: RelatorioClienteItem): boolean {
     return hasRelatorioScoreIa(row);
   }
 }

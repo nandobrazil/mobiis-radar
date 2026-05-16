@@ -2,7 +2,7 @@ import { Component, DestroyRef, OnDestroy, computed, effect, inject, input, sign
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
-import { catchError, finalize, map, of, switchMap, tap, throwError } from 'rxjs';
+import { catchError, finalize, of, throwError } from 'rxjs';
 import {
   LucideCircleDashed,
   LucideLayers,
@@ -11,9 +11,9 @@ import {
   LucideTriangleAlert,
 } from '@lucide/angular';
 
-import type { RelatorioTop20Item } from '../../data/top20.types';
+import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
 import { allProducts, customers, usageSeries } from '../../data/mock-data';
-import { healthScoreFromRelatorioRow, RadarTop20Service, RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID } from '../../shared/radar-top20.service';
+import { healthScoreFromRelatorioRow, RelatorioClientesService, RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID } from '../../shared/relatorio-clientes.service';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
@@ -40,7 +40,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
   readonly id = input<string>();
 
   private readonly destroyRef = inject(DestroyRef);
-  protected readonly top20 = inject(RadarTop20Service);
+  protected readonly relatorio = inject(RelatorioClientesService);
   private readonly clienteContexto = inject(ClienteContextoService);
 
   protected readonly contextoModalOpen = signal(false);
@@ -49,6 +49,12 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly contextoError = signal<string | null>(null);
   protected readonly contextoDraft = signal('');
   protected readonly contextoCarregado = signal<ClienteContextoDto | null>(null);
+
+  /** Contexto exibido na pagina (fora do modal). */
+  protected readonly contextoPagina = signal<ClienteContextoDto | null>(null);
+  protected readonly contextoPaginaLoading = signal(false);
+  protected readonly contextoPaginaError = signal<string | null>(null);
+  private contextoPaginaFetchSeq = 0;
 
   /** `owner_id` do cliente quando o modal esta aberto (salvar/get). */
   private contextoOwnerId: string | null = null;
@@ -77,13 +83,13 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly effectiveOwnerId = computed(() => this.id()?.trim() || RELATORIO_CLIENTE_DETALHE_FALLBACK_OWNER_ID);
 
   protected readonly report = computed(() => {
-    const row = this.top20.relatorioClienteResumo();
+    const row = this.relatorio.relatorioClienteResumo();
     return row == null ? undefined : row;
   });
 
   /** Detalle API so exibido quando corresponde ao cliente da rota. */
   protected readonly detalleOperacional = computed(() => {
-    const d = this.top20.clienteDetalle();
+    const d = this.relatorio.clienteDetalle();
     const idVal = this.effectiveOwnerId();
     if (!d || !idVal) {
       return undefined;
@@ -95,27 +101,6 @@ export class CustomerDetailPageComponent implements OnDestroy {
     customers.find((customerItem) => customerItem.id === this.effectiveOwnerId()),
   );
 
-  protected readonly segmentAvg = computed(() => {
-    const c = this.customer();
-    if (!c) return 0;
-    const segmentCustomers = customers.filter((item) => item.segment === c.segment);
-    return Math.round(segmentCustomers.reduce((sum, item) => sum + item.score, 0) / segmentCustomers.length);
-  });
-
-  protected readonly radarData = computed(() => {
-    const c = this.customer();
-    if (!c) return [];
-    const segmentAvgVal = this.segmentAvg();
-    return [
-      { dim: 'Adocao', v: c.score, ref: segmentAvgVal },
-      { dim: 'Frequencia', v: Math.min(100, c.score + 5), ref: segmentAvgVal },
-      { dim: 'Engajamento', v: Math.max(0, c.score - 8), ref: segmentAvgVal - 4 },
-      { dim: 'Estabilidade', v: Math.min(100, c.score + 12), ref: segmentAvgVal + 2 },
-      { dim: 'Suporte', v: Math.max(0, c.score - 4), ref: segmentAvgVal + 6 },
-      { dim: 'Expansao', v: c.potential === 'alto' ? 88 : c.potential === 'medio' ? 60 : 30, ref: 55 },
-    ];
-  });
-
   protected readonly unused = computed(() => {
     const c = this.customer();
     if (!c) return [];
@@ -123,38 +108,88 @@ export class CustomerDetailPageComponent implements OnDestroy {
   });
 
   ngOnDestroy(): void {
-    this.top20.clearClienteDetalle();
-    this.top20.clearRelatorioClienteResumo();
+    this.contextoPaginaFetchSeq++;
+    this.contextoPagina.set(null);
+    this.contextoPaginaLoading.set(false);
+    this.contextoPaginaError.set(null);
+    this.relatorio.clearClienteDetalle();
+    this.relatorio.clearRelatorioClienteResumo();
   }
 
   constructor() {
     effect(() => {
       const oid = this.effectiveOwnerId();
       if (oid) {
-        this.top20.fetchRelatorioClienteResumo(oid);
-        this.top20.fetchClienteDetalle(oid);
+        this.relatorio.fetchRelatorioClienteResumo(oid);
+        this.relatorio.fetchClienteDetalle(oid);
+        this.carregarContextoPagina(oid);
       } else {
-        this.top20.clearClienteDetalle();
-        this.top20.clearRelatorioClienteResumo();
+        this.relatorio.clearClienteDetalle();
+        this.relatorio.clearRelatorioClienteResumo();
+        this.contextoPaginaFetchSeq++;
+        this.contextoPagina.set(null);
+        this.contextoPaginaLoading.set(false);
+        this.contextoPaginaError.set(null);
       }
     });
   }
 
   protected recarregarDetalhesClientePagina(): void {
     const oid = this.effectiveOwnerId();
-    this.top20.fetchRelatorioClienteResumo(oid);
-    this.top20.fetchClienteDetalle(oid);
+    this.relatorio.fetchRelatorioClienteResumo(oid);
+    this.relatorio.fetchClienteDetalle(oid);
+    this.carregarContextoPagina(oid);
   }
 
-  protected riskFromReport(row: RelatorioTop20Item) {
+  /** GET contexto para card na pagina (404 => null). */
+  private carregarContextoPagina(ownerId: string): void {
+    const oid = ownerId?.trim();
+    if (!oid) {
+      this.contextoPaginaFetchSeq++;
+      this.contextoPagina.set(null);
+      this.contextoPaginaLoading.set(false);
+      this.contextoPaginaError.set(null);
+      return;
+    }
+    const seq = ++this.contextoPaginaFetchSeq;
+    this.contextoPaginaLoading.set(true);
+    this.contextoPaginaError.set(null);
+
+    this.getContextoModal$(oid)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => {
+          if (seq === this.contextoPaginaFetchSeq) {
+            this.contextoPaginaLoading.set(false);
+          }
+        }),
+      )
+      .subscribe({
+        next: (dto) => {
+          if (seq !== this.contextoPaginaFetchSeq) {
+            return;
+          }
+          this.contextoPagina.set(dto);
+        },
+        error: () => {
+          if (seq !== this.contextoPaginaFetchSeq) {
+            return;
+          }
+          this.contextoPagina.set(null);
+          this.contextoPaginaError.set('Nao foi possivel carregar o contexto.');
+        },
+      });
+  }
+
+  protected riskFromReport(row: RelatorioClienteItem) {
     return nivelRiscoToRiskLevel(row.analise?.nivel_risco);
   }
 
-  protected healthFromReport(row: RelatorioTop20Item): number {
+  protected healthFromReport(row: RelatorioClienteItem): number {
     return healthScoreFromRelatorioRow(row);
   }
 
-  protected kpis(row: RelatorioTop20Item) {
+  protected kpis(row: RelatorioClienteItem) {
     const c = row.cliente;
     return [
       { label: 'Dias sem uso', value: String(c.dias_sem_atividade) },
@@ -222,9 +257,11 @@ export class CustomerDetailPageComponent implements OnDestroy {
           if (dto === null) {
             this.contextoCarregado.set(null);
             this.contextoDraft.set('');
+            this.contextoPagina.set(null);
           } else {
             this.contextoCarregado.set(dto);
             this.contextoDraft.set(dto.contexto ?? '');
+            this.contextoPagina.set(dto);
           }
         },
         error: () => {
@@ -255,29 +292,15 @@ export class CustomerDetailPageComponent implements OnDestroy {
         autor: CONTEXTO_AUTOR_PADRAO,
       })
       .pipe(
-        tap(() => this.contextoLoading.set(true)),
-        switchMap((savedDto: ClienteContextoDto) =>
-          this.getContextoModal$(ownerId).pipe(
-            map((fresh) => (fresh == null ? savedDto : fresh)),
-            catchError(() => of(savedDto)),
-          ),
-        ),
-        finalize(() => {
-          this.contextoLoading.set(false);
-          this.contextoSaving.set(false);
-        }),
         takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.contextoSaving.set(false)),
       )
       .subscribe({
-        next: (dto) => {
-          if (dto === null) {
-            this.contextoCarregado.set(null);
-            this.contextoDraft.set('');
-          } else {
-            this.contextoCarregado.set(dto);
-            this.contextoDraft.set(dto.contexto ?? '');
-          }
+        next: () => {
           this.fecharModalContexto();
+          this.relatorio.fetchRelatorioClienteResumo(ownerId);
+          this.relatorio.fetchClienteDetalle(ownerId);
+          this.carregarContextoPagina(ownerId);
         },
         error: () => {
           this.contextoError.set('Nao foi possivel salvar o contexto.');

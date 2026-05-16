@@ -12,7 +12,7 @@ import { MovideskPageComponent } from './pages/movidesk/movidesk-page.component'
 
 export const routes: Routes = [
   { path: '', component: DashboardPageComponent, title: 'Dashboard - Mobiis Radar' },
-  { path: 'radar', component: RadarPageComponent, title: 'Radar de Clientes - Mobiis Radar' },
+  { path: 'radar', component: RadarPageComponent, title: 'Clientes - Mobiis Radar' },
   { path: 'comercial', component: ComercialPageComponent, title: 'Comercial Inteligente - Mobiis Radar' },
   { path: 'executivo', component: ExecutivoPageComponent, title: 'Executivo - Mobiis Radar' },
   { path: 'movidesk', component: MovideskPageComponent, title: 'Movidesk - Mobiis Radar' },

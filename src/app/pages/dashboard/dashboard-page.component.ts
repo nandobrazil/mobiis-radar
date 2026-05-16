@@ -9,14 +9,14 @@ import {
   LucideSparkles,
   LucideUsersRound,
 } from '@lucide/angular';
-import type { RelatorioTop20Item } from '../../data/top20.types';
+import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
 import { segmentRanking } from '../../data/mock-data';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
 import { BarChartPanelSkeletonComponent } from '../../shared/bar-chart-panel-skeleton/bar-chart-panel-skeleton.component';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
 import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
 import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
-import { healthScoreFromRelatorioRow, RadarTop20Service } from '../../shared/radar-top20.service';
+import { healthScoreFromRelatorioRow, RelatorioClientesService } from '../../shared/relatorio-clientes.service';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
@@ -41,19 +41,19 @@ import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
   templateUrl: './dashboard-page.component.html',
 })
 export class DashboardPageComponent implements OnInit {
-  protected readonly top20 = inject(RadarTop20Service);
+  protected readonly relatorio = inject(RelatorioClientesService);
   protected readonly initials = initials;
   /** Lista de segmentos e scores de referencia (dados demo fixos). */
   protected readonly segmentRanking = segmentRanking;
 
-  protected readonly stats = computed(() => this.top20.stats());
+  protected readonly stats = computed(() => this.relatorio.stats());
 
   protected readonly subtitle = computed(() => {
-    if (this.top20.loading() && this.top20.items().length === 0) {
+    if (this.relatorio.loading() && this.relatorio.items().length === 0) {
       return 'Carregando relatorio de clientes...';
     }
     const n = this.stats().total;
-    const t = this.top20.lastLoadedAt();
+    const t = this.relatorio.lastLoadedAt();
     const when = t ? ` · atualizado ${new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : '';
     return `${n} clientes no relatorio${when}`;
   });
@@ -64,8 +64,8 @@ export class DashboardPageComponent implements OnInit {
   protected readonly highlightSkeletonSlots = [0, 1, 2, 3, 4, 5] as const;
 
   ngOnInit(): void {
-    if (this.top20.items().length === 0 && !this.top20.loading()) {
-      this.top20.load();
+    if (this.relatorio.items().length === 0 && !this.relatorio.loading()) {
+      this.relatorio.load();
     }
   }
 
@@ -75,7 +75,7 @@ export class DashboardPageComponent implements OnInit {
     return `${Math.round((count / total) * 100)}% da carteira`;
   }
 
-  protected rowHealth(row: RelatorioTop20Item): number {
+  protected rowHealth(row: RelatorioClienteItem): number {
     return healthScoreFromRelatorioRow(row);
   }
 

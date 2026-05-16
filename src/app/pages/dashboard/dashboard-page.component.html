@@ -1,10 +1,10 @@
 <div class="page-shell">
   <app-top-bar title="Dashboard Estrategico" [subtitle]="subtitle()" />
   <main class="page-shell-body space-y-6 p-4 md:p-6">
-  @if (top20.error(); as msg) {
+  @if (relatorio.error(); as msg) {
     <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
       {{ msg }}
-      <button type="button" class="ml-3 underline" (click)="top20.load()">Tentar novamente</button>
+      <button type="button" class="ml-3 underline" (click)="relatorio.load()">Tentar novamente</button>
     </div>
   }
 
@@ -17,7 +17,7 @@
           <app-icon [icon]="iconSparkles" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0" />
           Relatorio de clientes — dados em tempo real
         </span>
-        @if (top20.loading() && top20.items().length === 0) {
+        @if (relatorio.loading() && relatorio.items().length === 0) {
           <div class="mt-3 space-y-3">
             <div class="skeleton h-9 w-full max-w-[26rem] rounded-lg"></div>
             <div class="skeleton h-4 w-full max-w-[20rem] rounded"></div>
@@ -33,7 +33,7 @@
         }
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        @if (top20.loading() && top20.items().length === 0) {
+        @if (relatorio.loading() && relatorio.items().length === 0) {
           @for (i of heroStatSkeletonSlots; track i) {
             <div class="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
               <div class="skeleton h-10 w-10 shrink-0 rounded-lg"></div>
@@ -63,15 +63,15 @@
             </div>
           </div>
         }
-        <button type="button" class="btn-outline" [disabled]="top20.loading()" (click)="top20.load()">
-          {{ top20.loading() ? 'Atualizando...' : 'Atualizar' }}
+        <button type="button" class="btn-outline" [disabled]="relatorio.loading()" (click)="relatorio.load()">
+          {{ relatorio.loading() ? 'Atualizando...' : 'Atualizar' }}
         </button>
       </div>
     </div>
   </section>
 
   <section class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-    @if (top20.loading() && top20.items().length === 0) {
+    @if (relatorio.loading() && relatorio.items().length === 0) {
       @for (i of kpiSkeletonSlots; track i) {
         <div [class]="i === 4 ? 'col-span-2 md:col-span-1 xl:col-span-1' : ''">
           <app-kpi-card-skeleton />
@@ -112,15 +112,15 @@
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-muted-foreground/60"></span>Sem IA</span>
         </div>
       </div>
-      @if (top20.loading() && top20.items().length === 0) {
+      @if (relatorio.loading() && relatorio.items().length === 0) {
         <div class="h-[280px]">
           <app-bar-chart-panel-skeleton />
         </div>
-      } @else if (top20.items().length === 0 && !top20.error()) {
+      } @else if (relatorio.items().length === 0 && !relatorio.error()) {
         <div class="grid h-[280px] place-items-center text-sm text-muted-foreground">Nenhum dado disponivel.</div>
       } @else {
         <div class="h-[280px]">
-          <app-bar-chart [data]="top20.riskChartData()" labelKey="label" valueKey="value" />
+          <app-bar-chart [data]="relatorio.riskChartData()" labelKey="label" valueKey="value" />
         </div>
       }
     </div>
@@ -163,9 +163,9 @@
           <h3 class="text-sm font-semibold">Destaque da carteira</h3>
           <p class="text-xs text-muted-foreground">Ordenado por score IA quando existir; senao por uso operacional</p>
         </div>
-        <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver radar completo →</a>
+        <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver todos os clientes →</a>
       </div>
-      @if (top20.loading() && top20.topRisco().length === 0) {
+      @if (relatorio.loading() && relatorio.clientesDestaque().length === 0) {
         <div class="mt-4 divide-y divide-border">
           @for (i of highlightSkeletonSlots; track i) {
             <div class="flex items-center gap-3 px-1 py-2.5">
@@ -179,11 +179,11 @@
             </div>
           }
         </div>
-      } @else if (top20.topRisco().length === 0) {
+      } @else if (relatorio.clientesDestaque().length === 0) {
         <div class="mt-6 py-8 text-center text-sm text-muted-foreground">Nenhum cliente no relatorio.</div>
       } @else {
         <div class="mt-4 divide-y divide-border">
-          @for (row of top20.topRisco(); track row.cliente.owner_id) {
+          @for (row of relatorio.clientesDestaque(); track row.cliente.owner_id) {
             <a
               [routerLink]="['/cliente', row.cliente.owner_id]"
               class="flex items-center gap-3 rounded-md px-1 py-2.5 transition-colors hover:bg-muted/30"

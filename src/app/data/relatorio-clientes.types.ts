@@ -20,8 +20,8 @@ export interface RelatorioAnalise {
   acao_recomendada: string;
 }
 
-/** Item do relatorio (GET `/api/relatorio/clientes` ou GET `/api/relatorio/cliente/{owner_id}`). */
-export interface RelatorioTop20Item {
+/** Linha do relatorio (GET `/api/relatorio/clientes` ou GET `/api/relatorio/cliente/{owner_id}`). */
+export interface RelatorioClienteItem {
   cliente: RelatorioCliente;
   /** A API pode omitir ou enviar `null` em registos incompletos. */
   analise?: RelatorioAnalise | null;
@@ -56,4 +56,3 @@ export interface RelatorioClienteDetalle {
   por_origem: RelatorioClientePorOrigem[];
   tendencia_semanal: Record<string, unknown>[];
 }
-

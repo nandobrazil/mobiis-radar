@@ -99,7 +99,7 @@ export class AppComponent {
   protected readonly brandIcon = LucideRadar;
   readonly main: { title: string; url: string; icon: LucideIconInput }[] = [
     { title: 'Dashboard', url: '/', icon: LucideLayoutDashboard },
-    { title: 'Radar de Clientes', url: '/radar', icon: LucideRadar },
+    { title: 'Clientes', url: '/radar', icon: LucideRadar },
     { title: 'Comercial', url: '/comercial', icon: LucideBriefcase },
     { title: 'Executivo', url: '/executivo', icon: LucideLineChart },
     { title: 'Insights IA', url: '/insights', icon: LucideSparkles },
