@@ -26,10 +26,6 @@ function contextoUrl(ownerId: string): string {
 export class ClienteContextoService {
   private readonly http = inject(HttpClient);
 
-  get(ownerId: string): Observable<ClienteContextoDto> {
-    return this.http.get<ClienteContextoDto>(contextoUrl(ownerId));
-  }
-
   save(ownerId: string, body: ClienteContextoSavePayload): Observable<ClienteContextoDto> {
     return this.http.post<ClienteContextoDto>(contextoUrl(ownerId), body);
   }

@@ -157,14 +157,12 @@
               {{ contextoPagina() ? 'Editar' : 'Adicionar' }}
             </button>
           </div>
-          @if (contextoPaginaLoading()) {
+          @if (relatorio.relatorioClienteResumoLoading() && !contextoPagina()) {
             <div class="mt-3 space-y-2">
               <div class="skeleton h-3 w-full rounded"></div>
               <div class="skeleton h-3 w-[94%] rounded"></div>
               <div class="skeleton h-3 w-[88%] rounded"></div>
             </div>
-          } @else if (contextoPaginaError(); as ctxErr) {
-            <p class="mt-3 text-sm text-destructive">{{ ctxErr }}</p>
           } @else if (contextoPagina(); as ctx) {
             <p class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{{ ctx.contexto.trim() ? ctx.contexto : '—' }}</p>
             <p class="mt-3 text-[11px] text-muted-foreground">
@@ -350,24 +348,20 @@
       <h2 id="contexto-modal-title" class="text-base font-semibold">Contexto do cliente</h2>
       <p class="mt-1 text-xs text-muted-foreground">Texto livre para o time de CS (autor ao salvar: CS).</p>
 
-      @if (contextoLoading()) {
-        <p class="mt-4 text-sm text-muted-foreground">Carregando...</p>
-      } @else {
-        <textarea
-          class="mt-4 block min-h-[160px] w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none ring-primary/40 focus:ring-2"
-          rows="8"
-          [value]="contextoDraft()"
-          (input)="contextoDraft.set(($any($event.target).value))"
-          placeholder="Digite observações, histórico ou próximos passos..."
-        ></textarea>
-        @if (contextoCarregado(); as ctx) {
-          <p class="mt-3 text-[11px] text-muted-foreground">
-            Última atualização: {{ formatIso(ctx.atualizado_em) }}
-            @if (ctx.autor) {
-              <span class="mx-1">·</span> Autor: {{ ctx.autor }}
-            }
-          </p>
-        }
+      <textarea
+        class="mt-4 block min-h-[160px] w-full resize-y rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none ring-primary/40 focus:ring-2"
+        rows="8"
+        [value]="contextoDraft()"
+        (input)="contextoDraft.set(($any($event.target).value))"
+        placeholder="Digite observações, histórico ou próximos passos..."
+      ></textarea>
+      @if (contextoPagina(); as ctx) {
+        <p class="mt-3 text-[11px] text-muted-foreground">
+          Última atualização: {{ formatIso(ctx.atualizado_em) }}
+          @if (ctx.autor) {
+            <span class="mx-1">·</span> Autor: {{ ctx.autor }}
+          }
+        </p>
       }
 
       @if (contextoError(); as msg) {
@@ -381,7 +375,7 @@
         <button
           type="button"
           class="btn-primary"
-          [disabled]="contextoLoading() || contextoSaving()"
+          [disabled]="contextoSaving()"
           (click)="salvarModalContexto()"
         >
           {{ contextoSaving() ? 'Salvando...' : 'Salvar e gerar análise' }}

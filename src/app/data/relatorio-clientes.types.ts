@@ -20,6 +20,14 @@ export interface RelatorioAnalise {
   acao_recomendada: string;
 }
 
+/** Contexto CS na raiz do GET `/api/relatorio/cliente/{owner_id}` (e lista quando presente). */
+export interface RelatorioClienteContexto {
+  owner_id?: string;
+  contexto: string;
+  autor?: string;
+  atualizado_em?: string;
+}
+
 /** Linha do relatorio (GET `/api/relatorio/clientes` ou GET `/api/relatorio/cliente/{owner_id}`). */
 export interface RelatorioClienteItem {
   cliente: RelatorioCliente;
@@ -27,6 +35,8 @@ export interface RelatorioClienteItem {
   analise?: RelatorioAnalise | null;
   /** Quando true, a analise IA falhou mas `cliente` costuma vir preenchido. */
   erro?: boolean;
+  /** Notas do CS; vem na raiz do GET do cliente (sem GET `/contexto` separado). */
+  contexto?: RelatorioClienteContexto | null;
 }
 
 export interface RelatorioClientePorEntidade {

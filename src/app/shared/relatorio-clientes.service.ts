@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 import type { RelatorioClienteDetalle, RelatorioClienteItem } from '../data/relatorio-clientes.types';
+import type { ClienteContextoDto } from './cliente-contexto.service';
 import { environment } from '../../environments/environment';
 
 export type NivelRiscoNorm = 'ALTO' | 'MEDIO' | 'BAIXO';
@@ -24,6 +25,25 @@ export interface RelatorioClientesStats {
   acoes30dTotal: number;
   inativos30d: number;
   usuariosAtivosTotal: number;
+}
+
+/** Extrai contexto CS já presente na raiz do item do relatório. */
+export function contextoFromRelatorioRow(row: RelatorioClienteItem | null | undefined): ClienteContextoDto | null {
+  const ctx = row?.contexto;
+  if (ctx == null) {
+    return null;
+  }
+  const ownerId = row!.cliente?.owner_id ?? '';
+  const text = (ctx.contexto ?? '').trim();
+  if (!text && !ctx.autor?.trim() && !ctx.atualizado_em?.trim()) {
+    return null;
+  }
+  return {
+    owner_id: ctx.owner_id?.trim() || ownerId,
+    contexto: ctx.contexto ?? '',
+    autor: ctx.autor ?? '',
+    atualizado_em: ctx.atualizado_em ?? '',
+  };
 }
 
 export function normalizeNivelRisco(nivel: string | null | undefined): NivelRiscoNorm {
