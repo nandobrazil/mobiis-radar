@@ -42,7 +42,7 @@ import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { ClienteContextoService } from '../../shared/cliente-contexto.service';
-import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
+import { formatDate, formatPerfilUso, initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 import { AtendimentoTicketsService } from '../../shared/atendimento-tickets.service';
 
 const CONTEXTO_AUTOR_PADRAO = 'CS';
@@ -441,20 +441,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
     return [...itens].sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
   }
 
-  protected formatPerfilUso(perfil: string | undefined): string {
-    if (!perfil?.trim()) {
-      return '—';
-    }
-    const labels: Record<string, string> = {
-      EM_DECLINIO: 'Em declínio',
-      ESTAVEL: 'Estável',
-      EM_CRESCIMENTO: 'Em crescimento',
-      INATIVO: 'Inativo',
-      ADOCAO_INICIAL: 'Adoção inicial',
-    };
-    const key = perfil.trim().toUpperCase();
-    return labels[key] ?? perfil.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-  }
+  protected readonly formatPerfilUso = formatPerfilUso;
 
   protected formatDeltaScore(n: number | undefined): string {
     if (n == null || Number.isNaN(Number(n))) {

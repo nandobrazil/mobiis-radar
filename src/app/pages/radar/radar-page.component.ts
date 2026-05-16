@@ -15,6 +15,7 @@ import { RadarListComponent } from './screens/radar-list/radar-list.component';
 import { RadarSegmentsComponent } from './screens/radar-segments/radar-segments.component';
 import { RadarMapComponent } from './screens/radar-map/radar-map.component';
 import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-processamento-banner/relatorio-processamento-banner.component';
+import { formatPerfilUso } from '../../shared/ui-helpers';
 
 type RadarTab = 'list' | 'segments' | 'map';
 const ALL = '__all__';
@@ -69,7 +70,9 @@ export class RadarPageComponent implements OnInit {
       const p = r.analise?.perfil_uso;
       if (p) set.add(p);
     });
-    const opts = Array.from(set).sort().map(v => ({ label: v, value: v }));
+    const opts = Array.from(set)
+      .sort()
+      .map((v) => ({ label: formatPerfilUso(v), value: v }));
     return [{ label: 'Todos - Perfis', value: ALL }, ...opts];
   });
 

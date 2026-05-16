@@ -36,7 +36,7 @@
               } @else { Cliente }
             </th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">
-                <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('perfil_uso')" [attr.aria-sort]="ariaSort('perfil_uso')">
+                <button type="button" class="inline-flex items-center gap-1 font-medium no-underline hover:text-primary" (click)="toggleSort('perfil_uso')" [attr.aria-sort]="ariaSort('perfil_uso')">
                   <span>Perfil</span>
                   @if (activeSortDirection('perfil_uso'); as dir) {
                     <app-icon [icon]="dir === 'asc' ? iconSortUp : iconSortDown" size="14" svgClass="size-3.5 text-primary" />
@@ -77,8 +77,8 @@
               </td>
               <td class="px-4 py-3">
                 @if (row.analise?.perfil_uso) {
-                  <span class="inline-flex items-center rounded-full bg-accent/50 px-2 py-0.5 text-[10px] font-medium text-foreground">
-                    {{ row.analise?.perfil_uso }}
+                  <span class="inline-flex items-center rounded-full bg-accent/50 px-2 py-0.5 text-[10px] font-medium text-foreground no-underline">
+                    {{ formatPerfilUso(row.analise?.perfil_uso) }}
                   </span>
                 } @else {
                   <span class="text-[10px] text-muted-foreground">N/A</span>

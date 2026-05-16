@@ -78,3 +78,27 @@ export function iaRiskCaptionClass(scoreIa: number): string {
 export function formatDate(value: string) {
   return new Date(value).toLocaleDateString('pt-BR');
 }
+
+/** Perfil de uso da API (`EM_DECLINIO`, etc.) → rótulo legível (sem underscores). */
+export function formatPerfilUso(perfil: string | undefined | null): string {
+  if (!perfil?.trim()) {
+    return '—';
+  }
+  const labels: Record<string, string> = {
+    EM_DECLINIO: 'Em Declínio',
+    ESTAVEL: 'Estável',
+    EM_CRESCIMENTO: 'Em Crescimento',
+    INATIVO: 'Inativo',
+    ADOCAO_INICIAL: 'Adoção Inicial',
+  };
+  const key = perfil.trim().toUpperCase();
+  if (labels[key]) {
+    return labels[key];
+  }
+  return perfil
+    .trim()
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+}

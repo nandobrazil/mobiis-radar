@@ -27,8 +27,7 @@ import { MenuService } from './shared/menu.service';
             <span class="absolute inset-0 rounded-lg animate-pulse-ring"></span>
           </div>
           <div class="min-w-0 grid leading-tight">
-            <span class="truncate text-sm font-semibold tracking-tight">Mobiis</span>
-            <span class="-mt-0.5 truncate text-xs text-muted-foreground">Radar Platform</span>
+            <span class="truncate text-sm font-semibold tracking-tight">Mobiis Radar</span>
           </div>
         </a>
 

@@ -113,7 +113,7 @@ export function relatorioStatusUrl(): string {
 }
 
 /** Intervalo de polling quando `/clientes` retorna 202. */
-export const RELATORIO_STATUS_POLL_MS = 4000;
+export const RELATORIO_STATUS_POLL_MS = 6000;
 
 export function clienteDetalleUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId)}/detalhe`;

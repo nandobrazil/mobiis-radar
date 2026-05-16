@@ -17,7 +17,7 @@ import {
   LucideArrowUp,
   LucideArrowUpDown,
 } from '@lucide/angular';
-import { initials, nivelRiscoToRiskLevel } from '../../../../shared/ui-helpers';
+import { formatPerfilUso, initials, nivelRiscoToRiskLevel } from '../../../../shared/ui-helpers';
 
 export type ClientesSortColumn =
   | 'cliente'
@@ -53,6 +53,7 @@ export class RadarListComponent {
   protected readonly iconSortDown = LucideArrowDown;
   protected readonly iconSortBoth = LucideArrowUpDown;
   protected readonly initials = initials;
+  protected readonly formatPerfilUso = formatPerfilUso;
 
   /** Paginação somente no front (sobre `sortedData()`). */
   protected readonly page = signal(1);
