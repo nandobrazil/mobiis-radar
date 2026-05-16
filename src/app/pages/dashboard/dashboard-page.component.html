@@ -17,7 +17,7 @@
           <app-icon [icon]="iconSparkles" size="14" strokeWidth="2" svgClass="size-3.5 shrink-0" />
           Relatório de clientes — dados em tempo real
         </span>
-        @if (relatorio.loading() && relatorio.items().length === 0) {
+        @if (relatorio.loading() && !relatorio.error()) {
           <div class="mt-3 space-y-3">
             <div class="skeleton h-9 w-full max-w-[26rem] rounded-lg"></div>
             <div class="skeleton h-4 w-full max-w-[20rem] rounded"></div>
@@ -33,7 +33,7 @@
         }
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        @if (relatorio.loading() && relatorio.items().length === 0) {
+        @if (relatorio.loading() && !relatorio.error()) {
           @for (i of heroStatSkeletonSlots; track i) {
             <div class="flex items-center gap-3 rounded-xl border border-border bg-background/60 px-4 py-3">
               <div class="skeleton h-10 w-10 shrink-0 rounded-lg"></div>
@@ -71,7 +71,7 @@
   </section>
 
   <section class="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
-    @if (relatorio.loading() && relatorio.items().length === 0) {
+    @if (relatorio.loading() && !relatorio.error()) {
       @for (i of kpiSkeletonSlots; track i) {
         <div [class]="i === 4 ? 'col-span-2 md:col-span-1 xl:col-span-1' : ''">
           <app-kpi-card-skeleton />
@@ -112,7 +112,7 @@
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-muted-foreground/60"></span>Sem IA</span>
         </div>
       </div>
-      @if (relatorio.loading() && relatorio.items().length === 0) {
+      @if (relatorio.loading() && !relatorio.error()) {
         <div class="h-[280px]">
           <app-bar-chart-panel-skeleton />
         </div>
@@ -165,7 +165,7 @@
         </div>
         <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver todos os clientes →</a>
       </div>
-      @if (relatorio.loading() && relatorio.clientesDestaque().length === 0) {
+      @if (relatorio.loading() && !relatorio.error()) {
         <div class="mt-4 divide-y divide-border">
           @for (i of highlightSkeletonSlots; track i) {
             <div class="flex items-center gap-3 px-1 py-2.5">

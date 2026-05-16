@@ -19,7 +19,20 @@
       </div>
     }
 
-    @if (resumo(); as r) {
+    @if (loading() && !resumoError()) {
+      <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        @for (i of kpiSkeletonSlots; track i) {
+          <div [class]="i === 4 ? 'col-span-2 md:col-span-1 xl:col-span-1' : ''">
+            <app-kpi-card-skeleton />
+          </div>
+        }
+      </section>
+      <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        @for (_ of chartSkeletonSlots; track $index) {
+          <app-pie-chart-panel-skeleton />
+        }
+      </section>
+    } @else if (resumo(); as r) {
       <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <app-kpi-card
           label="Total no período"
@@ -79,19 +92,6 @@
           }
         </div>
       </section>
-    } @else if (loading() && !resumoError()) {
-      <section class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        @for (i of kpiSkeletonSlots; track i) {
-          <div [class]="i === 4 ? 'col-span-2 md:col-span-1 xl:col-span-1' : ''">
-            <app-kpi-card-skeleton />
-          </div>
-        }
-      </section>
-      <section class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        @for (_ of chartSkeletonSlots; track $index) {
-          <app-pie-chart-panel-skeleton />
-        }
-      </section>
     }
 
     <div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
@@ -120,7 +120,7 @@
           </button>
         </div>
       </div>
-      @if (loading() && items().length === 0 && !error()) {
+      @if (loading() && !error()) {
         <div class="flex flex-col">
           <app-table-skeleton [columns]="10" [rows]="8" [tableClass]="'min-w-[1040px]'" />
           <div class="border-t border-border bg-muted/10 px-4 py-3">

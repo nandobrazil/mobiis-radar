@@ -18,6 +18,7 @@ import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { LineChartComponent } from '../../shared/line-chart/line-chart.component';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
+import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import type { ClienteContextoDto } from '../../shared/cliente-contexto.service';
 import { ClienteContextoService } from '../../shared/cliente-contexto.service';
@@ -32,6 +33,7 @@ const CONTEXTO_AUTOR_PADRAO = 'CS';
     AppIconComponent,
     RiskBadgeComponent,
     RouterLink,
+    TableSkeletonComponent,
     TopBarComponent,
   ],
   templateUrl: './customer-detail-page.component.html',

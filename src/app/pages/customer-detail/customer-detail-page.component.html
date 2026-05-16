@@ -196,9 +196,6 @@
               <p class="text-xs text-muted-foreground">Uso por entidade e origem</p>
             </div>
             <div class="flex items-center gap-2">
-              @if (relatorio.clienteDetalleLoading()) {
-                <span class="text-xs text-muted-foreground">Carregando...</span>
-              }
               <button
                 type="button"
                 class="text-xs font-medium text-primary hover:underline disabled:opacity-50"
@@ -211,6 +208,11 @@
           </div>
           @if (relatorio.clienteDetalleError(); as detErr) {
             <p class="text-sm text-destructive">{{ detErr }}</p>
+          }
+          @if (relatorio.clienteDetalleLoading() && !detalleOperacional()) {
+            <div class="mt-4">
+              <app-table-skeleton [columns]="8" [rows]="6" [tableClass]="'min-w-[680px]'" />
+            </div>
           }
           @if (detalleOperacional(); as d) {
             <div class="mt-4 space-y-6">
