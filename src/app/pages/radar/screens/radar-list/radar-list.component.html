@@ -1,0 +1,101 @@
+<div class="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+  <div class="flex items-center justify-between border-b border-border px-4 py-3">
+    <h2 class="text-sm font-semibold">Lista de clientes</h2>
+    <div class="flex gap-2">
+      <button
+        type="button"
+        class="btn-primary h-8 px-3 text-xs"
+        [disabled]="loading() || sortedData().length === 0"
+        (click)="exportarPlanilha()"
+      >
+        Exportar Lista
+      </button>
+    </div>
+  </div>
+
+  @if (loading() && data().length === 0) {
+    <div class="flex flex-col">
+      <app-table-skeleton [columns]="8" [rows]="10" />
+    </div>
+  } @else if (data().length === 0) {
+    <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado nos filtros selecionados.</div>
+  } @else {
+    <div class="flex flex-col">
+      <app-data-table>
+          <tr data-table-head-row>
+            <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
+              @if (sortableColumns.cliente) {
+                <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('cliente')" [attr.aria-sort]="ariaSort('cliente')">
+                  <span>Cliente</span>
+                  @if (activeSortDirection('cliente'); as dir) {
+                    <app-icon [icon]="dir === 'asc' ? iconSortUp : iconSortDown" size="14" svgClass="size-3.5 text-primary" />
+                  } @else {
+                    <app-icon [icon]="iconSortBoth" size="14" svgClass="size-3.5 opacity-30" />
+                  }
+                </button>
+              } @else { Cliente }
+            </th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">
+                <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('dias_sem_uso')" [attr.aria-sort]="ariaSort('dias_sem_uso')">
+                  <span>Dias s/ uso</span>
+                  @if (activeSortDirection('dias_sem_uso'); as dir) {
+                    <app-icon [icon]="dir === 'asc' ? iconSortUp : iconSortDown" size="14" svgClass="size-3.5 text-primary" />
+                  } @else {
+                    <app-icon [icon]="iconSortBoth" size="14" svgClass="size-3.5 opacity-30" />
+                  }
+                </button>
+            </th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 30d</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 90d</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Core (30/90)</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Usuários</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score IA</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Risco</th>
+          </tr>
+          @for (row of pageSlice(); track row.cliente.owner_id) {
+            <tr class="group transition-colors hover:bg-muted/20">
+              <td class="px-4 py-3">
+                <a [routerLink]="['/cliente', row.cliente.owner_id]" class="flex items-center gap-3">
+                  <div class="grid h-8 w-8 place-items-center rounded-lg bg-accent text-[10px] font-semibold">
+                    {{ initials(row.cliente.nome_cliente) }}
+                  </div>
+                  <div class="min-w-0 flex-1 truncate text-sm">
+                    <span class="font-medium group-hover:text-primary">{{ row.cliente.nome_cliente }}</span>
+                    <p class="text-[10px] text-muted-foreground">{{ row.cliente.owner_id }}</p>
+                  </div>
+                </a>
+              </td>
+              <td class="px-4 py-3 tabular-nums">{{ row.cliente.dias_sem_atividade }}</td>
+              <td class="px-4 py-3 tabular-nums">{{ row.cliente.acoes_30d }}</td>
+              <td class="px-4 py-3 tabular-nums">{{ row.cliente.acoes_90d }}</td>
+              <td class="px-4 py-3 text-xs tabular-nums text-muted-foreground">
+                {{ row.cliente.acoes_core_30d }} / {{ row.cliente.acoes_core_90d }}
+              </td>
+              <td class="px-4 py-3 tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
+              <td class="px-4 py-3">
+                @if (hasScoreIa(row)) {
+                  <app-score-bar [score]="healthScore(row)" />
+                } @else {
+                  <span class="text-[10px] text-muted-foreground">Sem IA</span>
+                }
+              </td>
+              <td class="px-4 py-3">
+                @if (row.analise) {
+                  <app-risk-badge [risk]="riskLevel(row)" />
+                } @else {
+                  <span class="text-[10px] text-muted-foreground">N/A</span>
+                }
+              </td>
+            </tr>
+          }
+      </app-data-table>
+      <app-table-pagination-bar
+        [totalCount]="data().length"
+        [page]="page()"
+        [pageSize]="pageSize()"
+        (pageChange)="page.set($event)"
+        (pageSizeChange)="pageSize.set($event)"
+      />
+    </div>
+  }
+</div>
