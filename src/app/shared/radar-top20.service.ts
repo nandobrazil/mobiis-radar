@@ -56,19 +56,7 @@ export function hasRelatorioScoreIa(row: RelatorioTop20Item): boolean {
 /** Saude 0-100: usa score IA quando existe; senao heuristica operacional (dias sem uso, acoes 30d). */
 export function healthScoreFromRelatorioRow(row: RelatorioTop20Item): number {
   const scoreIa = row.analise?.score_ia;
-  if (hasRelatorioScoreIa(row)) {
-    const n = Number(scoreIa);
-    return Math.max(0, Math.min(100, Math.round(100 - n)));
-  }
-  const c = row.cliente;
-  if (!c) {
-    return 0;
-  }
-  let h = 100;
-  h -= Math.min(55, (Number(c.dias_sem_atividade) || 0) * 0.75);
-  const a30 = Number(c.acoes_30d) || 0;
-  h -= Math.min(35, Math.max(0, 25 - a30) * 1.2);
-  return Math.max(0, Math.min(100, Math.round(h)));
+  return scoreIa ?? 0;
 }
 
 function apiRelatorioBase(): string {

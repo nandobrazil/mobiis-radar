@@ -10,6 +10,7 @@
       <span class="tabular-nums font-medium text-foreground">{{ rangeEnd() }}</span>
       de
       <span class="tabular-nums font-medium text-foreground">{{ totalCount() }}</span>
+      <span class="hidden sm:inline"> · Página {{ page() }} de {{ totalPages() }}</span>
     }
   </span>
   <div class="flex flex-wrap items-center gap-3">
@@ -25,24 +26,39 @@
         }
       </select>
     </label>
-    <div class="flex items-center gap-1">
+    <nav class="flex items-center gap-1" aria-label="Paginação">
       <button
         type="button"
-        class="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+        class="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium transition hover:bg-muted disabled:pointer-events-none disabled:opacity-40"
         [disabled]="page() <= 1 || totalCount() === 0"
         (click)="prev()"
       >
         Anterior
       </button>
-      <span class="min-w-[4.5rem] text-center tabular-nums">{{ page() }} / {{ totalPages() }}</span>
+      @for (p of visiblePageNumbers(); track p) {
+        <button
+          type="button"
+          class="grid min-w-8 place-items-center rounded-lg border px-2 py-1.5 text-xs font-medium tabular-nums transition hover:bg-muted disabled:pointer-events-none disabled:opacity-40"
+          [class.border-primary]="p === page()"
+          [class.bg-primary]="p === page()"
+          [class.text-primary-foreground]="p === page()"
+          [class.border-border]="p !== page()"
+          [class.bg-card]="p !== page()"
+          [disabled]="totalCount() === 0"
+          [attr.aria-current]="p === page() ? 'page' : null"
+          (click)="goTo(p)"
+        >
+          {{ p }}
+        </button>
+      }
       <button
         type="button"
-        class="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium transition hover:bg-muted disabled:opacity-40"
+        class="rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium transition hover:bg-muted disabled:pointer-events-none disabled:opacity-40"
         [disabled]="page() >= totalPages() || totalCount() === 0"
         (click)="next()"
       >
         Próxima
       </button>
-    </div>
+    </nav>
   </div>
 </div>

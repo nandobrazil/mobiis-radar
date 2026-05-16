@@ -67,7 +67,7 @@
                 class="px-4 py-3 text-left font-medium"
                 title="Saude 0-100: quanto maior, melhor. A linha 'Risco IA' e a nota bruta (maior = mais risco)."
               >
-                Saude IA
+                Score IA
               </th>
               <th class="px-4 py-3 text-left font-medium">Risco</th>
             </tr>
@@ -100,12 +100,6 @@
                   @if (hasScoreIa(row)) {
                     <div class="inline-flex items-center gap-3">
                       <app-score-bar [score]="healthScore(row)" />
-                      <span
-                        class="text-[10px] tabular-nums leading-none"
-                        [class]="iaRiskLineClass(row)"
-                      >
-                        Risco IA {{ row.analise!.score_ia }}
-                      </span>
                     </div>
                   } @else {
                     <span class="inline-flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
@@ -118,10 +112,6 @@
                   @if (row.analise) {
                     <div class="inline-flex items-center gap-2">
                       <app-risk-badge [risk]="riskLevel(row)" />
-                      <span
-                        class="max-w-[8rem] truncate text-[10px] uppercase text-muted-foreground"
-                        [title]="row.analise.nivel_risco"
-                        >{{ row.analise.nivel_risco }}</span>
                     </div>
                   } @else {
                     <span class="inline-flex items-center gap-2">

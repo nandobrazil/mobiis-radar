@@ -23,6 +23,21 @@ export class TablePaginationBarComponent {
     Math.max(1, Math.ceil(Math.max(0, this.totalCount()) / Math.max(1, this.pageSize()))),
   );
 
+  /** Até 5 números de página visíveis, centrados na página atual (quando há mais de 5 páginas). */
+  protected readonly visiblePageNumbers = computed(() => {
+    if (this.totalCount() === 0) {
+      return [] as number[];
+    }
+    const total = this.totalPages();
+    const cur = this.page();
+    const windowSize = 5;
+    if (total <= windowSize) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const start = Math.min(Math.max(1, cur - 2), total - windowSize + 1);
+    return Array.from({ length: windowSize }, (_, i) => start + i);
+  });
+
   protected readonly rangeStart = computed(() => {
     const t = this.totalCount();
     if (t === 0) {
@@ -44,6 +59,17 @@ export class TablePaginationBarComponent {
   protected next(): void {
     if (this.page() < this.totalPages()) {
       this.pageChange.emit(this.page() + 1);
+    }
+  }
+
+  protected goTo(p: number): void {
+    const total = this.totalPages();
+    if (this.totalCount() === 0 || total <= 1) {
+      return;
+    }
+    const next = Math.min(Math.max(1, Math.floor(p)), total);
+    if (next !== this.page()) {
+      this.pageChange.emit(next);
     }
   }
 
