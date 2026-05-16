@@ -54,53 +54,79 @@
             <tr data-table-head-row>
               <th class="px-4 py-3 text-left font-medium">Cliente</th>
               <th class="px-4 py-3 text-left font-medium">Dias sem uso</th>
-              <th class="px-4 py-3 text-left font-medium">Acoes 30d</th>
-              <th class="px-4 py-3 text-left font-medium">Acoes 90d</th>
+              <th class="px-4 py-3 text-left font-medium">Ações 30d</th>
+              <th class="px-4 py-3 text-left font-medium">Ações 90d</th>
               <th class="px-4 py-3 text-left font-medium">Core 30d / 90d</th>
               <th class="px-4 py-3 text-left font-medium">Usuarios</th>
-              <th class="px-4 py-3 text-left font-medium">Score IA</th>
+              <th
+                class="px-4 py-3 text-left font-medium"
+                title="Saude 0-100: quanto maior, melhor. A linha 'Risco IA' e a nota bruta (maior = mais risco)."
+              >
+                Saude IA
+              </th>
               <th class="px-4 py-3 text-left font-medium">Risco</th>
             </tr>
             @for (row of pageSlice(); track row.cliente.owner_id) {
               <tr class="group transition-colors hover:bg-muted/20">
-                <td class="px-4 py-3 align-top">
-                  <a [routerLink]="['/cliente', row.cliente.owner_id]" class="flex items-start gap-3">
+                <td class="px-4 py-3">
+                  <a
+                    [routerLink]="['/cliente', row.cliente.owner_id]"
+                    class="flex max-w-[min(380px,48vw)] items-center gap-3"
+                    [title]="row.cliente.nome_cliente + ' · ' + row.cliente.owner_id"
+                  >
                     <div class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-xs font-semibold">
                       {{ initials(row.cliente.nome_cliente) }}
                     </div>
-                    <div class="min-w-0">
-                      <div class="font-medium group-hover:text-primary">{{ row.cliente.nome_cliente }}</div>
-                      <div class="truncate text-xs text-muted-foreground" [title]="row.cliente.owner_id">
-                        {{ row.cliente.owner_id }}
-                      </div>
+                    <div class="min-w-0 flex-1 truncate text-sm">
+                      <span class="font-medium group-hover:text-primary">{{ row.cliente.nome_cliente }}</span>
+                      <span class="text-muted-foreground"> · </span>
+                      <span class="text-xs text-muted-foreground">{{ row.cliente.owner_id }}</span>
                     </div>
                   </a>
                 </td>
-                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.dias_sem_atividade }}</td>
-                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.acoes_30d }}</td>
-                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.acoes_90d }}</td>
-                <td class="px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                <td class="px-4 py-3 tabular-nums">{{ row.cliente.dias_sem_atividade }}</td>
+                <td class="px-4 py-3 tabular-nums">{{ row.cliente.acoes_30d }}</td>
+                <td class="px-4 py-3 tabular-nums">{{ row.cliente.acoes_90d }}</td>
+                <td class="px-4 py-3 text-xs tabular-nums text-muted-foreground">
                   {{ row.cliente.acoes_core_30d }} / {{ row.cliente.acoes_core_90d }}
                 </td>
-                <td class="px-4 py-3 align-top tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
-                <td class="px-4 py-3 align-top">
+                <td class="px-4 py-3 tabular-nums">{{ row.cliente.usuarios_ativos }}</td>
+                <td class="px-4 py-3">
                   @if (hasScoreIa(row)) {
-                    <app-score-bar [score]="healthScore(row)" />
-                    <span class="mt-0.5 block text-[10px] text-muted-foreground">IA {{ row.analise!.score_ia }}</span>
+                    <div class="inline-flex items-center gap-3">
+                      <app-score-bar [score]="healthScore(row)" />
+                      <span
+                        class="text-[10px] tabular-nums leading-none"
+                        [class]="iaRiskLineClass(row)"
+                      >
+                        Risco IA {{ row.analise!.score_ia }}
+                      </span>
+                    </div>
                   } @else {
-                    <span class="text-xs tabular-nums text-muted-foreground">—</span>
-                    <span class="mt-0.5 block text-[10px] text-muted-foreground">Sem score IA</span>
+                    <span class="inline-flex items-center gap-2 text-xs tabular-nums text-muted-foreground">
+                      <span>—</span>
+                      <span class="text-[10px] leading-none">Sem score IA</span>
+                    </span>
                   }
                 </td>
-                <td class="px-4 py-3 align-top">
+                <td class="px-4 py-3">
                   @if (row.analise) {
-                    <app-risk-badge [risk]="riskLevel(row)" />
-                    <div class="mt-1 text-[10px] uppercase text-muted-foreground">{{ row.analise.nivel_risco }}</div>
+                    <div class="inline-flex items-center gap-2">
+                      <app-risk-badge [risk]="riskLevel(row)" />
+                      <span
+                        class="max-w-[8rem] truncate text-[10px] uppercase text-muted-foreground"
+                        [title]="row.analise.nivel_risco"
+                        >{{ row.analise.nivel_risco }}</span>
+                    </div>
                   } @else {
-                    <span class="inline-flex rounded-md border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">Sem IA</span>
-                    @if (row.erro) {
-                      <div class="mt-1 text-[10px] text-destructive/90">Erro na analise</div>
-                    }
+                    <span class="inline-flex items-center gap-2">
+                      <span
+                        class="inline-flex rounded-md border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground"
+                        >Sem IA</span>
+                      @if (row.erro) {
+                        <span class="truncate text-[10px] text-destructive/90" title="Erro na analise">Erro na analise</span>
+                      }
+                    </span>
                   }
                 </td>
               </tr>

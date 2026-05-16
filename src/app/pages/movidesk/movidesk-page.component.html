@@ -141,45 +141,40 @@
             </tr>
             @for (row of pageSlice(); track row.id) {
               <tr class="transition-colors hover:bg-muted/20">
-                <td class="px-4 py-3 align-top font-mono text-xs tabular-nums text-muted-foreground">{{ row.id }}</td>
-                <td class="max-w-[min(420px,40vw)] px-4 py-3 align-top">
-                  <span class="line-clamp-2 font-medium leading-snug" [title]="row.subject">{{ row.subject }}</span>
+                <td class="px-4 py-3 font-mono text-xs tabular-nums text-muted-foreground">{{ row.id }}</td>
+                <td class="max-w-[min(420px,40vw)] px-4 py-3">
+                  <span class="block truncate font-medium" [title]="row.subject">{{ row.subject }}</span>
                 </td>
-                <td class="max-w-[200px] px-4 py-3 align-top">
+                <td class="max-w-[220px] px-4 py-3">
                   @if (row.tags.length === 0) {
                     <span class="text-xs text-muted-foreground">—</span>
                   } @else {
-                    <div class="flex max-w-[200px] flex-wrap gap-1">
-                      @for (tag of row.tags; track tag) {
-                        <span
-                          class="inline-block max-w-full truncate rounded-md border border-border/80 bg-muted/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
-                          [title]="tag"
-                          >{{ tag }}</span>
-                      }
-                    </div>
+                    <span class="block truncate text-xs text-muted-foreground" [title]="row.tags.join(', ')">{{ row.tags.join(' · ') }}</span>
                   }
                 </td>
-                <td class="px-4 py-3 align-top">
-                  <span
-                    class="inline-flex rounded-md border px-2 py-0.5 text-[11px] font-medium"
-                    [class]="statusTone(row.status)"
-                  >
-                    {{ statusLabelPt(row.status) }}
-                  </span>
-                  <div class="mt-0.5 text-[10px] text-muted-foreground">{{ row.baseStatus }}</div>
+                <td class="px-4 py-3">
+                  <div class="inline-flex max-w-full items-center gap-2">
+                    <span
+                      class="inline-flex shrink-0 rounded-md border px-2 py-0.5 text-[11px] font-medium"
+                      [class]="statusTone(row.status)"
+                    >
+                      {{ statusLabelPt(row.status) }}
+                    </span>
+                    <span class="min-w-0 truncate text-[10px] text-muted-foreground" [title]="row.baseStatus">{{ row.baseStatus }}</span>
+                  </div>
                 </td>
-                <td class="px-4 py-3 align-top text-xs">{{ row.urgency }}</td>
-                <td class="px-4 py-3 align-top text-xs">{{ row.category ?? '—' }}</td>
-                <td class="max-w-[200px] px-4 py-3 align-top text-xs leading-relaxed text-muted-foreground">
-                  <span class="line-clamp-2" [title]="row.ownerTeam">{{ row.ownerTeam }}</span>
+                <td class="px-4 py-3 text-xs">{{ row.urgency }}</td>
+                <td class="max-w-[10rem] px-4 py-3 text-xs"><span class="block truncate" [title]="row.category ?? ''">{{ row.category ?? '—' }}</span></td>
+                <td class="max-w-[200px] px-4 py-3 text-xs text-muted-foreground">
+                  <span class="block truncate" [title]="row.ownerTeam">{{ row.ownerTeam }}</span>
                 </td>
-                <td class="max-w-[220px] px-4 py-3 align-top text-xs text-muted-foreground">
-                  <span class="line-clamp-2" [title]="clientsLabel(row)">{{ clientsLabel(row) }}</span>
+                <td class="max-w-[220px] px-4 py-3 text-xs text-muted-foreground">
+                  <span class="block truncate" [title]="clientsLabel(row)">{{ clientsLabel(row) }}</span>
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                <td class="whitespace-nowrap px-4 py-3 text-xs tabular-nums text-muted-foreground">
                   {{ formatDt(row.createdDate) }}
                 </td>
-                <td class="whitespace-nowrap px-4 py-3 align-top text-xs tabular-nums text-muted-foreground">
+                <td class="whitespace-nowrap px-4 py-3 text-xs tabular-nums text-muted-foreground">
                   {{ formatDt(row.lastUpdate) }}
                 </td>
               </tr>

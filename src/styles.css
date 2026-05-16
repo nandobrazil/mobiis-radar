@@ -245,6 +245,13 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /** Tabelas de dados: uma linha por célula (scroll horizontal no wrapper). */
+  app-data-table table thead th,
+  app-data-table table tbody td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
   app-dashboard-page,
   app-radar-page,
   app-comercial-page,

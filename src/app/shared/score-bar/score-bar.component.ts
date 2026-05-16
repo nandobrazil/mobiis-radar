@@ -1,6 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
-import { scoreTone } from '../ui-helpers';
+import { healthScoreBarBackground, healthScoreTextColor } from '../ui-helpers';
 
 @Component({
   selector: 'app-score-bar',
@@ -11,7 +11,6 @@ import { scoreTone } from '../ui-helpers';
 export class ScoreBarComponent {
   readonly score = input.required<number>();
 
-  tone() {
-    return scoreTone(this.score());
-  }
+  protected readonly barBackground = computed(() => healthScoreBarBackground(this.score()));
+  protected readonly valueColor = computed(() => healthScoreTextColor(this.score()));
 }

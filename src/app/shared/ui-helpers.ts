@@ -41,8 +41,38 @@ export function riskClasses(risk: RiskLevel) {
   return classes[risk];
 }
 
-export function scoreTone(score: number) {
-  return score >= 70 ? 'bg-success' : score >= 45 ? 'bg-warning' : 'bg-destructive';
+/**
+ * Cor de preenchimento para barra de saude 0-100 (0 = pior, 100 = melhor).
+ * Transicao continua vermelho -> amarelo -> verde usando tokens do tema.
+ */
+export function healthScoreBarBackground(health: number): string {
+  const s = Math.max(0, Math.min(100, health));
+  if (s <= 50) {
+    const t = s / 50;
+    return `color-mix(in oklch, var(--destructive) ${(1 - t) * 100}%, var(--warning) ${t * 100}%)`;
+  }
+  const t = (s - 50) / 50;
+  return `color-mix(in oklch, var(--warning) ${(1 - t) * 100}%, var(--success) ${t * 100}%)`;
+}
+
+/** Cor do valor numerico ao lado da barra (mesma logica da barra). */
+export function healthScoreTextColor(health: number): string {
+  return healthScoreBarBackground(health);
+}
+
+/**
+ * Classes Tailwind para legenda do risco IA bruto (maior nota = mais risco).
+ * Complementa a barra de saude (100 - score_ia em muitos casos).
+ */
+export function iaRiskCaptionClass(scoreIa: number): string {
+  const s = Math.max(0, Math.min(100, Number.isFinite(scoreIa) ? scoreIa : 0));
+  if (s >= 66) {
+    return 'font-semibold text-destructive';
+  }
+  if (s >= 33) {
+    return 'font-semibold text-warning-foreground';
+  }
+  return 'font-semibold text-success';
 }
 
 export function formatDate(value: string) {

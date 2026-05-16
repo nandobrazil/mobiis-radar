@@ -134,12 +134,11 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
     const c = row.cliente;
     return [
       { label: 'Dias sem uso', value: String(c.dias_sem_atividade) },
-      { label: 'Acoes 30d', value: String(c.acoes_30d) },
-      { label: 'Acoes 90d', value: String(c.acoes_90d) },
+      { label: 'Ações 30d', value: String(c.acoes_30d) },
+      { label: 'Ações 90d', value: String(c.acoes_90d) },
       { label: 'Usuarios ativos', value: String(c.usuarios_ativos) },
-      { label: 'Core 30d / 90d', value: `${c.acoes_core_30d} / ${c.acoes_core_90d}` },
       { label: 'Entidades', value: String(c.entidades_utilizadas) },
-      { label: 'Acoes neg. 30d', value: String(c.acoes_negativas_30d) },
+      { label: 'Ações neg. 30d', value: String(c.acoes_negativas_30d) },
       { label: 'Automacao 30d', value: String(c.acoes_automatizadas_30d) },
     ];
   }
@@ -159,9 +158,9 @@ export class CustomerDetailPageComponent implements OnInit, OnDestroy {
     const firstUnused = this.unused()[0] ?? 'Analytics+';
     return [
       { icon: LucideTriangleAlert, title: 'Risco de churn', tone: 'bg-destructive/10 text-destructive border-destructive/30', body: `Probabilidade estimada de <strong>${Math.max(5, 100 - c.score)}%</strong> nos proximos 60 dias.` },
-      { icon: LucideCircleDashed, title: 'Recomendacao para CS', tone: 'bg-info/10 text-info border-info/30', body: 'Agendar QBR com sponsor + revisar SLA da Torre de Controle.' },
-      { icon: LucideSparkles, title: 'Recomendacao comercial', tone: 'bg-primary/10 text-primary border-primary/30', body: `Apresentar pacote ${firstUnused} com piloto de 30 dias.` },
-      { icon: LucideSettings, title: 'Acoes preventivas', tone: 'bg-warning/10 text-warning border-warning/30', body: 'Reativar webhook de eventos e reforcar treinamento do Planner.' },
+      { icon: LucideCircleDashed, title: 'Recomendação para CS', tone: 'bg-info/10 text-info border-info/30', body: 'Agendar QBR com sponsor + revisar SLA da Torre de Controle.' },
+      { icon: LucideSparkles, title: 'Recomendação comercial', tone: 'bg-primary/10 text-primary border-primary/30', body: `Apresentar pacote ${firstUnused} com piloto de 30 dias.` },
+      { icon: LucideSettings, title: 'Ações preventivas', tone: 'bg-warning/10 text-warning border-warning/30', body: 'Reativar webhook de eventos e reforcar treinamento do Planner.' },
       { icon: LucideLayers, title: 'Produtos aderentes', tone: 'bg-primary/10 text-primary border-primary/30', body: this.unused().slice(0, 3).join(' - ') },
     ];
   }

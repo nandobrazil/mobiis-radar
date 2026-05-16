@@ -15,7 +15,7 @@ import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { LucideSearch } from '@lucide/angular';
-import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
+import { initials, iaRiskCaptionClass, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
 
 const ALL = '__all__';
 
@@ -85,6 +85,12 @@ export class RadarPageComponent implements OnInit {
     });
   }
 
+  /** Cor da legenda "Risco IA" (nota bruta: maior = pior). */
+  protected iaRiskLineClass(row: RelatorioTop20Item): string {
+    const n = Number(row.analise?.score_ia);
+    return iaRiskCaptionClass(Number.isFinite(n) ? n : 0);
+  }
+
   ngOnInit(): void {
     this.top20.load();
   }
@@ -98,7 +104,7 @@ export class RadarPageComponent implements OnInit {
     return healthScoreFromRelatorioRow(row);
   }
 
-  /** Barra na coluna "Score IA": so quando a API enviou `score_ia` numerico. */
+  /** Barra na coluna "Saude IA": so quando a API enviou `score_ia` numerico. */
   protected hasScoreIa(row: RelatorioTop20Item): boolean {
     return hasRelatorioScoreIa(row);
   }
