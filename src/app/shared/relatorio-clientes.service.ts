@@ -8,6 +8,10 @@ import type {
   RelatorioClienteParametros,
   RelatorioProcessamentoStatus,
 } from '../data/relatorio-clientes.types';
+import type {
+  RelatorioMatchCnaeRequest,
+  RelatorioMatchCnaeResponse,
+} from '../data/relatorio-match-cnae.types';
 import type { ClienteContextoDto } from './cliente-contexto.service';
 import { environment } from '../../environments/environment';
 
@@ -127,6 +131,11 @@ export function relatorioClienteParametrosUrl(ownerId: string): string {
 /** POST reprocessar análise IA do cliente. */
 export function relatorioClienteReprocessarUrl(ownerId: string): string {
   return `${apiRelatorioBase()}/cliente/${encodeURIComponent(ownerId.trim())}/reprocessar`;
+}
+
+/** POST match CNAE + argumento de venda (payload da BrasilAPI ou mínimo com `cnae_fiscal`). */
+export function relatorioMatchCnaeUrl(): string {
+  return `${apiRelatorioBase()}/match-cnae`;
 }
 
 /** Quando `:id` nao vem na rota, esta pagina usa este owner como padrao (demo). */
@@ -484,5 +493,10 @@ export class RelatorioClientesService implements OnDestroy {
       throw new Error('owner_id obrigatório');
     }
     return this.http.post<RelatorioClienteItem>(relatorioClienteReprocessarUrl(oid), {});
+  }
+
+  /** Envia o payload da BrasilAPI (ou mínimo) para encontrar clientes similares e gerar argumento de venda. */
+  matchCnae(body: RelatorioMatchCnaeRequest) {
+    return this.http.post<RelatorioMatchCnaeResponse>(relatorioMatchCnaeUrl(), body);
   }
 }

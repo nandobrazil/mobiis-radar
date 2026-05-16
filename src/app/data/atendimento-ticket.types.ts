@@ -1,5 +1,5 @@
-/** Cliente vinculado ao ticket (API Movidesk). */
-export interface MovideskTicketClient {
+﻿/** Cliente vinculado ao ticket (API de atendimento). */
+export interface AtendimentoTicketClient {
   id: string;
   personType: number;
   profileType: number;
@@ -18,7 +18,7 @@ export interface MovideskTicketClient {
 }
 
 /** Ticket retornado por GET /api/movidesk/tickets */
-export interface MovideskTicket {
+export interface AtendimentoTicket {
   tags: string[];
   serviceFull: string[];
   serviceFirstLevelId: number;
@@ -35,5 +35,5 @@ export interface MovideskTicket {
   subject: string;
   type: number;
   id: number;
-  clients: MovideskTicketClient[];
+  clients: AtendimentoTicketClient[];
 }

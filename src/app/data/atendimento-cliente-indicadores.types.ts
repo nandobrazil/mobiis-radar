@@ -1,5 +1,5 @@
-/** Resposta de GET /api/movidesk/indicadores/{owner_id}. */
-export interface MovideskClienteIndicadores {
+﻿/** Resposta de GET /api/movidesk/indicadores/{owner_id}. */
+export interface AtendimentoClienteIndicadores {
   owner_id: string;
   nome_cliente: string;
   emails_vinculados: string[];

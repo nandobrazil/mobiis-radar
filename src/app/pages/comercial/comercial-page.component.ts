@@ -1,8 +1,24 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  ElementRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
+import { catchError, finalize, switchMap, throwError } from 'rxjs';
 
 import { coordsFromUf } from '../../data/brasil-uf-centers';
+import type {
+  RelatorioMatchCnaeRequest,
+  RelatorioMatchCnaeResponse,
+} from '../../data/relatorio-match-cnae.types';
 import { BrasilApiCnpjService } from '../../shared/brasil-api-cnpj.service';
 import type { BrasilApiCnpj } from '../../shared/brasil-api-cnpj.types';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
@@ -11,8 +27,9 @@ import { RelatorioClientesService } from '../../shared/relatorio-clientes.servic
 import { RelatorioProcessamentoBannerComponent } from '../../shared/relatorio-processamento-banner/relatorio-processamento-banner.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import {
+  COMERCIAL_MAP_DIVISAO_COLOR,
   COMERCIAL_MAP_RISK_COLOR,
-  filterRelatorioPorCnaeDescricao,
+  matchCnaeToGeoMarker,
   relatorioRowToGeoMarker,
 } from './comercial-mapa.helpers';
 
@@ -32,10 +49,21 @@ function formatCep(cep: string): string {
   return `${c.slice(0, 5)}-${c.slice(5)}`;
 }
 
+/** Payload da BrasilAPI repassado integralmente ao POST match-cnae. */
+function brasilApiToMatchCnaePayload(data: BrasilApiCnpj): RelatorioMatchCnaeRequest {
+  return { ...data };
+}
+
 @Component({
   selector: 'app-comercial-page',
   standalone: true,
-  imports: [CurrencyPipe, GeoMapComponent, TopBarComponent, RelatorioProcessamentoBannerComponent],
+  imports: [
+    CurrencyPipe,
+    GeoMapComponent,
+    RouterLink,
+    TopBarComponent,
+    RelatorioProcessamentoBannerComponent,
+  ],
   templateUrl: './comercial-page.component.html',
 })
 export class ComercialPageComponent implements OnInit {
@@ -43,38 +71,71 @@ export class ComercialPageComponent implements OnInit {
   protected readonly relatorio = inject(RelatorioClientesService);
   private readonly destroyRef = inject(DestroyRef);
 
+  private readonly argumentoGerandoBanner = viewChild<ElementRef<HTMLElement>>('argumentoGerandoBanner');
+
   protected readonly cnpjDraft = signal('');
   protected readonly loading = signal(false);
+  protected readonly matchLoading = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly matchError = signal<string | null>(null);
   protected readonly empresa = signal<BrasilApiCnpj | null>(null);
-  /** Quando definido, o mapa mostra só empresas com o mesmo `cnae_fiscal_descricao`. */
-  protected readonly cnaeFiltroDescricao = signal<string | null>(null);
+  protected readonly matchResult = signal<RelatorioMatchCnaeResponse | null>(null);
 
   protected readonly comercialMapLegend: GeoMapLegendItem[] = [
+    { label: 'CNAE exato', color: COMERCIAL_MAP_RISK_COLOR.saudavel },
+    { label: 'Mesma divisão CNAE', color: COMERCIAL_MAP_DIVISAO_COLOR },
     { label: 'Risco alto', color: COMERCIAL_MAP_RISK_COLOR.risco },
     { label: 'Atenção', color: COMERCIAL_MAP_RISK_COLOR.atencao },
     { label: 'Saudável', color: COMERCIAL_MAP_RISK_COLOR.saudavel },
   ];
 
   protected readonly mapMarkers = computed(() => {
-    const rows = filterRelatorioPorCnaeDescricao(this.relatorio.items(), this.cnaeFiltroDescricao());
-    return rows
+    const match = this.matchResult();
+    if (match?.matches?.length) {
+      return match.matches
+        .map((row) => matchCnaeToGeoMarker(row))
+        .filter((m): m is GeoMapMarker => m != null);
+    }
+    return this.relatorio
+      .items()
       .map((row) => relatorioRowToGeoMarker(row))
       .filter((m): m is GeoMapMarker => m != null);
   });
 
   protected readonly mapResumo = computed(() => {
+    const match = this.matchResult();
+    if (match) {
+      const visiveis = this.mapMarkers().length;
+      const total = match.matches.length;
+      const exatos = match.matches.filter((m) => m.similaridade === 'EXATO').length;
+      return `${visiveis} de ${total} cliente(s) similar(es) no mapa · ${exatos} com CNAE exato`;
+    }
     const total = this.relatorio.items().length;
     const visiveis = this.mapMarkers().length;
-    const filtro = this.cnaeFiltroDescricao();
-    if (filtro?.trim()) {
-      return `${visiveis} empresa(s) com o mesmo CNAE no mapa`;
-    }
     return `${visiveis} de ${total} empresa(s) no mapa`;
   });
 
   protected readonly formatCnpjDisplay = formatCnpjDisplay;
   protected readonly formatCep = formatCep;
+
+  constructor() {
+    effect((onCleanup) => {
+      if (!this.matchLoading()) {
+        return;
+      }
+      const timerId = window.setTimeout(() => this.scrollParaBannerGerando(), 0);
+      onCleanup(() => window.clearTimeout(timerId));
+    });
+  }
+
+  private scrollParaBannerGerando(): void {
+    requestAnimationFrame(() => {
+      this.argumentoGerandoBanner()?.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  }
 
   ngOnInit(): void {
     if (this.relatorio.items().length === 0 && !this.relatorio.loading()) {
@@ -90,8 +151,9 @@ export class ComercialPageComponent implements OnInit {
   protected limparBusca(): void {
     this.cnpjDraft.set('');
     this.empresa.set(null);
-    this.cnaeFiltroDescricao.set(null);
+    this.matchResult.set(null);
     this.error.set(null);
+    this.matchError.set(null);
   }
 
   protected buscar(): void {
@@ -102,44 +164,62 @@ export class ComercialPageComponent implements OnInit {
     }
 
     this.error.set(null);
+    this.matchError.set(null);
+    this.matchResult.set(null);
     this.loading.set(true);
+    this.matchLoading.set(false);
 
     this.brasilCnpj
       .getCnpj(raw)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
+      .pipe(
+        switchMap((data) => {
           this.empresa.set(data);
-          this.cnaeFiltroDescricao.set(data.cnae_fiscal_descricao?.trim() || null);
-          this.loading.set(false);
+          this.matchLoading.set(true);
+          return this.relatorio.matchCnae(brasilApiToMatchCnaePayload(data)).pipe(
+            catchError((err) => {
+              this.matchError.set(
+                'Não foi possível gerar o match de CNAE. Os dados cadastrais foram carregados; tente novamente.',
+              );
+              return throwError(() => err);
+            }),
+            finalize(() => this.matchLoading.set(false)),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (result) => {
+          this.matchResult.set(result);
+          this.matchError.set(null);
         },
-        error: () => {
-          this.empresa.set(null);
-          this.cnaeFiltroDescricao.set(null);
-          this.error.set('Não foi possível consultar este CNPJ. Confira o número ou tente de novo.');
-          this.loading.set(false);
+        error: (err) => {
+          if (!this.empresa()) {
+            this.error.set('Não foi possível consultar este CNPJ. Confira o número ou tente de novo.');
+          }
+          if (err && !this.matchError()) {
+            this.matchError.set('Falha ao consultar clientes similares.');
+          }
         },
       });
   }
 
-  /** Marcador extra quando o CNPJ buscado não está na lista do relatório. */
+  /** Marcador do prospect quando não está entre os matches retornados. */
   protected readonly marcadorEmpresaBuscada = computed((): GeoMapMarker | null => {
     const e = this.empresa();
     if (!e) {
       return null;
     }
     const doc = e.cnpj.replace(/\D/g, '');
-    const jaNaLista = this.relatorio.items().some(
-      (row) => row.owner?.documento?.replace(/\D/g, '') === doc,
-    );
-    if (jaNaLista) {
+    const match = this.matchResult();
+    if (match?.matches.some((m) => m.documento?.replace(/\D/g, '') === doc)) {
       return null;
     }
     const [lat, lng] = coordsFromUf(e.uf);
     return {
       lat,
       lng,
-      label: `${e.nome_fantasia?.trim() || e.razao_social} · pesquisada (Brasil API)`,
+      label: `${e.nome_fantasia?.trim() || e.razao_social} · prospect (Brasil API)`,
       color: '#7c3aed',
       radius: 12,
     };

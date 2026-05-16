@@ -1,4 +1,4 @@
-/** Chaves como retornadas pela API Movidesk (inglês) → rótulo em português para UI. */
+﻿/** Chaves como retornadas pela API de atendimento (inglês) → rótulo em português para UI. */
 const STATUS_API_PARA_PT: Record<string, string> = {
   closed: 'Fechado',
   new: 'Novo',
@@ -18,8 +18,8 @@ function chaveNormalizada(status: string): string {
   return status.trim().toLowerCase().replace(/\s+/g, '');
 }
 
-/** Traduz status Movidesk (API em inglês) para português; mantém o texto original se não houver de-para. */
-export function movideskStatusLabelPt(statusApi: string): string {
+/** Traduz status de atendimento (API em inglês) para português; mantém o texto original se não houver de-para. */
+export function atendimentoStatusLabelPt(statusApi: string): string {
   const key = chaveNormalizada(statusApi);
   return STATUS_API_PARA_PT[key] ?? statusApi;
 }

@@ -1,7 +1,7 @@
-import type { MovideskResumo } from './movidesk-resumo.types';
-import { MOVIDESK_GRAFICO_NAO_DEFINIDO } from './movidesk-grafico-labels';
+﻿import type { AtendimentoResumo } from './atendimento-resumo.types';
+import { ATENDIMENTO_GRAFICO_NAO_DEFINIDO } from './atendimento-grafico-labels';
 
-/** Chaves que representam categoria/urgência/status sem valor no Movidesk. */
+/** Chaves que representam categoria/urgência/status sem valor no atendimento. */
 function isChaveSemValor(rawKey: string): boolean {
   const key = rawKey?.trim() ?? '';
   if (!key) {
@@ -26,13 +26,13 @@ export function agruparChavesNulasComoOutros(dist: Record<string, number>): Reco
     next[rawKey] = (next[rawKey] ?? 0) + count;
   }
   if (indefinidos > 0) {
-    next[MOVIDESK_GRAFICO_NAO_DEFINIDO] = (next[MOVIDESK_GRAFICO_NAO_DEFINIDO] ?? 0) + indefinidos;
+    next[ATENDIMENTO_GRAFICO_NAO_DEFINIDO] = (next[ATENDIMENTO_GRAFICO_NAO_DEFINIDO] ?? 0) + indefinidos;
   }
   return next;
 }
 
 /** Aplica agrupamento de nulos nas distribuições categóricas do resumo. */
-export function normalizarResumoMovidesk(raw: MovideskResumo): MovideskResumo {
+export function normalizarResumoAtendimento(raw: AtendimentoResumo): AtendimentoResumo {
   return {
     ...raw,
     por_status: agruparChavesNulasComoOutros(raw.por_status ?? {}),

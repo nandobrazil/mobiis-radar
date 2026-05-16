@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnDestroy, computed, effect, inject, input, signal } from '@angular/core';
+﻿import { Component, DestroyRef, OnDestroy, computed, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -19,7 +19,7 @@ import {
   LucideUsers,
 } from '@lucide/angular';
 
-import type { MovideskClienteIndicadores } from '../../data/movidesk-cliente-indicadores.types';
+import type { AtendimentoClienteIndicadores } from '../../data/atendimento-cliente-indicadores.types';
 import type {
   RelatorioClienteItem,
   RelatorioClienteParametros,
@@ -43,7 +43,7 @@ import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skelet
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { ClienteContextoService } from '../../shared/cliente-contexto.service';
 import { formatDate, initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
-import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
+import { AtendimentoTicketsService } from '../../shared/atendimento-tickets.service';
 
 const CONTEXTO_AUTOR_PADRAO = 'CS';
 
@@ -78,15 +78,15 @@ export class CustomerDetailPageComponent implements OnDestroy {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly relatorio = inject(RelatorioClientesService);
   private readonly clienteContexto = inject(ClienteContextoService);
-  private readonly movideskTickets = inject(MovideskTicketsService);
+  private readonly atendimentoTickets = inject(AtendimentoTicketsService);
 
-  protected readonly movideskIndicadoresModalOpen = signal(false);
-  protected readonly movideskIndicadoresLoading = signal(false);
-  protected readonly movideskIndicadoresError = signal<string | null>(null);
-  protected readonly movideskIndicadores = signal<MovideskClienteIndicadores | null>(null);
+  protected readonly atendimentoIndicadoresModalOpen = signal(false);
+  protected readonly atendimentoIndicadoresLoading = signal(false);
+  protected readonly atendimentoIndicadoresError = signal<string | null>(null);
+  protected readonly atendimentoIndicadores = signal<AtendimentoClienteIndicadores | null>(null);
 
-  protected readonly movideskPorCategoriaRows = computed(() => {
-    const p = this.movideskIndicadores()?.por_categoria;
+  protected readonly atendimentoPorCategoriaRows = computed(() => {
+    const p = this.atendimentoIndicadores()?.por_categoria;
     if (!p) {
       return [] as { label: string; value: number }[];
     }
@@ -119,7 +119,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
   protected readonly iconSparkles = LucideSparkles;
   protected readonly iconAlert = LucideTriangleAlert;
   protected readonly iconArrowLeft = LucideArrowLeft;
-  protected readonly iconMovidesk = LucideBarChart3;
+  protected readonly iconAtendimento = LucideBarChart3;
   protected readonly iconContexto = LucideFileText;
   protected readonly iconReprocessar = LucideRefreshCw;
   protected readonly iconActivity = LucideActivity;
@@ -337,41 +337,41 @@ export class CustomerDetailPageComponent implements OnDestroy {
     return 'font-semibold text-destructive';
   }
 
-  protected abrirModalIndicadoresMovidesk(): void {
+  protected abrirModalIndicadoresAtendimento(): void {
     const row = this.report();
     const ownerId = row?.cliente.owner_id?.trim();
     if (!ownerId) {
       return;
     }
-    this.movideskIndicadoresModalOpen.set(true);
-    this.movideskIndicadoresLoading.set(true);
-    this.movideskIndicadoresError.set(null);
-    this.movideskIndicadores.set(null);
+    this.atendimentoIndicadoresModalOpen.set(true);
+    this.atendimentoIndicadoresLoading.set(true);
+    this.atendimentoIndicadoresError.set(null);
+    this.atendimentoIndicadores.set(null);
 
-    this.movideskTickets
+    this.atendimentoTickets
       .clienteIndicadores(ownerId)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.movideskIndicadoresLoading.set(false)),
+        finalize(() => this.atendimentoIndicadoresLoading.set(false)),
       )
       .subscribe({
         next: (data) => {
-          this.movideskIndicadores.set(data);
+          this.atendimentoIndicadores.set(data);
         },
         error: () => {
-          this.movideskIndicadoresError.set('Não foi possível carregar os indicadores Movidesk.');
+          this.atendimentoIndicadoresError.set('Não foi possível carregar os indicadores de Atendimento.');
         },
       });
   }
 
-  protected fecharModalIndicadoresMovidesk(): void {
-    this.movideskIndicadoresModalOpen.set(false);
-    this.movideskIndicadoresLoading.set(false);
-    this.movideskIndicadoresError.set(null);
-    this.movideskIndicadores.set(null);
+  protected fecharModalIndicadoresAtendimento(): void {
+    this.atendimentoIndicadoresModalOpen.set(false);
+    this.atendimentoIndicadoresLoading.set(false);
+    this.atendimentoIndicadoresError.set(null);
+    this.atendimentoIndicadores.set(null);
   }
 
-  protected tendenciaMovideskLabel(t: string | undefined): string {
+  protected tendenciaAtendimentoLabel(t: string | undefined): string {
     const u = t?.trim().toLowerCase() ?? '';
     if (u === 'crescendo') return 'Crescendo';
     if (u === 'decrescendo' || u === 'diminuindo') return 'Em queda';

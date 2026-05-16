@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { LucideIconInput } from '@lucide/angular';
 import {
@@ -102,7 +102,7 @@ export class AppComponent {
     { title: 'Radar de Clientes', url: '/radar', icon: LucideRadar },
     { title: 'Comercial', url: '/comercial', icon: LucideBriefcase },
     { title: 'Insights IA', url: '/insights', icon: LucideSparkles },
-    { title: 'Movidesk', url: '/movidesk', icon: LucideTicket },
+    { title: 'Atendimento', url: '/atendimento', icon: LucideTicket },
   ];
   readonly config = [
   ];

@@ -1,18 +1,18 @@
-import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
+﻿import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 
-import type { MovideskResumo } from '../../data/movidesk-resumo.types';
-import { movideskRotuloGrafico } from '../../data/movidesk-grafico-labels';
-import { movideskStatusLabelPt } from '../../data/movidesk-status-i18n';
-import type { MovideskTicket } from '../../data/movidesk-ticket.types';
+import type { AtendimentoResumo } from '../../data/atendimento-resumo.types';
+import { atendimentoRotuloGrafico } from '../../data/atendimento-grafico-labels';
+import { atendimentoStatusLabelPt } from '../../data/atendimento-status-i18n';
+import type { AtendimentoTicket } from '../../data/atendimento-ticket.types';
 import { PieChartComponent } from '../../shared/pie-chart/pie-chart.component';
 import { PieChartPanelSkeletonComponent } from '../../shared/pie-chart-panel-skeleton/pie-chart-panel-skeleton.component';
 import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
 import { TableSkeletonComponent } from '../../shared/table-skeleton/table-skeleton.component';
 import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
-import { MovideskTicketsService } from '../../shared/movidesk-tickets.service';
+import { AtendimentoTicketsService } from '../../shared/atendimento-tickets.service';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
@@ -28,10 +28,10 @@ import {
   LucideTimer,
 } from '@lucide/angular';
 
-type ChamadosLoad = { error: boolean; rows: MovideskTicket[] };
-type ResumoLoad = { ok: boolean; data: MovideskResumo | null };
+type ChamadosLoad = { error: boolean; rows: AtendimentoTicket[] };
+type ResumoLoad = { ok: boolean; data: AtendimentoResumo | null };
 
-type MovideskSortColumn =
+type AtendimentoSortColumn =
   | 'id'
   | 'subject'
   | 'tags'
@@ -44,7 +44,7 @@ type MovideskSortColumn =
   | 'lastUpdate';
 
 @Component({
-  selector: 'app-movidesk-page',
+  selector: 'app-atendimento-page',
   standalone: true,
   imports: [
     AppIconComponent,
@@ -57,18 +57,18 @@ type MovideskSortColumn =
     TablePaginationBarComponent,
     TopBarComponent,
   ],
-  templateUrl: './movidesk-page.component.html',
+  templateUrl: './atendimento-page.component.html',
 })
-export class MovideskPageComponent implements OnInit {
-  private readonly movidesk = inject(MovideskTicketsService);
+export class AtendimentoPageComponent implements OnInit {
+  private readonly atendimento = inject(AtendimentoTicketsService);
 
   protected readonly iconSearch = LucideSearch;
   protected readonly iconSortUp = LucideArrowUp;
   protected readonly iconSortDown = LucideArrowDown;
   protected readonly iconSortBoth = LucideArrowUpDown;
 
-  protected readonly items = signal<MovideskTicket[]>([]);
-  protected readonly resumo = signal<MovideskResumo | null>(null);
+  protected readonly items = signal<AtendimentoTicket[]>([]);
+  protected readonly resumo = signal<AtendimentoResumo | null>(null);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly resumoError = signal(false);
@@ -78,9 +78,9 @@ export class MovideskPageComponent implements OnInit {
   protected readonly pageSize = signal(10);
 
   /** Ordenação ativa; null = ordem devolvida pela API após o filtro de busca. */
-  protected readonly tableSort = signal<{ column: MovideskSortColumn; direction: 'asc' | 'desc' } | null>(null);
+  protected readonly tableSort = signal<{ column: AtendimentoSortColumn; direction: 'asc' | 'desc' } | null>(null);
 
-  protected readonly sortableColumns: Record<MovideskSortColumn, boolean> = {
+  protected readonly sortableColumns: Record<AtendimentoSortColumn, boolean> = {
     id: true,
     subject: true,
     tags: true,
@@ -107,7 +107,7 @@ export class MovideskPageComponent implements OnInit {
     const t = this.items().length;
     const r = this.resumo();
     if (this.loading() && t === 0 && !r) {
-      return 'Carregando chamados e indicadores Movidesk...';
+      return 'Carregando chamados e indicadores de Atendimento...';
     }
     const periodo = r?.periodo_dias;
     const suffix = periodo != null ? ` · Resumo últimos ${periodo} dias` : '';
@@ -115,7 +115,7 @@ export class MovideskPageComponent implements OnInit {
   });
 
   protected readonly chartStatus = computed(() =>
-    this.chartFromRecord(this.resumo()?.por_status, 14, movideskStatusLabelPt),
+    this.chartFromRecord(this.resumo()?.por_status, 14, atendimentoStatusLabelPt),
   );
   protected readonly chartCategoria = computed(() => this.chartFromRecord(this.resumo()?.por_categoria));
   protected readonly chartUrgencia = computed(() => this.chartFromRecord(this.resumo()?.por_urgencia));
@@ -186,14 +186,14 @@ export class MovideskPageComponent implements OnInit {
     this.error.set(null);
     this.resumoError.set(false);
     forkJoin({
-      chamados: this.movidesk.list().pipe(
+      chamados: this.atendimento.list().pipe(
         map((rows): ChamadosLoad => ({
           error: false,
           rows: Array.isArray(rows) ? rows : [],
         })),
-        catchError(() => of({ error: true, rows: [] as MovideskTicket[] })),
+        catchError(() => of({ error: true, rows: [] as AtendimentoTicket[] })),
       ),
-      resumo: this.movidesk.resumo().pipe(
+      resumo: this.atendimento.resumo().pipe(
         map((data): ResumoLoad => ({ ok: true, data })),
         catchError(() => of({ ok: false, data: null })),
       ),
@@ -237,7 +237,7 @@ export class MovideskPageComponent implements OnInit {
     return `${h.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`;
   }
 
-  protected clientsLabel(t: MovideskTicket): string {
+  protected clientsLabel(t: AtendimentoTicket): string {
     const names = t.clients
       .filter((c) => !c.isDeleted)
       .map((c) => c.businessName?.trim() || c.email || '—')
@@ -245,9 +245,9 @@ export class MovideskPageComponent implements OnInit {
     return names.length ? names.join(' · ') : '—';
   }
 
-  protected readonly statusLabelPt = movideskStatusLabelPt;
+  protected readonly statusLabelPt = atendimentoStatusLabelPt;
 
-  protected toggleSort(column: MovideskSortColumn): void {
+  protected toggleSort(column: AtendimentoSortColumn): void {
     if (!this.sortableColumns[column]) {
       return;
     }
@@ -262,7 +262,7 @@ export class MovideskPageComponent implements OnInit {
     this.page.set(1);
   }
 
-  protected ariaSort(column: MovideskSortColumn): 'ascending' | 'descending' | 'none' {
+  protected ariaSort(column: AtendimentoSortColumn): 'ascending' | 'descending' | 'none' {
     const s = this.tableSort();
     if (s == null || s.column !== column) {
       return 'none';
@@ -270,7 +270,7 @@ export class MovideskPageComponent implements OnInit {
     return s.direction === 'asc' ? 'ascending' : 'descending';
   }
 
-  protected activeSortDirection(column: MovideskSortColumn): 'asc' | 'desc' | null {
+  protected activeSortDirection(column: AtendimentoSortColumn): 'asc' | 'desc' | null {
     const s = this.tableSort();
     if (s?.column === column) {
       return s.direction;
@@ -279,9 +279,9 @@ export class MovideskPageComponent implements OnInit {
   }
 
   private compareTicketRow(
-    a: MovideskTicket,
-    b: MovideskTicket,
-    column: MovideskSortColumn,
+    a: AtendimentoTicket,
+    b: AtendimentoTicket,
+    column: AtendimentoSortColumn,
     direction: 'asc' | 'desc',
   ): number {
     const mult = direction === 'asc' ? 1 : -1;
@@ -296,7 +296,7 @@ export class MovideskPageComponent implements OnInit {
         return mult * ta.localeCompare(tb, 'pt-BR', { sensitivity: 'base' });
       }
       case 'status':
-        return mult * movideskStatusLabelPt(a.status).localeCompare(movideskStatusLabelPt(b.status), 'pt-BR', {
+        return mult * atendimentoStatusLabelPt(a.status).localeCompare(atendimentoStatusLabelPt(b.status), 'pt-BR', {
           sensitivity: 'base',
         });
       case 'urgency':
@@ -356,7 +356,7 @@ export class MovideskPageComponent implements OnInit {
       .map(([chave, value]) => {
         const bruto = labelDePara ? labelDePara(chave) : chave;
         return {
-          label: movideskRotuloGrafico(bruto),
+          label: atendimentoRotuloGrafico(bruto),
           value,
         };
       })

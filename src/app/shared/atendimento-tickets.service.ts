@@ -1,16 +1,16 @@
-import { HttpClient } from '@angular/common/http';
+﻿import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { normalizarResumoMovidesk } from '../data/movidesk-resumo.helpers';
-import type { MovideskResumo } from '../data/movidesk-resumo.types';
-import type { MovideskClienteIndicadores } from '../data/movidesk-cliente-indicadores.types';
-import type { MovideskTicket } from '../data/movidesk-ticket.types';
+import { normalizarResumoAtendimento } from '../data/atendimento-resumo.helpers';
+import type { AtendimentoResumo } from '../data/atendimento-resumo.types';
+import type { AtendimentoClienteIndicadores } from '../data/atendimento-cliente-indicadores.types';
+import type { AtendimentoTicket } from '../data/atendimento-ticket.types';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class MovideskTicketsService {
+export class AtendimentoTicketsService {
   private readonly http = inject(HttpClient);
 
   private apiRoot(): string {
@@ -30,16 +30,16 @@ export class MovideskTicketsService {
     return `${this.apiRoot()}/api/movidesk/indicadores/${encodeURIComponent(ownerId.trim())}`;
   }
 
-  list(): Observable<MovideskTicket[]> {
-    return this.http.get<MovideskTicket[]>(this.ticketsUrl());
+  list(): Observable<AtendimentoTicket[]> {
+    return this.http.get<AtendimentoTicket[]>(this.ticketsUrl());
   }
 
   /** Indicadores agregados; chaves `null` nas distribuições viram **Não definido**. */
-  resumo(): Observable<MovideskResumo> {
-    return this.http.get<MovideskResumo>(this.resumoUrl()).pipe(map((raw) => normalizarResumoMovidesk(raw)));
+  resumo(): Observable<AtendimentoResumo> {
+    return this.http.get<AtendimentoResumo>(this.resumoUrl()).pipe(map((raw) => normalizarResumoAtendimento(raw)));
   }
 
-  clienteIndicadores(ownerId: string): Observable<MovideskClienteIndicadores> {
-    return this.http.get<MovideskClienteIndicadores>(this.clienteIndicadoresUrl(ownerId));
+  clienteIndicadores(ownerId: string): Observable<AtendimentoClienteIndicadores> {
+    return this.http.get<AtendimentoClienteIndicadores>(this.clienteIndicadoresUrl(ownerId));
   }
 }

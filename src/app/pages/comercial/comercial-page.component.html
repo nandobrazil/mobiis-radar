@@ -1,7 +1,7 @@
 <div class="page-shell">
   <app-top-bar
     title="Comercial Inteligente"
-    subtitle="Consulta CNPJ (Brasil API) e mapa de empresas do mesmo CNAE"
+    subtitle="Consulta CNPJ, match de CNAE e argumento de venda com IA"
   />
   <main class="page-shell-body space-y-4 p-4 md:p-6">
     <app-relatorio-processamento-banner />
@@ -17,7 +17,7 @@
           rel="noreferrer"
           >Brasil API</a
         >
-        (ex.: 33200056000149).
+        · match de clientes similares e argumento de venda (~3–8s).
       </p>
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
         <input
@@ -36,13 +36,15 @@
           (click)="buscar()"
           [disabled]="loading()"
         >
-          @if (loading()) {
-            Buscando…
+          @if (loading() && !matchLoading()) {
+            Consultando CNPJ…
+          } @else if (matchLoading()) {
+            Gerando argumento…
           } @else {
             Buscar
           }
         </button>
-        @if (empresa() || cnaeFiltroDescricao()) {
+        @if (empresa() || matchResult()) {
           <button type="button" class="btn-outline h-10 shrink-0 px-4 text-sm" (click)="limparBusca()">
             Ver todas
           </button>
@@ -50,6 +52,9 @@
       </div>
       @if (error(); as err) {
         <p class="mt-3 text-sm text-destructive">{{ err }}</p>
+      }
+      @if (matchError(); as mErr) {
+        <p class="mt-3 text-sm text-destructive">{{ mErr }}</p>
       }
     </section>
 
@@ -135,29 +140,46 @@
           class="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-border bg-card/40 p-6 text-center shadow-card lg:col-span-1"
         >
           <p class="max-w-sm text-sm text-muted-foreground">
-            Faça uma busca para ver razão social, CNAE, endereço e sócios retornados pela API.
+            Faça uma busca para ver razão social, CNAE, endereço e argumento de venda para o prospect.
           </p>
         </section>
       }
 
       <section class="rounded-2xl border border-border bg-card p-5 shadow-card lg:col-span-1">
-        <h3 class="text-sm font-semibold">Mapa de empresas</h3>
+        <h3 class="text-sm font-semibold">Mapa de clientes similares</h3>
         @if (empresa(); as e) {
           <p class="mt-0.5 text-xs text-muted-foreground">
-            Filtro: <span class="font-mono tabular-nums">{{ e.cnae_fiscal }}</span>
-            · {{ e.cnae_fiscal_descricao }}
+            CNAE
+            <span class="font-mono tabular-nums">{{ e.cnae_fiscal }}</span>
+            · matches por similaridade
           </p>
         } @else {
           <p class="mt-0.5 text-xs text-muted-foreground">Todas as empresas do relatório com localização</p>
         }
         <p class="mb-3 mt-2 text-xs text-muted-foreground">
-          {{ mapResumo() }} · cor por nível de risco (IA)
+          {{ mapResumo() }}
+          @if (matchResult()) {
+            · roxo = prospect pesquisado
+          } @else {
+            · cor por nível de risco (IA)
+          }
         </p>
-        @if (relatorio.loading() && relatorio.items().length === 0) {
-          <div class="grid h-[360px] place-items-center rounded-xl border border-border bg-muted/20 text-sm text-muted-foreground">
+        @if (matchLoading()) {
+          <div
+            class="grid h-[360px] place-items-center rounded-xl border border-border bg-muted/20 text-center text-sm text-muted-foreground"
+          >
+            <div>
+              <p>Analisando CNAE e gerando argumento de venda…</p>
+              <p class="mt-1 text-xs">Isso pode levar alguns segundos.</p>
+            </div>
+          </div>
+        } @else if (relatorio.loading() && relatorio.items().length === 0 && !matchResult()) {
+          <div
+            class="grid h-[360px] place-items-center rounded-xl border border-border bg-muted/20 text-sm text-muted-foreground"
+          >
             Carregando empresas…
           </div>
-        } @else if (relatorio.error(); as listErr) {
+        } @else if (relatorio.error() && !matchResult(); as listErr) {
           <p class="mb-3 text-sm text-destructive">{{ listErr }}</p>
         } @else {
           <app-geo-map
@@ -168,5 +190,204 @@
         }
       </section>
     </div>
+
+    @if (matchLoading()) {
+      <section
+        #argumentoGerandoBanner
+        class="scroll-mt-24 rounded-2xl border border-primary/30 bg-primary/5 p-5 shadow-card"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="flex gap-4">
+          <div
+            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-background"
+            aria-hidden="true"
+          >
+            <svg
+              class="h-5 w-5 animate-spin text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-foreground">Gerando argumento de venda com IA</p>
+            <p class="mt-1 text-sm text-muted-foreground">
+              Buscando clientes com CNAE similar e montando diferenciais, oportunidades e riscos. Isso costuma levar de
+              3 a 8 segundos.
+            </p>
+            @if (empresa(); as e) {
+              <p class="mt-2 truncate text-xs text-muted-foreground">
+                Prospect:
+                <span class="font-medium text-foreground">{{ e.nome_fantasia || e.razao_social }}</span>
+                · CNAE {{ e.cnae_fiscal }}
+              </p>
+            }
+          </div>
+        </div>
+        <div class="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+          <div class="h-full w-1/3 animate-pulse rounded-full bg-gradient-primary"></div>
+        </div>
+      </section>
+    }
+
+    @if (matchResult()?.insights; as ins) {
+      <section class="space-y-4">
+        <div class="rounded-2xl border border-border bg-card p-6 shadow-card">
+          <span
+            class="inline-block rounded-md border border-border bg-muted/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+          >
+            Argumento de venda
+          </span>
+          <p class="mt-4 text-sm leading-relaxed text-foreground md:text-base">{{ ins.argumento_venda }}</p>
+          @if (ins.abordagem_sugerida) {
+            <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
+              <span class="font-semibold text-foreground">Abordagem sugerida:</span>
+              {{ ins.abordagem_sugerida }}
+            </p>
+          }
+          <div class="mt-5 flex flex-wrap gap-2">
+            <span
+              class="rounded-full border border-border bg-muted/30 px-3 py-1 text-xs font-medium text-primary"
+            >
+              {{ ins.total_clientes_similares }} cliente(s) similar(es)
+            </span>
+            @for (uf of ins.uf_com_mais_clientes ?? []; track uf.uf) {
+              <span
+                class="rounded-full border border-border bg-muted/30 px-3 py-1 text-xs font-medium text-primary"
+              >
+                {{ uf.count }} em {{ uf.uf }}
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
+            <h3 class="text-sm font-semibold text-emerald-600 dark:text-emerald-400">Diferenciais</h3>
+            <ul class="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+              @for (item of ins.diferenciais; track item) {
+                <li class="flex gap-2">
+                  <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>
+                  <span>{{ item }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+          <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
+            <h3 class="text-sm font-semibold text-sky-600 dark:text-sky-400">Oportunidades</h3>
+            <ul class="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+              @for (item of ins.oportunidades; track item) {
+                <li class="flex gap-2">
+                  <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-500"></span>
+                  <span>{{ item }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+          <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
+            <h3 class="text-sm font-semibold text-amber-600 dark:text-amber-400">Riscos conhecidos</h3>
+            <ul class="mt-3 space-y-2.5 text-sm leading-relaxed text-muted-foreground">
+              @for (item of ins.riscos_conhecidos; track item) {
+                <li class="flex gap-2">
+                  <span class="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"></span>
+                  <span>{{ item }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        </div>
+
+        @if (ins.modulos_recomendados?.length) {
+          <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
+            <h3 class="text-sm font-semibold">Módulos recomendados</h3>
+            <ul class="mt-3 grid gap-2 sm:grid-cols-2">
+              @for (mod of ins.modulos_recomendados!; track mod) {
+                <li class="rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-sm">{{ mod }}</li>
+              }
+            </ul>
+          </section>
+        }
+      </section>
+    }
+
+    @if (matchResult()?.matches; as matches) {
+      @if (matches.length) {
+        <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
+          <h3 class="text-sm font-semibold">Clientes similares na base</h3>
+          <p class="mt-0.5 text-xs text-muted-foreground">
+            Ordenados: CNAE exato primeiro, depois mesma divisão · clique para ver detalhe
+          </p>
+          <div class="mt-4 overflow-x-auto">
+            <table class="w-full min-w-[640px] text-left text-sm">
+              <thead>
+                <tr class="border-b border-border text-[11px] uppercase tracking-wide text-muted-foreground">
+                  <th class="pb-2 pr-4 font-medium">Empresa</th>
+                  <th class="pb-2 pr-4 font-medium">Similaridade</th>
+                  <th class="pb-2 pr-4 font-medium">Local</th>
+                  <th class="pb-2 pr-4 font-medium">Score IA</th>
+                  <th class="pb-2 font-medium">Módulos</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (m of matches; track m.owner_id) {
+                  <tr class="border-b border-border/50 last:border-0">
+                    <td class="py-3 pr-4">
+                      <a
+                        [routerLink]="['/cliente', m.owner_id]"
+                        class="font-medium text-primary underline-offset-2 hover:underline"
+                        >{{ m.nome }}</a
+                      >
+                      @if (m.documento) {
+                        <p class="font-mono text-xs text-muted-foreground">{{ m.documento }}</p>
+                      }
+                    </td>
+                    <td class="py-3 pr-4">
+                      <span
+                        class="rounded-full px-2 py-0.5 text-xs font-medium"
+                        [class.bg-emerald-500/15]="m.similaridade === 'EXATO'"
+                        [class.text-emerald-700]="m.similaridade === 'EXATO'"
+                        [class.dark:text-emerald-300]="m.similaridade === 'EXATO'"
+                        [class.bg-slate-500/15]="m.similaridade === 'DIVISAO'"
+                        [class.text-slate-600]="m.similaridade === 'DIVISAO'"
+                        [class.dark:text-slate-300]="m.similaridade === 'DIVISAO'"
+                      >
+                        {{ m.similaridade === 'EXATO' ? 'Exato' : 'Divisão' }}
+                      </span>
+                      @if (m.cnaes_em_comum?.length) {
+                        <p class="mt-1 text-xs text-muted-foreground">
+                          {{ m.cnaes_em_comum!.length }} CNAE(s) em comum
+                        </p>
+                      }
+                    </td>
+                    <td class="py-3 pr-4 text-muted-foreground">
+                      {{ m.municipio || '—' }}/{{ m.uf || '—' }}
+                    </td>
+                    <td class="py-3 pr-4 tabular-nums">
+                      @if (m.analise?.score_ia != null) {
+                        {{ m.analise!.score_ia }}
+                      } @else {
+                        <span class="text-muted-foreground">—</span>
+                      }
+                    </td>
+                    <td class="py-3 text-xs text-muted-foreground">
+                      {{ (m.modulos ?? []).join(', ') || '—' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    }
   </main>
 </div>

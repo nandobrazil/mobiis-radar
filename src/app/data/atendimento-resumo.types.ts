@@ -1,5 +1,5 @@
-/** Resposta de GET /api/movidesk/resumo (chaves literais "null" indicam valor ausente no backend). */
-export interface MovideskResumo {
+﻿/** Resposta de GET /api/movidesk/resumo (chaves literais "null" indicam valor ausente no backend). */
+export interface AtendimentoResumo {
   periodo_dias: number;
   total: number;
   por_status: Record<string, number>;
