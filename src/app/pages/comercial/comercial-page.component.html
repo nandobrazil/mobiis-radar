@@ -1,45 +1,156 @@
 <div class="page-shell">
-  <app-top-bar title="Comercial Inteligente" subtitle="Mapa de oportunidades e clusters operacionais" />
+  <app-top-bar
+    title="Comercial Inteligente"
+    subtitle="Consulta CNPJ (Brasil API) e mapa de empresas do mesmo CNAE"
+  />
   <main class="page-shell-body space-y-4 p-4 md:p-6">
-  <section class="grid grid-cols-1 gap-4">
-    <div class="rounded-2xl border border-border bg-card p-5 shadow-card">
-      <h3 class="text-sm font-semibold">Mapa de clientes & clusters</h3>
-      <p class="mb-3 text-xs text-muted-foreground">Passe o mouse sobre um ponto para ver o cliente</p>
-      <app-geo-map [height]="360" />
-    </div>
-  </section>
-
-  <!-- <section class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-    @for (card of cards; track card.title) {
-      <div class="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-card">
-        <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b to-transparent" [class]="card.tint"></div>
-        <div class="relative">
-          <div class="flex items-center gap-2">
-            <span class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-background/60" [class]="card.text">
-              <app-icon [icon]="card.icon" size="18" strokeWidth="2" svgClass="shrink-0" />
-            </span>
-            <div>
-              <h3 class="text-sm font-semibold">{{ card.title }}</h3>
-              <p class="text-[11px] text-muted-foreground">{{ card.description }}</p>
-            </div>
-          </div>
-          <ul class="mt-4 space-y-2">
-            @for (customer of card.list; track customer.id) {
-              <li class="flex items-center justify-between rounded-lg border border-border/50 bg-background/40 px-3 py-2">
-                <div class="min-w-0">
-                  <p class="truncate text-sm font-medium">{{ customer.name }}</p>
-                  <p class="text-[11px] text-muted-foreground">{{ customer.segment }} - {{ customer.region }}</p>
-                </div>
-                <span class="rounded-md border border-border px-2 py-0.5 text-[10px]">{{ customer.score }}</span>
-              </li>
-            }
-          </ul>
-          <button class="mt-4 flex w-full items-center justify-between rounded-lg px-2 py-2 text-sm text-primary transition hover:bg-muted/40">
-            Ver todos <span>→</span>
-          </button>
-        </div>
+    <section class="rounded-2xl border border-border bg-card p-5 shadow-card">
+      <h3 class="text-sm font-semibold">Buscar empresa</h3>
+      <p class="mt-0.5 text-xs text-muted-foreground">
+        Dados em tempo real via
+        <a
+          class="text-primary underline-offset-2 hover:underline"
+          href="https://brasilapi.com.br/docs#tag/CNPJ"
+          target="_blank"
+          rel="noreferrer"
+          >Brasil API</a
+        >
+        (ex.: 33200056000149).
+      </p>
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <input
+          type="text"
+          class="h-10 w-full min-w-0 flex-1 rounded-lg border border-border bg-background px-3 text-sm outline-none ring-ring focus-visible:ring-2"
+          placeholder="CNPJ (com ou sem máscara)"
+          [value]="cnpjDraft()"
+          (input)="onCnpjInput($event)"
+          (keydown.enter)="buscar()"
+          [disabled]="loading()"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          class="h-10 shrink-0 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          (click)="buscar()"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+            Buscando…
+          } @else {
+            Buscar
+          }
+        </button>
       </div>
-    }
-  </section> -->
-</main>
+      @if (error(); as err) {
+        <p class="mt-3 text-sm text-destructive">{{ err }}</p>
+      }
+    </section>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      @if (empresa(); as e) {
+        <section class="rounded-2xl border border-border bg-card p-5 shadow-card lg:col-span-1">
+          <h3 class="text-sm font-semibold">Dados cadastrais</h3>
+
+          <dl class="mt-4 grid gap-3 text-sm">
+            <div>
+              <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">CNAE principal</dt>
+              <dd class="mt-0.5">
+                <span class="font-mono text-xs tabular-nums text-muted-foreground">{{ e.cnae_fiscal }}</span>
+                <p class="mt-1 font-medium leading-snug">{{ e.cnae_fiscal_descricao }}</p>
+              </dd>
+            </div>
+            <div>
+              <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Razão social</dt>
+              <dd class="mt-0.5 font-medium">{{ e.razao_social }}</dd>
+            </div>
+            <div>
+              <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Nome fantasia</dt>
+              <dd class="mt-0.5">{{ e.nome_fantasia || '—' }}</dd>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">CNPJ</dt>
+                <dd class="mt-0.5 font-mono text-xs tabular-nums">{{ formatCnpjDisplay(e.cnpj) }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Situação</dt>
+                <dd class="mt-0.5">{{ e.descricao_situacao_cadastral }}</dd>
+              </div>
+            </div>
+            <div>
+              <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Endereço</dt>
+              <dd class="mt-0.5">
+                {{ e.descricao_tipo_de_logradouro || '' }} {{ e.logradouro }}, {{ e.numero }}
+                @if (e.complemento) {
+                  — {{ e.complemento }}
+                }
+                · {{ e.bairro }} · {{ e.municipio }}/{{ e.uf }} · CEP
+                {{ formatCep(e.cep) }}
+              </dd>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Natureza jurídica</dt>
+                <dd class="mt-0.5 text-xs">{{ e.natureza_juridica }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Porte</dt>
+                <dd class="mt-0.5">{{ e.porte }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Início de atividade</dt>
+                <dd class="mt-0.5 tabular-nums">{{ e.data_inicio_atividade }}</dd>
+              </div>
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Capital social</dt>
+                <dd class="mt-0.5 tabular-nums">
+                  {{ e.capital_social | currency: 'BRL' : 'symbol' : '1.0-0' : 'pt-BR' }}
+                </dd>
+              </div>
+            </div>
+            @if (e.qsa?.length) {
+              <div>
+                <dt class="text-[11px] uppercase tracking-wide text-muted-foreground">Sócios (amostra)</dt>
+                <dd class="mt-2 space-y-1.5">
+                  @for (s of (e.qsa ?? []).slice(0, 6); track s.nome_socio) {
+                    <p class="rounded-md border border-border/60 bg-background/40 px-2 py-1 text-xs">
+                      <span class="font-medium">{{ s.nome_socio }}</span>
+                      <span class="text-muted-foreground"> · {{ s.qualificacao_socio }}</span>
+                    </p>
+                  }
+                </dd>
+              </div>
+            }
+          </dl>
+        </section>
+      } @else {
+        <section
+          class="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-border bg-card/40 p-6 text-center shadow-card lg:col-span-1"
+        >
+          <p class="max-w-sm text-sm text-muted-foreground">
+            Faça uma busca para ver razão social, CNAE, endereço e sócios retornados pela API.
+          </p>
+        </section>
+      }
+
+      <section class="rounded-2xl border border-border bg-card p-5 shadow-card lg:col-span-1">
+        <h3 class="text-sm font-semibold">Mapa · mesmo CNAE</h3>
+        @if (empresa(); as e) {
+          <p class="mt-0.5 text-xs text-muted-foreground">
+            <span class="font-mono tabular-nums">{{ e.cnae_fiscal }}</span>
+            · {{ e.cnae_fiscal_descricao }}
+          </p>
+        }
+        <p class="mb-3 mt-2 text-xs text-muted-foreground">
+          Ponto roxo: empresa pesquisada (centro aproximado pela UF). Azul: empresas mock com o mesmo CNAE
+          (troque por GET depois).
+        </p>
+        <app-geo-map
+          [height]="360"
+          [markers]="mapMarkers()"
+          [legendItems]="mapMarkers().length ? comercialMapLegend : undefined"
+        />
+      </section>
+    </div>
+  </main>
 </div>

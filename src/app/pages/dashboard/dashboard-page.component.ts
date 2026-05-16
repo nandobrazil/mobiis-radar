@@ -2,10 +2,11 @@ import { Component, OnInit, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideActivity, LucideAlertTriangle, LucideCircleOff, LucideSparkles } from '@lucide/angular';
 import type { RelatorioClienteItem } from '../../data/relatorio-clientes.types';
-import { segmentRanking } from '../../data/mock-data';
+import { customers, segmentRanking, type Customer } from '../../data/mock-data';
 import { BarChartComponent } from '../../shared/bar-chart/bar-chart.component';
 import { BarChartPanelSkeletonComponent } from '../../shared/bar-chart-panel-skeleton/bar-chart-panel-skeleton.component';
 import { GeoMapComponent } from '../../shared/geo-map/geo-map.component';
+import type { GeoMapLegendItem, GeoMapMarker } from '../../shared/geo-map/geo-map-marker.model';
 import { KpiCardComponent } from '../../shared/kpi-card/kpi-card.component';
 import { KpiCardSkeletonComponent } from '../../shared/kpi-card-skeleton/kpi-card-skeleton.component';
 import { healthScoreFromRelatorioRow, RelatorioClientesService } from '../../shared/relatorio-clientes.service';
@@ -14,6 +15,25 @@ import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
 import { AppIconComponent } from '../../shared/app-icon/app-icon.component';
 import { initials, nivelRiscoToRiskLevel } from '../../shared/ui-helpers';
+
+const DASHBOARD_RISK_COLOR: Record<Customer['risk'], string> = {
+  saudavel: '#4ade80',
+  atencao: '#facc15',
+  risco: '#f87171',
+};
+
+const DASHBOARD_MAP_MARKERS: GeoMapMarker[] = customers.map((c) => ({
+  lat: c.lat,
+  lng: c.lng,
+  label: c.name,
+  color: DASHBOARD_RISK_COLOR[c.risk],
+}));
+
+const DASHBOARD_MAP_LEGEND: GeoMapLegendItem[] = [
+  { label: 'Saudável', color: DASHBOARD_RISK_COLOR.saudavel },
+  { label: 'Atenção', color: DASHBOARD_RISK_COLOR.atencao },
+  { label: 'Risco', color: DASHBOARD_RISK_COLOR.risco },
+];
 
 @Component({
   selector: 'app-dashboard-page',
@@ -37,6 +57,8 @@ export class DashboardPageComponent implements OnInit {
   protected readonly initials = initials;
   /** Lista de segmentos e scores de referencia (dados demo fixos). */
   protected readonly segmentRanking = segmentRanking;
+  protected readonly dashboardMapMarkers = DASHBOARD_MAP_MARKERS;
+  protected readonly dashboardMapLegend = DASHBOARD_MAP_LEGEND;
 
   protected readonly stats = computed(() => this.relatorio.stats());
 

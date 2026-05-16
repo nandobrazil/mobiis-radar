@@ -1,10 +1,17 @@
 <div class="geo-map-shell relative overflow-hidden rounded-xl border border-border">
   <div #mapHost class="geo-map-host" [style.height.px]="height()"></div>
-  <div
-    class="pointer-events-none absolute bottom-3 left-3 z-[1000] flex gap-3 rounded-lg border border-border bg-background/80 px-3 py-1.5 text-[11px] backdrop-blur"
-  >
-    <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-success"></span>Saudável</span>
-    <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-warning"></span>Atenção</span>
-    <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-destructive"></span>Risco</span>
-  </div>
+  @if (legendItems(); as items) {
+    @if (items.length) {
+      <div
+        class="pointer-events-none absolute bottom-3 left-3 z-[1000] flex flex-wrap gap-3 rounded-lg border border-border bg-background/80 px-3 py-1.5 text-[11px] backdrop-blur"
+      >
+        @for (item of items; track item.label) {
+          <span class="inline-flex items-center gap-1.5">
+            <span class="h-2 w-2 shrink-0 rounded-full" [style.background-color]="item.color"></span>
+            {{ item.label }}
+          </span>
+        }
+      </div>
+    }
+  }
 </div>
