@@ -1,4 +1,4 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, signal, effect, untracked } from '@angular/core';
 import type { RelatorioClienteItem } from '../../../../data/relatorio-clientes.types';
 import { DataTableComponent } from '../../../../shared/data-table/data-table.component';
 import { TableSkeletonComponent } from '../../../../shared/table-skeleton/table-skeleton.component';
@@ -7,6 +7,7 @@ import { normalizeNivelRisco } from '../../../../shared/relatorio-clientes.servi
 import { ScoreBarComponent } from '../../../../shared/score-bar/score-bar.component';
 import { AppIconComponent } from '../../../../shared/app-icon/app-icon.component';
 import { LucideArrowDown, LucideArrowUp, LucideArrowUpDown } from '@lucide/angular';
+import { TablePaginationBarComponent } from '../../../../shared/table-pagination-bar/table-pagination-bar.component';
 
 interface SegmentGroup {
   name: string;
@@ -26,6 +27,7 @@ interface SegmentGroup {
     DataTableComponent,
     TableSkeletonComponent,
     ScoreBarComponent,
+    TablePaginationBarComponent,
   ],
   templateUrl: './radar-segments.component.html',
 })
@@ -98,4 +100,28 @@ export class RadarSegmentsComponent {
       acoes30d: g.acoes30d,
     })).sort((a, b) => b.total - a.total);
   });
+  
+  /** Paginação somente no front (sobre `segmentsData()`). */
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal(10);
+
+  protected readonly pageSlice = computed(() => {
+    const rows = this.segmentsData();
+    const size = this.pageSize();
+    const p = this.page();
+    const start = (p - 1) * size;
+    return rows.slice(start, start + size);
+  });
+
+  constructor() {
+    effect(() => {
+      const n = this.segmentsData().length;
+      const size = this.pageSize();
+      const tp = Math.max(1, Math.ceil(n / Math.max(1, size)));
+      untracked(() => {
+        const p = this.page();
+        if (p > tp) this.page.set(tp);
+      });
+    });
+  }
 }
