@@ -399,7 +399,7 @@ export class CustomerDetailPageComponent implements OnDestroy {
   }
 
   protected acaoRecomendadaInicial(row: RelatorioClienteItem): string {
-    return row.analise?.acao_recomendada?.trim() || 'Clique em «Gerar plano de ação» para montar recomendações com base nas métricas e na IA.';
+    return row.analise?.acao_recomendada?.trim() || 'Clique em «Gerar plano de ação» para montar recomendações com base nas métricas e no Mobiis Radar.';
   }
 
   protected gerarPlanoDeAcao(ownerId: string): void {

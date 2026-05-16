@@ -21,7 +21,7 @@
         [value]="stats().total"
         [icon]="iconUsers"
         tone="primary"
-        [hint]="stats().semAnalise ? stats().comAnalise + ' com IA · ' + stats().semAnalise + ' sem IA' : 'Todos com análise IA'"
+        [hint]="stats().semAnalise ? stats().comAnalise + ' com análise do Radar · ' + stats().semAnalise + ' sem análise' : 'Todos com análise do Mobiis Radar'"
       />
       <app-kpi-card label="Risco alto" [value]="stats().alto" [icon]="iconAlertHigh" tone="danger" [hint]="pct(stats().alto)" />
     }

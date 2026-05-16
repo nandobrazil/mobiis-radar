@@ -20,10 +20,10 @@ export function exportRelatorioClientesToXlsx(rows: RelatorioClienteItem[], base
         'Entidades utilizadas': c.entidades_utilizadas,
         'Usuários ativos': c.usuarios_ativos,
         'Ações automatizadas 30d': c.acoes_automatizadas_30d,
-        'Score IA': r.analise?.score_ia ?? '',
-        'Nível risco (IA)': r.analise?.nivel_risco ?? '',
-        'Resumo (IA)': r.analise?.resumo ?? '',
-        'Sem análise IA': r.analise ? 'Não' : 'Sim',
+        'Score': r.analise?.score_ia ?? '',
+        'Nível risco': r.analise?.nivel_risco ?? '',
+        'Resumo': r.analise?.resumo ?? '',
+        'Sem análise': r.analise ? 'Não' : 'Sim',
         'Erro análise': r.erro ? 'Sim' : 'Não',
       };
     });

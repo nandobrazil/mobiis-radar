@@ -14,7 +14,7 @@ import { RelatorioClientesService } from '../relatorio-clientes.service';
       >
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-sm font-medium text-foreground">Análise da IA em andamento</p>
+            <p class="text-sm font-medium text-foreground">O Mobiis Radar está analisando a carteira</p>
             <p class="mt-0.5 text-xs text-muted-foreground">
               A lista será atualizada automaticamente quando o processamento terminar.
             </p>

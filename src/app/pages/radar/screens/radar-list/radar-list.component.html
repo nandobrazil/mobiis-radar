@@ -59,7 +59,7 @@
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 90d</th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Core (30/90)</th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Usuários</th>
-            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score IA</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score</th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Risco</th>
           </tr>
           @for (row of pageSlice(); track row.cliente.owner_id) {
@@ -95,7 +95,7 @@
                 @if (hasScoreIa(row)) {
                   <app-score-bar [score]="healthScore(row)" />
                 } @else {
-                  <span class="text-[10px] text-muted-foreground">Sem IA</span>
+                  <span class="text-[10px] text-muted-foreground">Sem análise</span>
                 }
               </td>
               <td class="px-4 py-3">

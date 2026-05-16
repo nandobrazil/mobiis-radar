@@ -1,7 +1,7 @@
 <div class="page-shell">
   <app-top-bar
     title="Comercial Inteligente"
-    subtitle="Consulta CNPJ, match de CNAE e argumento de venda com IA"
+    subtitle="Consulta CNPJ, match de CNAE e argumento de venda com o Mobiis Radar"
   />
   <main class="page-shell-body space-y-4 p-4 md:p-6">
     <app-relatorio-processamento-banner />
@@ -145,7 +145,7 @@
         }
         <p class="mb-3 mt-2 text-xs text-muted-foreground">
           {{ mapResumo() }}
-          · cor por nível de risco (IA)
+          · cor por nível de risco (Mobiis Radar)
           @if (matchResult()) {
             · roxo = prospect pesquisado
           }
@@ -205,7 +205,7 @@
             </svg>
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold text-foreground">Gerando argumento de venda com IA</p>
+              <p class="text-sm font-semibold text-foreground">O Mobiis Radar está gerando o argumento de venda</p>
             <p class="mt-1 text-sm text-muted-foreground">
               Buscando clientes com CNAE similar e montando diferenciais, oportunidades e riscos. Isso costuma levar de
               3 a 8 segundos.
@@ -327,7 +327,7 @@
                 Local
               </th>
               <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
-                Score IA
+                Score
               </th>
               <th class="px-4 py-3 text-left text-sm font-medium normal-case tracking-normal text-foreground" scope="col">
                 Módulos

@@ -3,8 +3,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import type { LucideIconInput } from '@lucide/angular';
 import {
   LucideBriefcase,
-  LucideLayoutDashboard,
-  LucideLineChart,
   LucideRadar,
   LucideSparkles,
   LucideTicket,
@@ -99,9 +97,9 @@ export class AppComponent {
   protected readonly brandIcon = LucideRadar;
   readonly main: { title: string; url: string; icon: LucideIconInput }[] = [
     // { title: 'Dashboard', url: '/', icon: LucideLayoutDashboard },
+    { title: 'Insights', url: '/insights', icon: LucideSparkles },
     { title: 'Radar de Clientes', url: '/radar', icon: LucideRadar },
     { title: 'Comercial', url: '/comercial', icon: LucideBriefcase },
-    { title: 'Insights IA', url: '/insights', icon: LucideSparkles },
     { title: 'Atendimento', url: '/atendimento', icon: LucideTicket },
   ];
   readonly config = [

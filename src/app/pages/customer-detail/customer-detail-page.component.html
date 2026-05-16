@@ -90,7 +90,7 @@
   <div class="page-shell">
   <app-top-bar
     [title]="r.cliente.nome_cliente"
-    [subtitle]="'Score IA ' + (r.analise?.score_ia ?? '—') + ' - Risco ' + (r.analise?.nivel_risco ?? '—')"
+    [subtitle]="'Score ' + (r.analise?.score_ia ?? '—') + ' - Risco ' + (r.analise?.nivel_risco ?? '—')"
   />
   <main class="page-shell-body flex min-h-0 flex-col gap-4 lg:flex-row lg:gap-0 lg:overflow-hidden p-4 md:p-6 lg:p-0">
 
@@ -120,7 +120,7 @@
               (click)="abrirModalReprocessar()"
             >
               <app-icon [icon]="iconReprocessar" size="16" strokeWidth="2" svgClass="size-4 shrink-0" />
-              Reprocessar análise IA
+              Reprocessar análise
             </button>
             <!-- <button type="button" class="btn-primary">Agendar contato</button> -->
           </div>
@@ -140,7 +140,7 @@
             </div>
             <div class="flex shrink-0 flex-wrap items-start gap-6">
               <div class="text-center">
-                <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Score IA</p>
+                <p class="text-[11px] uppercase tracking-wider text-muted-foreground">Score</p>
                 <p class="text-4xl font-semibold tabular-nums text-gradient">{{ healthFromReport(r) }}</p>
               </div>
               <div class="text-center">
@@ -174,7 +174,7 @@
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div>
               <h3 class="text-sm font-semibold">Contexto do CS</h3>
-              <p class="text-xs text-muted-foreground">Notas do time para análise e IA</p>
+              <p class="text-xs text-muted-foreground">Notas do time para o Mobiis Radar</p>
             </div>
             <button
               type="button"
@@ -355,7 +355,7 @@
                 <app-icon [icon]="iconSparkles" size="16" strokeWidth="2" svgClass="size-4" />
               </div>
               <div>
-                <h3 class="text-sm font-semibold">Mobiis AI</h3>
+                <h3 class="text-sm font-semibold">Mobiis Radar</h3>
                 <p class="text-[11px] text-muted-foreground">Ação recomendada</p>
               </div>
             </div>
@@ -381,12 +381,12 @@
                     }
                     @if (ia.score_ia != null) {
                       <span class="rounded-md border border-border/60 bg-card px-2 py-0.5 text-[11px] tabular-nums">
-                        Score IA <span class="font-semibold">{{ ia.score_ia }}</span>
+                        Score <span class="font-semibold">{{ ia.score_ia }}</span>
                       </span>
                     }
                     @if (ia.ajuste_ia != null) {
                       <span class="rounded-md border border-border/60 bg-card px-2 py-0.5 text-[11px] tabular-nums">
-                        Ajuste IA <span class="font-semibold" [class]="breakdownDeltaClass(ia.ajuste_ia)">{{ formatDeltaScore(ia.ajuste_ia) }}</span>
+                        Ajuste Radar <span class="font-semibold" [class]="breakdownDeltaClass(ia.ajuste_ia)">{{ formatDeltaScore(ia.ajuste_ia) }}</span>
                       </span>
                     }
                     @if (ia.perfil_uso) {
@@ -464,7 +464,7 @@
 
                 @if (plano.analise_ia?.motivos?.length) {
                   <div class="border-t border-border/50 pt-3">
-                    <p class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Motivos (IA)</p>
+                    <p class="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Motivos (Mobiis Radar)</p>
                     <ol class="list-inside list-decimal space-y-1 text-xs text-muted-foreground">
                       @for (m of plano.analise_ia!.motivos!; track $index) {
                         <li class="leading-relaxed">{{ m }}</li>
@@ -540,12 +540,12 @@
           <app-icon [icon]="iconAlert" size="20" strokeWidth="2" svgClass="size-5" />
         </div>
         <div class="min-w-0 flex-1">
-          <h2 id="reprocessar-modal-title" class="text-base font-semibold">Reprocessar análise da IA</h2>
+          <h2 id="reprocessar-modal-title" class="text-base font-semibold">Reprocessar análise do Mobiis Radar</h2>
           <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Esta ação dispara uma nova execução do modelo de IA para este cliente (score, risco, resumo e recomendações).
+            Esta ação dispara uma nova análise do Mobiis Radar para este cliente (score, risco, resumo e recomendações).
           </p>
           <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-            O reprocessamento pode gerar <span class="font-medium text-foreground">custos adicionais</span> na sua conta de uso de IA e levar alguns segundos para concluir.
+            O reprocessamento pode gerar <span class="font-medium text-foreground">custos adicionais</span> no processamento e levar alguns segundos para concluir.
           </p>
           @if (report(); as row) {
             <p class="mt-3 rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">

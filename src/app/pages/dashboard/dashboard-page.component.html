@@ -51,7 +51,7 @@
               <app-icon [icon]="iconActivity" size="20" strokeWidth="2" svgClass="size-5" />
             </div>
             <div class="leading-tight">
-              <p class="text-xs text-muted-foreground">Score IA médio</p>
+              <p class="text-xs text-muted-foreground">Score médio (Mobiis Radar)</p>
               <p class="text-lg font-semibold tabular-nums">{{ stats().scoreIaMedio }}</p>
             </div>
           </div>
@@ -93,13 +93,13 @@
       <div class="mb-4 flex items-center justify-between">
         <div>
           <h3 class="text-sm font-semibold">Distribuição por nível de risco</h3>
-          <p class="text-xs text-muted-foreground">Todos os clientes do relatório (risco IA + sem IA)</p>
+          <p class="text-xs text-muted-foreground">Todos os clientes do relatório (com e sem análise do Mobiis Radar)</p>
         </div>
         <div class="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-destructive"></span>Alto</span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-warning"></span>Médio</span>
           <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-success"></span>Baixo</span>
-          <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-muted-foreground/60"></span>Sem IA</span>
+          <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-muted-foreground/60"></span>Sem análise</span>
         </div>
       </div>
       @if (relatorio.loading() && !relatorio.error()) {
@@ -152,7 +152,7 @@
         <div>
           <h3 class="text-sm font-semibold">Piores da carteira</h3>
           <p class="text-xs text-muted-foreground">
-            Maior risco IA primeiro; sem análise IA, prioriza inatividade e baixa atividade
+            Maior risco primeiro (Mobiis Radar); sem análise, prioriza inatividade e baixa atividade
           </p>
         </div>
         <a routerLink="/radar" class="text-xs font-medium text-primary hover:underline">Ver todos os clientes →</a>

@@ -273,7 +273,7 @@ export class RelatorioClientesService implements OnDestroy {
       { label: 'Alto', value: s.alto },
       { label: 'Médio', value: s.medio },
       { label: 'Baixo', value: s.baixo },
-      { label: 'Sem IA', value: s.semAnalise },
+      { label: 'Sem análise', value: s.semAnalise },
     ];
   });
 
