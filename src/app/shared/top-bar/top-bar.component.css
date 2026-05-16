@@ -1,3 +1,9 @@
 :host {
   display: block;
 }
+
+/* Garante que a barra fique acima do scroll do main sem “saltar” em iOS */
+header {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}

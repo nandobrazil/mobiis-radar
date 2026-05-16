@@ -1,44 +1,54 @@
-<header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-background/70 px-4 backdrop-blur-xl md:px-6">
+<header
+  class="relative z-20 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/90 px-3 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75 md:gap-3 md:px-6"
+>
   <button
     type="button"
-    class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground md:hidden"
+    class="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted md:hidden"
     (click)="menu.open.set(true)"
     aria-label="Abrir menu"
   >
-    <span class="text-lg">☰</span>
+    <span class="text-lg leading-none">☰</span>
   </button>
-  <div class="hidden md:block">
-    <h1 class="text-sm font-semibold tracking-tight">{{ title() }}</h1>
-    @if (subtitle()) {
-      <p class="text-xs text-muted-foreground">{{ subtitle() }}</p>
+
+  <div class="min-w-0 flex-1">
+    <h1 class="truncate text-sm font-semibold leading-tight tracking-tight">{{ title() }}</h1>
+    @if (subtitle(); as sub) {
+      <p class="mt-0.5 line-clamp-2 text-xs leading-snug text-muted-foreground">{{ sub }}</p>
     }
   </div>
-  <div class="ml-auto flex items-center gap-2">
+
+  <div class="flex shrink-0 items-center gap-1.5 md:gap-2">
     <div class="relative hidden md:block">
-      <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
+      <span class="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-sm text-muted-foreground">⌕</span>
       <input
+        type="search"
+        autocomplete="off"
         placeholder="Buscar clientes, segmentos, produtos..."
-        class="h-9 w-[320px] rounded-lg border border-border/60 bg-card pl-9 pr-16 text-sm outline-none ring-ring/0 transition focus:ring-2"
+        class="h-9 w-[min(20rem,calc(100vw-24rem))] rounded-lg border border-border/60 bg-card py-0 pl-9 pr-[4.25rem] text-sm text-foreground outline-none ring-ring/0 transition placeholder:text-muted-foreground/80 focus:border-ring focus:ring-2 focus:ring-ring/30"
       />
       <kbd
-        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:flex"
+        class="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 select-none rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline-block"
       >
         ⌘ K
       </kbd>
     </div>
     <button
       type="button"
-      class="grid h-9 w-9 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition hover:bg-muted"
+      class="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:bg-muted"
       (click)="theme.toggle()"
       [attr.aria-label]="theme.dark() ? 'Ativar modo claro' : 'Ativar modo escuro'"
       [attr.title]="theme.dark() ? 'Modo claro' : 'Modo escuro'"
     >
-      <span class="text-base">{{ theme.dark() ? '☀' : '☽' }}</span>
+      <span class="text-base leading-none">{{ theme.dark() ? '☀' : '☽' }}</span>
     </button>
-    <button type="button" class="relative grid h-9 w-9 place-items-center rounded-lg text-muted-foreground transition hover:bg-muted">
-      <span>◔</span>
+    <button
+      type="button"
+      class="relative grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-transparent text-muted-foreground transition-colors hover:bg-muted"
+      aria-label="Notificações"
+    >
+      <span class="text-base leading-none">◔</span>
       <span
-        class="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-destructive-foreground"
+        class="absolute -right-0.5 -top-0.5 grid h-4 min-w-[1rem] place-items-center rounded-full bg-destructive px-1 text-[10px] font-medium leading-none text-destructive-foreground"
       >
         3
       </span>

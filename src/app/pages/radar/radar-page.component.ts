@@ -4,7 +4,12 @@ import { RouterLink } from '@angular/router';
 import type { RelatorioTop20Item } from '../../data/top20.types';
 import { DataTableComponent } from '../../shared/data-table/data-table.component';
 import { RiskBadgeComponent } from '../../shared/risk-badge/risk-badge.component';
-import { healthScoreFromRelatorioRow, normalizeNivelRisco, RadarTop20Service } from '../../shared/radar-top20.service';
+import {
+  hasRelatorioScoreIa,
+  healthScoreFromRelatorioRow,
+  normalizeNivelRisco,
+  RadarTop20Service,
+} from '../../shared/radar-top20.service';
 import { ScoreBarComponent } from '../../shared/score-bar/score-bar.component';
 import { TablePaginationBarComponent } from '../../shared/table-pagination-bar/table-pagination-bar.component';
 import { TopBarComponent } from '../../shared/top-bar/top-bar.component';
@@ -89,5 +94,10 @@ export class RadarPageComponent implements OnInit {
   /** Saude 0-100: IA quando existe; senao heuristica operacional (ver `healthScoreFromRelatorioRow`). */
   protected healthScore(row: RelatorioTop20Item): number {
     return healthScoreFromRelatorioRow(row);
+  }
+
+  /** Barra na coluna "Score IA": so quando a API enviou `score_ia` numerico. */
+  protected hasScoreIa(row: RelatorioTop20Item): boolean {
+    return hasRelatorioScoreIa(row);
   }
 }

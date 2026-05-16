@@ -204,16 +204,64 @@
 
 @layer base {
   * { border-color: var(--color-border); }
-  html, body, app-root { height: 100%; overflow: hidden; }
+  html, body, app-root {
+    height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+  html {
+    font-family: var(--font-sans);
+  }
   body {
     background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+  app-root {
+    font-family: inherit;
+  }
 }
 
 @layer utilities {
+  /**
+   * Paginas com <app-top-bar>: o host preenche o main da app; o scroll fica so em .page-shell-body
+   * (a barra superior deixa de sair com o scroll da viewport).
+   */
+  .page-shell {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  .page-shell-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  app-dashboard-page,
+  app-radar-page,
+  app-comercial-page,
+  app-executivo-page,
+  app-tickets-page,
+  app-insights-page,
+  app-integracoes-page,
+  app-configuracoes-page,
+  app-customer-detail-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    height: 100%;
+  }
+
   .bg-gradient-primary { background-image: var(--gradient-primary); }
   .bg-grid {
     background-image:

@@ -1,9 +1,10 @@
 @if (report(); as r) {
+  <div class="page-shell">
   <app-top-bar
     [title]="r.cliente.nome_cliente"
     [subtitle]="'Score IA ' + (r.analise?.score_ia ?? '—') + ' - Risco ' + (r.analise?.nivel_risco ?? '—')"
   />
-  <main class="flex-1 p-4 md:p-6">
+  <main class="page-shell-body p-4 md:p-6">
     <div class="mb-4 flex items-center justify-between">
       <a routerLink="/radar" class="rounded-lg px-3 py-2 text-sm transition hover:bg-muted">← Voltar</a>
       <div class="flex items-center gap-2">
@@ -174,9 +175,11 @@
       </aside>
     </div>
   </main>
+  </div>
 } @else if (customer(); as c) {
+  <div class="page-shell">
   <app-top-bar [title]="c.name" [subtitle]="c.segment + ' - ' + c.region" />
-  <main class="flex-1 p-4 md:p-6">
+  <main class="page-shell-body p-4 md:p-6">
     <div class="mb-4 flex items-center justify-between">
       <a routerLink="/radar" class="rounded-lg px-3 py-2 text-sm transition hover:bg-muted">← Voltar</a>
       <div class="flex items-center gap-2">
@@ -318,14 +321,19 @@
       </aside>
     </div>
   </main>
+  </div>
 } @else {
   @if (!top20.loading()) {
+    <div class="page-shell">
     <app-top-bar title="Cliente nao encontrado" subtitle="Volte ao radar para selecionar outro cliente" />
-    <main class="grid flex-1 place-items-center p-10 text-sm text-muted-foreground">
+    <main class="page-shell-body grid place-items-center p-10 text-sm text-muted-foreground">
       Cliente nao encontrado. <a routerLink="/radar" class="ml-2 text-primary">Voltar ao radar</a>
     </main>
+    </div>
   } @else {
+    <div class="page-shell">
     <app-top-bar title="Carregando..." subtitle="" />
-    <main class="grid flex-1 place-items-center p-10 text-sm text-muted-foreground">Carregando dados...</main>
+    <main class="page-shell-body grid place-items-center p-10 text-sm text-muted-foreground">Carregando dados...</main>
+    </div>
   }
 }

@@ -1,5 +1,6 @@
-<app-top-bar title="Dashboard Estrategico" [subtitle]="subtitle()" />
-<main class="flex-1 space-y-6 p-4 md:p-6">
+<div class="page-shell">
+  <app-top-bar title="Dashboard Estrategico" [subtitle]="subtitle()" />
+  <main class="page-shell-body space-y-6 p-4 md:p-6">
   @if (top20.error(); as msg) {
     <div class="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
       {{ msg }}
@@ -163,3 +164,4 @@
     </div>
   </section>
 </main>
+</div>

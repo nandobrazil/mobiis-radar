@@ -7,7 +7,7 @@ import { MenuService } from './shared/menu.service';
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   template: `
-    <div class="h-dvh w-full overflow-hidden bg-background">
+    <div class="font-sans flex h-dvh min-h-0 w-full flex-col overflow-hidden bg-background">
       <aside
         class="fixed inset-y-0 left-0 z-40 flex h-dvh w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform duration-200 ease-out md:translate-x-0"
         [class.-translate-x-full]="!menu.open()"
@@ -75,7 +75,7 @@ import { MenuService } from './shared/menu.service';
         ></button>
       }
 
-      <main class="h-dvh overflow-y-auto md:pl-60">
+      <main class="flex min-h-0 flex-1 flex-col overflow-hidden md:pl-60">
         <router-outlet />
       </main>
     </div>

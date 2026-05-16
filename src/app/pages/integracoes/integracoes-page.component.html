@@ -1,5 +1,6 @@
-<app-top-bar title="Integracoes" subtitle="Fontes de dados conectadas a plataforma" />
-<main class="flex-1 space-y-4 p-4 md:p-6">
+<div class="page-shell">
+  <app-top-bar title="Integracoes" subtitle="Fontes de dados conectadas a plataforma" />
+  <main class="page-shell-body space-y-4 p-4 md:p-6">
   <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
     <div class="stat"><p>Conectadas</p><strong class="text-success">{{ connected }}</strong></div>
     <div class="stat"><p>Sincronizando</p><strong class="text-info">{{ syncing }}</strong></div>
@@ -35,3 +36,4 @@
     </button>
   </section>
 </main>
+</div>

@@ -43,11 +43,22 @@ export function normalizeNivelRisco(nivel: string | null | undefined): NivelRisc
   return 'BAIXO';
 }
 
+/** True quando `analise.score_ia` e um numero utilizavel (mesma regra que medias no `stats`). */
+export function hasRelatorioScoreIa(row: RelatorioTop20Item): boolean {
+  const v = row.analise?.score_ia;
+  if (v == null) {
+    return false;
+  }
+  const n = Number(v);
+  return !Number.isNaN(n);
+}
+
 /** Saude 0-100: usa score IA quando existe; senao heuristica operacional (dias sem uso, acoes 30d). */
 export function healthScoreFromRelatorioRow(row: RelatorioTop20Item): number {
   const scoreIa = row.analise?.score_ia;
-  if (scoreIa != null && !Number.isNaN(Number(scoreIa))) {
-    return Math.max(0, Math.min(100, 100 - Number(scoreIa)));
+  if (hasRelatorioScoreIa(row)) {
+    const n = Number(scoreIa);
+    return Math.max(0, Math.min(100, Math.round(100 - n)));
   }
   const c = row.cliente;
   if (!c) {
