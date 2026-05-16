@@ -3,14 +3,13 @@ import { Routes } from '@angular/router';
 import { ComercialPageComponent } from './pages/comercial/comercial-page.component';
 import { ConfiguracoesPageComponent } from './pages/configuracoes/configuracoes-page.component';
 import { CustomerDetailPageComponent } from './pages/customer-detail/customer-detail-page.component';
-import { DashboardPageComponent } from './pages/dashboard/dashboard-page.component';
 import { InsightsPageComponent } from './pages/insights/insights-page.component';
 import { IntegracoesPageComponent } from './pages/integracoes/integracoes-page.component';
 import { RadarPageComponent } from './pages/radar/radar-page.component';
 import { MovideskPageComponent } from './pages/movidesk/movidesk-page.component';
 
 export const routes: Routes = [
-  { path: '', component: DashboardPageComponent, title: 'Dashboard - Mobiis Radar' },
+  { path: '', redirectTo: 'radar', pathMatch: 'full' },
   { path: 'radar', component: RadarPageComponent, title: 'Clientes - Mobiis Radar' },
   { path: 'comercial', component: ComercialPageComponent, title: 'Comercial Inteligente - Mobiis Radar' },
   { path: 'movidesk', component: MovideskPageComponent, title: 'Movidesk - Mobiis Radar' },
