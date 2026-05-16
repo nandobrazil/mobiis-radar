@@ -15,7 +15,7 @@
 
   @if (loading() && data().length === 0) {
     <div class="flex flex-col">
-      <app-table-skeleton [columns]="8" [rows]="10" />
+      <app-table-skeleton [columns]="9" [rows]="10" />
     </div>
   } @else if (data().length === 0) {
     <div class="p-12 text-center text-sm text-muted-foreground">Nenhum cliente encontrado nos filtros selecionados.</div>
@@ -34,6 +34,16 @@
                   }
                 </button>
               } @else { Cliente }
+            </th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">
+                <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('perfil_uso')" [attr.aria-sort]="ariaSort('perfil_uso')">
+                  <span>Perfil</span>
+                  @if (activeSortDirection('perfil_uso'); as dir) {
+                    <app-icon [icon]="dir === 'asc' ? iconSortUp : iconSortDown" size="14" svgClass="size-3.5 text-primary" />
+                  } @else {
+                    <app-icon [icon]="iconSortBoth" size="14" svgClass="size-3.5 opacity-30" />
+                  }
+                </button>
             </th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">
                 <button type="button" class="inline-flex items-center gap-1 font-medium hover:text-primary" (click)="toggleSort('dias_sem_uso')" [attr.aria-sort]="ariaSort('dias_sem_uso')">
@@ -64,6 +74,15 @@
                     <p class="text-[10px] text-muted-foreground">{{ row.cliente.owner_id }}</p>
                   </div>
                 </a>
+              </td>
+              <td class="px-4 py-3">
+                @if (row.analise?.perfil_uso) {
+                  <span class="inline-flex items-center rounded-full bg-accent/50 px-2 py-0.5 text-[10px] font-medium text-foreground">
+                    {{ row.analise?.perfil_uso }}
+                  </span>
+                } @else {
+                  <span class="text-[10px] text-muted-foreground">N/A</span>
+                }
               </td>
               <td class="px-4 py-3 tabular-nums">{{ row.cliente.dias_sem_atividade }}</td>
               <td class="px-4 py-3 tabular-nums">{{ row.cliente.acoes_30d }}</td>

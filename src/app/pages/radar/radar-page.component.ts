@@ -61,11 +61,23 @@ export class RadarPageComponent implements OnInit {
     const opts = Array.from(set).sort().map(v => ({ label: v, value: v }));
     return [{ label: 'Todos - Segmentos', value: ALL }, ...opts];
   });
+  protected readonly perfil = signal(ALL);
+  protected readonly perfilOptions = computed(() => {
+    const items = this.relatorio.items();
+    const set = new Set<string>();
+    items.forEach(r => {
+      const p = r.analise?.perfil_uso;
+      if (p) set.add(p);
+    });
+    const opts = Array.from(set).sort().map(v => ({ label: v, value: v }));
+    return [{ label: 'Todos - Perfis', value: ALL }, ...opts];
+  });
 
   protected readonly filtered = computed(() => {
     const q = this.q().trim().toLowerCase();
     const r = this.risk();
     const c = this.cnae();
+    const p = this.perfil();
     return this.relatorio.items().filter((row) => {
       if (!row?.cliente) return false;
       const name = (row.owner?.nome || row.cliente.nome_cliente || '').toLowerCase();
@@ -77,8 +89,11 @@ export class RadarPageComponent implements OnInit {
       
       const cnaeVal = row.owner?.cnae_fiscal_descricao;
       const matchCnae = c === ALL || cnaeVal === c;
+
+      const perfilVal = row.analise?.perfil_uso;
+      const matchPerfil = p === ALL || perfilVal === p;
       
-      return matchQ && matchRisk && matchCnae;
+      return matchQ && matchRisk && matchCnae && matchPerfil;
     });
   });
 
@@ -127,5 +142,9 @@ export class RadarPageComponent implements OnInit {
   protected selectSegment(segment: string) {
     this.cnae.set(segment);
     this.activeTab.set('list');
+  }
+
+  protected onPerfilFilterChange(value: string | null): void {
+    this.perfil.set(value || ALL);
   }
 }
