@@ -30,25 +30,32 @@ export class RadarMapComponent {
   protected readonly markers = computed(() => {
     return this.data()
       .map(row => {
+        const owner = row.owner;
+        const cliente = row.cliente;
+        
         // Tenta pegar lat/lng do owner, senão do cliente
-        const rawLat = row.owner?.lat ?? row.cliente?.lat;
-        const rawLng = row.owner?.lng ?? row.cliente?.lng;
+        const rawLat = owner?.lat ?? cliente?.lat;
+        const rawLng = owner?.lng ?? cliente?.lng;
         
         if (rawLat == null || rawLng == null) return null;
         
         const lat = Number(rawLat);
         const lng = Number(rawLng);
-        
         if (isNaN(lat) || isNaN(lng)) return null;
 
-        const name = row.owner?.nome || row.cliente?.nome_cliente || 'Cliente';
+        const nome = owner?.nome || cliente?.nome_cliente || 'Cliente';
+        const local = [owner?.municipio, owner?.uf].filter(Boolean).join('/');
+        const label = local ? `${nome} · ${local}` : nome;
+
         const nr = normalizeNivelRisco(row.analise?.nivel_risco);
+        const ownerId = (owner?.id || cliente?.owner_id)?.trim();
         
         return {
           lat,
           lng,
-          label: name,
+          label,
           color: RISK_COLOR[nr] || RISK_COLOR['BAIXO'],
+          ownerId: ownerId || undefined,
         } as GeoMapMarker;
       })
       .filter((m): m is GeoMapMarker => m !== null);
