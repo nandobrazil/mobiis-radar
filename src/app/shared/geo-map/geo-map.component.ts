@@ -10,6 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 
 import {
   GEO_MAP_DEFAULT_MARKER_COLOR,
@@ -38,6 +39,8 @@ const BRAZIL_OVERVIEW: L.LatLngTuple = [-14.2, -51.9];
 export class GeoMapComponent implements AfterViewInit, OnDestroy {
   readonly height = input(320);
   readonly markers = input<GeoMapMarker[]>([]);
+  /** Agrupa pontos próximos em clusters (recomendado com muitos marcadores). */
+  readonly clusterMarkers = input(true);
   /** Se omitido ou `[]`, a legenda não é exibida. */
   readonly legendItems = input<GeoMapLegendItem[] | undefined>(undefined);
 
@@ -47,6 +50,7 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
   private readonly mapReady = signal(false);
   private map?: L.Map;
   private tileLayer?: L.TileLayer;
+  private clusterGroup?: L.MarkerClusterGroup;
   private leafletMarkers: L.CircleMarker[] = [];
 
   constructor() {
@@ -59,6 +63,7 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       this.markers();
+      this.clusterMarkers();
       if (this.mapReady()) {
         this.renderMarkers();
       }
@@ -118,10 +123,89 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private clearMarkers(): void {
-    for (const marker of this.leafletMarkers) {
-      marker.remove();
+    if (this.clusterGroup && this.map) {
+      this.map.removeLayer(this.clusterGroup);
+      this.clusterGroup.clearLayers();
+      this.clusterGroup = undefined;
+    } else {
+      for (const marker of this.leafletMarkers) {
+        marker.remove();
+      }
     }
     this.leafletMarkers = [];
+  }
+
+  private createCircleMarker(point: GeoMapMarker): L.CircleMarker {
+    const fill = point.color ?? GEO_MAP_DEFAULT_MARKER_COLOR;
+    const r = point.radius ?? GEO_MAP_DEFAULT_RADIUS;
+
+    const marker = L.circleMarker([point.lat, point.lng], {
+      radius: r,
+      fillColor: fill,
+      color: '#ffffffb3',
+      weight: 1.5,
+      fillOpacity: 0.92,
+    });
+
+    marker.bindTooltip(point.label, {
+      direction: 'top',
+      offset: L.point(0, -10),
+      opacity: 1,
+      sticky: true,
+    });
+
+    marker.on('mouseover', () => marker.openTooltip());
+    marker.on('mouseout', () => marker.closeTooltip());
+
+    return marker;
+  }
+
+  private createClusterGroup(): L.MarkerClusterGroup {
+    return L.markerClusterGroup({
+      /** Raio em px para agrupar pontos próximos na mesma tela. */
+      maxClusterRadius: 56,
+      /** Ao dar zoom máximo, abre em “leque” para ver cada ponto. */
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      removeOutsideVisibleBounds: true,
+      animate: true,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        let sizeClass = 'marker-cluster-small';
+        if (count >= 25) {
+          sizeClass = 'marker-cluster-large';
+        } else if (count >= 8) {
+          sizeClass = 'marker-cluster-medium';
+        }
+        return L.divIcon({
+          html: `<div><span>${count}</span></div>`,
+          className: `marker-cluster geo-map-cluster ${sizeClass}`,
+          iconSize: L.point(40, 40),
+        });
+      },
+    });
+  }
+
+  private fitToMarkers(points: GeoMapMarker[]): void {
+    if (!this.map || points.length === 0) {
+      return;
+    }
+
+    if (points.length === 1) {
+      this.map.setView([points[0].lat, points[0].lng], 6);
+      return;
+    }
+
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as L.LatLngTuple));
+    if (this.clusterGroup) {
+      const clusterBounds = this.clusterGroup.getBounds();
+      if (clusterBounds.isValid()) {
+        this.map.fitBounds(clusterBounds.pad(0.15));
+        return;
+      }
+    }
+    this.map.fitBounds(bounds.pad(0.15));
   }
 
   private renderMarkers(): void {
@@ -138,37 +222,24 @@ export class GeoMapComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    for (const point of points) {
-      const fill = point.color ?? GEO_MAP_DEFAULT_MARKER_COLOR;
-      const r = point.radius ?? GEO_MAP_DEFAULT_RADIUS;
+    const useCluster = this.clusterMarkers() && points.length > 1;
 
-      const marker = L.circleMarker([point.lat, point.lng], {
-        radius: r,
-        fillColor: fill,
-        color: '#ffffffb3',
-        weight: 1.5,
-        fillOpacity: 0.92,
-      });
-
-      marker.bindTooltip(point.label, {
-        direction: 'top',
-        offset: L.point(0, -10),
-        opacity: 1,
-      });
-
-      marker.on('mouseover', () => marker.openTooltip());
-      marker.on('mouseout', () => marker.closeTooltip());
-
-      marker.addTo(this.map);
-      this.leafletMarkers.push(marker);
+    if (useCluster) {
+      this.clusterGroup = this.createClusterGroup();
+      for (const point of points) {
+        const marker = this.createCircleMarker(point);
+        this.clusterGroup.addLayer(marker);
+        this.leafletMarkers.push(marker);
+      }
+      this.map.addLayer(this.clusterGroup);
+    } else {
+      for (const point of points) {
+        const marker = this.createCircleMarker(point);
+        marker.addTo(this.map);
+        this.leafletMarkers.push(marker);
+      }
     }
 
-    if (points.length === 1) {
-      this.map.setView([points[0].lat, points[0].lng], 6);
-      return;
-    }
-
-    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as L.LatLngTuple));
-    this.map.fitBounds(bounds.pad(0.15));
+    this.fitToMarkers(points);
   }
 }
