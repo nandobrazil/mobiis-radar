@@ -21,6 +21,41 @@ export interface RelatorioAnalise {
   resumo: string;
   motivos: string[];
   acao_recomendada: string;
+  perfil_uso?: string;
+  padrao_historico?: string;
+}
+
+export interface RelatorioOwnerCnaeSecundario {
+  codigo: number;
+  descricao: string;
+}
+
+/** Dados cadastrais / geográficos (GET `/api/relatorio/clientes`). */
+export interface RelatorioOwner {
+  id: string;
+  nome: string;
+  tipo?: number;
+  status?: number;
+  documento?: string;
+  cep?: string;
+  logradouro?: string;
+  numero?: string;
+  complemento?: string | null;
+  bairro?: string;
+  municipio?: string;
+  uf?: string;
+  lat?: number | null;
+  lng?: number | null;
+  razao_social?: string;
+  nome_fantasia?: string;
+  cnae_fiscal?: number;
+  cnae_fiscal_descricao?: string;
+  cnaes_secundarios?: RelatorioOwnerCnaeSecundario[];
+  porte?: string;
+  natureza_juridica?: string;
+  capital_social?: number;
+  data_inicio_atividade?: string;
+  opcao_pelo_simples?: boolean | null;
 }
 
 /** Contexto CS na raiz do GET `/api/relatorio/cliente/{owner_id}` (e lista quando presente). */
@@ -40,6 +75,8 @@ export interface RelatorioClienteItem {
   erro?: boolean;
   /** Notas do CS; vem na raiz do GET do cliente (sem GET `/contexto` separado). */
   contexto?: RelatorioClienteContexto | null;
+  /** Cadastro CNPJ / CNAE / coordenadas para mapa comercial. */
+  owner?: RelatorioOwner | null;
 }
 
 export interface RelatorioClientePorEntidade {
