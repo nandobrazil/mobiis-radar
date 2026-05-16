@@ -54,8 +54,9 @@ export class RadarPageComponent implements OnInit {
     const r = this.risk();
     return this.relatorio.items().filter((row) => {
       if (!row?.cliente) return false;
-      const name = row.cliente.nome_cliente.toLowerCase();
-      const matchQ = !q || name.includes(q) || row.cliente.owner_id.toLowerCase().includes(q);
+      const name = (row.owner?.nome || row.cliente.nome_cliente || '').toLowerCase();
+      const id = (row.owner?.id || row.cliente.owner_id || '').toLowerCase();
+      const matchQ = !q || name.includes(q) || id.includes(q);
       if (r === ALL) return matchQ;
       if (!row.analise) return false;
       const nr = normalizeNivelRisco(row.analise.nivel_risco);

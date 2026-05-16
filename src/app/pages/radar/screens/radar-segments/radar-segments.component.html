@@ -19,6 +19,7 @@
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Score Médio</th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Ações 30d (Total)</th>
             <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Usuários Ativos</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-foreground" scope="col">Saúde</th>
           </tr>
           @for (seg of segmentsData(); track seg.name) {
             <tr class="group transition-colors hover:bg-muted/20">
@@ -40,6 +41,12 @@
               </td>
               <td class="px-4 py-3 tabular-nums text-muted-foreground">{{ seg.acoes30d }}</td>
               <td class="px-4 py-3 tabular-nums text-muted-foreground">{{ seg.usuarios }}</td>
+              <td class="px-4 py-3 tabular-nums text-muted-foreground" width="200">
+                <div class="relative rounded-full bg-muted" style="width: 100px; height: 10px">
+                  <div class="h-full rounded-full bg-gradient-primary" [style.width.%]="seg.avgScore"></div> 
+                </div>
+                <span class="text-xs">{{seg.avgScore}}%</span>
+              </td>
             </tr>
           }
       </app-data-table>
