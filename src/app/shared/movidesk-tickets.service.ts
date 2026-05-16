@@ -18,11 +18,7 @@ export class MovideskTicketsService {
   }
 
   private ticketsUrl(): string {
-    // ultimos 90 dias
-    const date = new Date();
-    date.setDate(date.getDate() - 90);
-    const dateString = date.toISOString().split('T')[0];
-    return `${this.apiRoot()}/api/movidesk/tickets?date_from=${dateString}`;
+    return `${this.apiRoot()}/api/movidesk/tickets`;
   }
 
   private resumoUrl(): string {

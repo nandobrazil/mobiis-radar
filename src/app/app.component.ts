@@ -98,8 +98,8 @@ export class AppComponent {
   protected readonly menu = inject(MenuService);
   protected readonly brandIcon = LucideRadar;
   readonly main: { title: string; url: string; icon: LucideIconInput }[] = [
-    { title: 'Dashboard', url: '/', icon: LucideLayoutDashboard },
-    { title: 'Clientes', url: '/radar', icon: LucideRadar },
+    // { title: 'Dashboard', url: '/', icon: LucideLayoutDashboard },
+    { title: 'Radar de Clientes', url: '/radar', icon: LucideRadar },
     { title: 'Comercial', url: '/comercial', icon: LucideBriefcase },
     { title: 'Insights IA', url: '/insights', icon: LucideSparkles },
     { title: 'Movidesk', url: '/movidesk', icon: LucideTicket },
